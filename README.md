@@ -6,6 +6,12 @@ This repository contains all information and resources for the **Client SubHive*
 - **Purpose:** Store and manage all client-related data, including enrollment, benefits, compliance, and vendor integrations.
 - **Audience:** Internal teams responsible for client onboarding, benefits administration, compliance, and support.
 
+## OR BT System Responsibility
+All processes, updates, and maintenance for this repository are managed by the **OR BT system** (Operational Repair, Build, Troubleshooting/Training). This includes:
+- Operational repair of data and workflows
+- System builds and enhancements
+- Troubleshooting and training for users and administrators
+
 ## Key Contents
 - `client_subhive_schema.sql`: PostgreSQL schema for all core tables, following the STAMPED doctrine (column numbers, descriptions, and data types).
 
