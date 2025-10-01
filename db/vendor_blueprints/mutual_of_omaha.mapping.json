@@ -1,0 +1,8 @@
+{
+  "company_unique_id": "group_number",
+  "employee_unique_id": "member_id",
+  "tier_type": "coverage_level",
+  "effective_date": "start_date",
+  "termination_date": "end_date",
+  "cost_amount": "premium"
+}

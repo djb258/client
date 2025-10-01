@@ -1,0 +1,149 @@
+{
+  "project_name": "client-intake-wizard",
+  "version": "1.0.0",
+  "description": "Client Intake Wizard MCP endpoints for Barton Doctrine compliance",
+  "mcp_endpoints": {
+    "client_intake": {
+      "base_path": "/mcp/client-intake",
+      "endpoints": [
+        {
+          "path": "/company/validate",
+          "method": "POST",
+          "description": "Validate company data before promotion to Neon",
+          "request_schema": {
+            "company_id": "string (UUID)",
+            "company_name": "string (required)",
+            "ein": "string (optional)",
+            "address": "string (optional)",
+            "industry": "string (optional)",
+            "internal_group_number": "string (optional)",
+            "vendor_group_numbers": "object (optional)",
+            "renewal_date": "string (ISO date, optional)",
+            "hr_tone": "object (optional)"
+          },
+          "response_schema": {
+            "success": "boolean",
+            "job_id": "string",
+            "errors": "array<string>",
+            "validated": "boolean"
+          },
+          "validation_rules": [
+            "company_name must not be empty",
+            "ein must match format XX-XXXXXXX if provided",
+            "renewal_date must be valid ISO date if provided",
+            "vendor_group_numbers must be valid JSON object",
+            "hr_tone must be valid JSON object"
+          ]
+        },
+        {
+          "path": "/company/promote",
+          "method": "POST",
+          "description": "Promote validated company data from Firebase to Neon",
+          "request_schema": {
+            "company_id": "string (UUID, required)",
+            "firebase_doc": "object (CompanyDocument, required)"
+          },
+          "response_schema": {
+            "success": "boolean",
+            "job_id": "string",
+            "errors": "array<string>",
+            "promoted_table": "string (company)",
+            "neon_id": "string (UUID)"
+          },
+          "business_rules": [
+            "Company must be validated before promotion",
+            "Company must not already exist in Neon (check by EIN or company_name)",
+            "All required fields must be present",
+            "Write to intake_audit_log on success or failure"
+          ]
+        },
+        {
+          "path": "/employee/validate",
+          "method": "POST",
+          "description": "Validate employee data before promotion to Neon",
+          "request_schema": {
+            "employee_id": "string (UUID)",
+            "company_id": "string (UUID, required)",
+            "first_name": "string (required)",
+            "last_name": "string (required)",
+            "internal_employee_number": "string (optional)",
+            "vendor_employee_ids": "object (optional)",
+            "benefit_type": "string (optional)",
+            "coverage_tier": "string (optional)",
+            "dependents": "array<Dependent> (optional)"
+          },
+          "response_schema": {
+            "success": "boolean",
+            "job_id": "string",
+            "errors": "array<string>",
+            "validated": "boolean"
+          },
+          "validation_rules": [
+            "first_name must not be empty",
+            "last_name must not be empty",
+            "company_id must reference existing company in Neon",
+            "coverage_tier must be one of: employee, employee+spouse, employee+child, family",
+            "dependents array must have valid structure if provided",
+            "vendor_employee_ids must be valid JSON object"
+          ]
+        },
+        {
+          "path": "/employee/promote",
+          "method": "POST",
+          "description": "Promote validated employee data from Firebase to Neon",
+          "request_schema": {
+            "employee_id": "string (UUID, required)",
+            "firebase_doc": "object (EmployeeDocument, required)"
+          },
+          "response_schema": {
+            "success": "boolean",
+            "job_id": "string",
+            "errors": "array<string>",
+            "promoted_table": "string (employee)",
+            "neon_id": "string (UUID)"
+          },
+          "business_rules": [
+            "Employee must be validated before promotion",
+            "Company must exist in Neon (check company_id FK)",
+            "All required fields must be present",
+            "Write to intake_audit_log on success or failure"
+          ]
+        }
+      ]
+    }
+  },
+  "neon_config": {
+    "schema": "clnt",
+    "connection_string_env": "NEON_DATABASE_URL",
+    "tables": {
+      "company": "clnt.company",
+      "employee": "clnt.employee",
+      "audit_log": "clnt.intake_audit_log"
+    }
+  },
+  "firebase_config": {
+    "project_id": "client_intake",
+    "collections": {
+      "company": "company",
+      "employee": "employee",
+      "audit_log": "intake_audit_log"
+    }
+  },
+  "audit_config": {
+    "log_all_requests": true,
+    "log_validation_failures": true,
+    "log_promotion_attempts": true,
+    "retention_days": 90
+  },
+  "security": {
+    "require_authentication": true,
+    "rate_limit": {
+      "requests_per_minute": 60,
+      "requests_per_hour": 500
+    },
+    "allowed_origins": [
+      "https://client-intake.lovable.app",
+      "http://localhost:3000"
+    ]
+  }
+}

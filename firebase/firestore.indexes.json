@@ -1,0 +1,36 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "company_intake",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ein", "order": "ASCENDING" },
+        { "fieldPath": "validated", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "employee_intake",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "company_unique_id", "order": "ASCENDING" },
+        { "fieldPath": "validated", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "benefit_intake",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "company_vendor_id", "order": "ASCENDING" },
+        { "fieldPath": "validated", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "export_queue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "company_vendor_id", "order": "ASCENDING" },
+        { "fieldPath": "export_status", "order": "ASCENDING" }
+      ]
+    }
+  ]
+}

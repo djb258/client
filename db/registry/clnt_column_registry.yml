@@ -1,0 +1,192 @@
+# clnt_column_registry.yml
+# Column registry for client-subhive canonical schema
+
+version: "1.0"
+schema: clnt
+
+tables:
+  company:
+    columns:
+      - name: company_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: company_name
+        type: TEXT
+        required: true
+        description: Legal company name
+      - name: ein
+        type: TEXT
+        required: false
+        description: Employer Identification Number (XX-XXXXXXX)
+      - name: address
+        type: TEXT
+        required: false
+        description: Company mailing address
+      - name: industry
+        type: TEXT
+        required: false
+        description: Industry classification
+      - name: internal_group_number
+        type: TEXT
+        required: false
+        description: Internal group identifier
+      - name: vendor_group_numbers
+        type: JSONB
+        required: false
+        description: Vendor-specific group numbers mapping
+      - name: renewal_date
+        type: DATE
+        required: false
+        description: Benefits renewal date
+      - name: hr_tone
+        type: JSONB
+        required: false
+        description: HR communication style preferences
+
+  employee:
+    columns:
+      - name: employee_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: company_id
+        type: UUID
+        required: true
+        description: Foreign key to company
+      - name: first_name
+        type: TEXT
+        required: true
+        description: Employee first name
+      - name: last_name
+        type: TEXT
+        required: true
+        description: Employee last name
+      - name: internal_employee_number
+        type: TEXT
+        required: false
+        description: Internal employee identifier
+      - name: vendor_employee_ids
+        type: JSONB
+        required: false
+        description: Vendor-specific employee IDs mapping
+      - name: benefit_type
+        type: TEXT
+        required: false
+        description: Type of benefit (medical, dental, vision, life)
+      - name: coverage_tier
+        type: TEXT
+        required: false
+        description: Coverage tier (employee, employee+spouse, employee+child, family)
+      - name: dependents
+        type: JSONB
+        required: false
+        description: Array of dependent information
+
+  vendor_linkage:
+    columns:
+      - name: linkage_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: company_id
+        type: UUID
+        required: true
+        description: Foreign key to company
+      - name: vendor_name
+        type: TEXT
+        required: true
+        description: Vendor identifier
+      - name: vendor_group_number
+        type: TEXT
+        required: false
+        description: Vendor-assigned group number
+      - name: vendor_config
+        type: JSONB
+        required: false
+        description: Vendor-specific configuration
+      - name: active
+        type: BOOLEAN
+        required: true
+        description: Active status
+
+  benefits:
+    columns:
+      - name: benefit_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: company_id
+        type: UUID
+        required: true
+        description: Foreign key to company
+      - name: benefit_type
+        type: TEXT
+        required: true
+        description: Type of benefit
+      - name: benefit_description
+        type: TEXT
+        required: false
+        description: Benefit description
+      - name: effective_date
+        type: DATE
+        required: false
+        description: Benefit effective date
+      - name: termination_date
+        type: DATE
+        required: false
+        description: Benefit termination date
+      - name: config
+        type: JSONB
+        required: false
+        description: Benefit configuration
+
+  tiers:
+    columns:
+      - name: tier_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: benefit_id
+        type: UUID
+        required: true
+        description: Foreign key to benefits
+      - name: tier_name
+        type: TEXT
+        required: true
+        description: Tier name
+      - name: tier_config
+        type: JSONB
+        required: false
+        description: Tier configuration
+
+  enrollments:
+    columns:
+      - name: enrollment_id
+        type: UUID
+        required: true
+        description: Primary key
+      - name: employee_id
+        type: UUID
+        required: true
+        description: Foreign key to employee
+      - name: benefit_id
+        type: UUID
+        required: true
+        description: Foreign key to benefits
+      - name: tier_id
+        type: UUID
+        required: false
+        description: Foreign key to tiers
+      - name: enrollment_date
+        type: DATE
+        required: false
+        description: Enrollment date
+      - name: status
+        type: TEXT
+        required: false
+        description: Enrollment status (active, terminated, pending)
+      - name: config
+        type: JSONB
+        required: false
+        description: Enrollment configuration

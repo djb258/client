@@ -112,3 +112,4 @@ factory/dist/
 *.backup
 *.bak
 *~
+nul
