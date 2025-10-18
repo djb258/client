@@ -2,15 +2,15 @@
 
 ## Factory (New Builds)
 - [x] Factory init scaffolds new app with .env.example + logging shim
-- [ ] Integrate compliance checks into factory workflow
-- [ ] Add garage-MCP orchestration to factory builds
-- [ ] Auto-generate blueprint documentation
+- [x] Integrate compliance checks into factory workflow
+- [x] Add garage-MCP orchestration to factory builds
+- [x] Auto-generate blueprint documentation
 
 ## Mechanic (Recalls/Repairs)
 - [x] Mechanic recall injects .env.example + shim into existing repo (no secrets)
 - [x] Compliance heartbeat system for monitoring
-- [ ] Integrate HEIR error handling into recall workflow
-- [ ] Add subagent delegation for complex repairs
+- [x] Integrate HEIR error handling into recall workflow
+- [x] Add subagent delegation for complex repairs
 
 ## Environment & Configuration
 - [x] Env check warns on missing placeholders or drift from schema
