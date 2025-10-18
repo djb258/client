@@ -135,15 +135,118 @@ cat > "$TARGET/.imo-compliance.json" << JSON
 JSON
 
 # Copy compliance check script
-cp "templates/imo-compliance-check.py" "$TARGET/imo-compliance-check.py" 2>/dev/null || echo "[Factory] Note: Compliance check script not found in templates/"
+if [ -f "templates/imo-compliance-check.py" ]; then
+  cp "templates/imo-compliance-check.py" "$TARGET/imo-compliance-check.py"
+  chmod +x "$TARGET/imo-compliance-check.py"
+  echo "[Factory] ✅ Compliance check script installed"
+else
+  echo "[Factory] ⚠️  Compliance check script not found in templates/"
+fi
+
+# Run initial compliance check
+echo "[Factory] Running initial compliance check..."
+if [ -f "$TARGET/imo-compliance-check.py" ]; then
+  python "$TARGET/imo-compliance-check.py" > "$TARGET/.compliance-report.txt" 2>&1 || true
+  echo "[Factory] ✅ Initial compliance check completed (see .compliance-report.txt)"
+fi
+
+# Add HEIR validation
+echo "[Factory] Adding HEIR validation configuration..."
+cat > "$TARGET/.heir-config.yaml" << 'HEIR'
+doctrine:
+  version: "HEIR/1.0"
+  app_name: ${APP_NAME}
+  db: "shq"
+  subhive: "03"
+  altitude_layers:
+    - layer: 30
+      description: "Strategic orchestration"
+    - layer: 20
+      description: "Tactical processing"
+    - layer: 10
+      description: "Implementation"
+    - layer: 5
+      description: "Validation"
+
+validation:
+  enabled: true
+  strict_mode: false
+  auto_fix: true
+
+error_handling:
+  capture_all: true
+  log_to_master: true
+  retry_strategy: "exponential_backoff"
+  max_retries: 3
+HEIR
 
 # Generate deep wiki with branch specifications
 echo "[Factory] Generating deep wiki with branch specifications..."
-bash tools/deep_wiki_generator.sh "$TARGET" "$APP_NAME"
+bash tools/deep_wiki_generator.sh "$TARGET" "$APP_NAME" 2>/dev/null || echo "[Factory] Note: Deep wiki generator not available"
 
-echo "[Factory] ✅ Created $TARGET with deep wiki"
+# Auto-generate blueprint documentation
+echo "[Factory] Generating blueprint documentation..."
+if [ -f "tools/blueprint_doc_generator.py" ]; then
+  python "tools/blueprint_doc_generator.py" "$TARGET" 2>/dev/null || echo "[Factory] Note: Blueprint documentation will be generated on first manifest creation"
+fi
+
+# Create garage-MCP integration stub
+echo "[Factory] Adding garage-MCP integration..."
+cat > "$TARGET/src/mcp-client.js" << 'MCP'
+/**
+ * Garage-MCP Client Integration
+ * Provides orchestration layer for factory-built apps
+ */
+
+import { logError, logInfo } from "../../../src/imo-logger.ts";
+
+const MCP_URL = process.env.GARAGE_MCP_URL || 'http://localhost:7001';
+const MCP_TOKEN = process.env.GARAGE_MCP_TOKEN;
+
+export async function callMCPTool(toolName, data) {
+  try {
+    const response = await fetch(`${MCP_URL}/tools/${toolName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(MCP_TOKEN && { 'Authorization': `Bearer ${MCP_TOKEN}` })
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      throw new Error(`MCP tool ${toolName} failed: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    await logError(error, { tool: toolName, mcp_url: MCP_URL });
+    throw error;
+  }
+}
+
+export async function registerSubagent(config) {
+  await logInfo("Registering subagent", config);
+  return callMCPTool('subagent_register', config);
+}
+
+export async function delegateTask(task) {
+  await logInfo("Delegating task", { task_id: task.id });
+  return callMCPTool('subagent_delegate', task);
+}
+MCP
+
+echo "[Factory] ✅ Created $TARGET with full compliance integration"
+echo ""
 echo "[Factory] Next steps:"
 echo "  1. cd $TARGET"
 echo "  2. Set environment variables in Vercel/Render"
 echo "  3. npm run env:check"
-echo "  4. npm run dev"
+echo "  4. npm run compliance:check"
+echo "  5. npm run dev"
+echo ""
+echo "[Factory] Compliance Features:"
+echo "  ✅ HEIR validation configured (.heir-config.yaml)"
+echo "  ✅ Compliance monitoring enabled (.imo-compliance.json)"
+echo "  ✅ Garage-MCP client integrated (src/mcp-client.js)"
+echo "  ✅ Error handling with master log integration"
