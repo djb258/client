@@ -55,7 +55,8 @@
     "errors:unresolved": "tsx scripts/check-errors.ts unresolved",
     "errors:critical": "tsx scripts/check-errors.ts critical",
     "errors:summary": "tsx scripts/check-errors.ts summary",
-    "errors:recent": "tsx scripts/check-errors.ts recent"
+    "errors:recent": "tsx scripts/check-errors.ts recent",
+    "agent:validate-env": "tsx scripts/setup_agent_env.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

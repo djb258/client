@@ -700,6 +700,37 @@ timestamp_last_touched: "ISO-8601 timestamp"
 - **10k ft**: Implementation transforms
 - **5k ft**: Validation testing
 
+### Environment Setup & Validation
+
+**Script**: `scripts/setup_agent_env.ts`
+
+Before executing any agent workflows, validate that the environment is properly configured:
+
+```bash
+npm run agent:validate-env
+# Or directly: ts-node scripts/setup_agent_env.ts
+```
+
+**What it checks**:
+1. ✅ **Bootstrap Config**: Validates `bootstrap_program.json` exists and contains required fields
+2. ✅ **Database Connection**: Verifies connectivity to Neon PostgreSQL
+3. ✅ **Required Tables**: Confirms existence of:
+   - `clnt.employee_vendor_ids` - Vendor ID cross-reference table
+   - `shq.audit_log` - Audit logging table
+   - `shq.error_log` - Error logging table
+
+**Expected Output**:
+```
+✅ Agent environment is valid and ready.
+```
+
+**On Failure**:
+- Review missing tables and run `npm run migrate`
+- Check DATABASE_URL environment variable
+- Verify bootstrap_program.json has all required fields
+
+**Use Case**: Run this script at the start of any agent session to ensure all required infrastructure is in place before executing validation, promotion, or export workflows.
+
 ---
 
 ## End of LLM Overview
