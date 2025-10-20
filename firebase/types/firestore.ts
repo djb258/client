@@ -21,6 +21,10 @@ export interface CompanyDocument {
   promoted_to_neon: boolean;
   last_touched: Date | Timestamp;
   created_at?: Date | Timestamp;
+  // Blueprint versioning fields
+  blueprint_version: string; // e.g., "v1.0.0"
+  validator_signature: string; // e.g., "SHQ-INTAKE-VALIDATOR"
+  timestamp_last_touched: string; // ISO timestamp
 }
 
 export interface HRTone {
@@ -48,6 +52,10 @@ export interface EmployeeDocument {
   promoted_to_neon: boolean;
   last_touched: Date | Timestamp;
   created_at?: Date | Timestamp;
+  // Blueprint versioning fields
+  blueprint_version: string; // e.g., "v1.0.0"
+  validator_signature: string; // e.g., "SHQ-INTAKE-VALIDATOR"
+  timestamp_last_touched: string; // ISO timestamp
 }
 
 export interface Dependent {

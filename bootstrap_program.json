@@ -1,0 +1,10 @@
+{
+  "repo_name": "client",
+  "blueprint_version": "v1.0.0",
+  "validator_signature": "SHQ-INTAKE-VALIDATOR",
+  "error_log_table": "shq.error_log",
+  "audit_log_table": "shq.audit_log",
+  "vendor_table": "clnt.employee_vendor_ids",
+  "doctrine": ["CTB", "ORBT", "STAMPED"],
+  "llm_instruction": "Validate all input against blueprint schema. Log all actions to audit_log. Log all errors to error_log. Ensure validator signature and blueprint_version are present. Never modify structure without updated doctrine."
+}

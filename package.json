@@ -19,6 +19,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "dev-ui": "cd apps/ui && npm run dev",
+    "build-ui": "cd apps/ui && npm run build",
     "factory:dev": "node factory/ui/dev.js",
     "factory:build": "node factory/ui/build.js",
     "factory:init": "bash factory/ui/init.sh",
@@ -48,7 +50,12 @@
     "composio:status": "python tools/composio_app_connector.py status",
     "composio:test": "python tools/composio_app_connector.py setup-defaults",
     "mcp:start-garage": "python garage-mcp/main.py",
-    "mcp:test": "python tools/demo_workflow.py"
+    "mcp:test": "python tools/demo_workflow.py",
+    "errors:check": "tsx scripts/check-errors.ts",
+    "errors:unresolved": "tsx scripts/check-errors.ts unresolved",
+    "errors:critical": "tsx scripts/check-errors.ts critical",
+    "errors:summary": "tsx scripts/check-errors.ts summary",
+    "errors:recent": "tsx scripts/check-errors.ts recent"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

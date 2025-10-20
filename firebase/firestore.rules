@@ -2,6 +2,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper function to validate blueprint versioning fields
+    function hasVersioningFields() {
+      return request.resource.data.blueprint_version is string
+          && request.resource.data.validator_signature is string
+          && request.resource.data.timestamp_last_touched is string;
+    }
+
+    // Company collection - requires blueprint versioning
+    match /company/{companyId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && hasVersioningFields();
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // Employee collection - requires blueprint versioning
+    match /employee/{employeeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && hasVersioningFields();
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // Audit log collection
+    match /intake_audit_log/{logId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
     // All collections in clnt_subhive
     match /clnt_subhive/{collection}/{docId} {
       allow read, write: if request.auth != null;
