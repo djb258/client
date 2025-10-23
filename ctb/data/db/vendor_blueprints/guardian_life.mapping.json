@@ -1,0 +1,125 @@
+{
+  "vendor_name": "guardian_life",
+  "version": "1.0",
+  "description": "Guardian Life vendor mapping blueprint",
+  "output_table": "clnt.vendor_guardian_life",
+  "mappings": {
+    "company": {
+      "group_number": {
+        "source": "vendor_group_numbers->>'guardian_life'",
+        "target": "grd_policy_number",
+        "type": "TEXT",
+        "required": true
+      },
+      "company_name": {
+        "source": "company_name",
+        "target": "grd_employer_name",
+        "type": "TEXT",
+        "required": true
+      },
+      "ein": {
+        "source": "ein",
+        "target": "grd_employer_id",
+        "type": "TEXT",
+        "required": false
+      }
+    },
+    "employee": {
+      "employee_number": {
+        "source": "vendor_employee_ids->>'guardian_life'",
+        "target": "grd_certificate_number",
+        "type": "TEXT",
+        "required": true
+      },
+      "first_name": {
+        "source": "first_name",
+        "target": "grd_insured_first",
+        "type": "TEXT",
+        "required": true
+      },
+      "last_name": {
+        "source": "last_name",
+        "target": "grd_insured_last",
+        "type": "TEXT",
+        "required": true
+      },
+      "coverage_tier": {
+        "source": "coverage_tier",
+        "target": "grd_plan_type",
+        "type": "TEXT",
+        "required": false,
+        "transform": {
+          "employee": "SINGLE",
+          "employee+spouse": "TWO_PARTY",
+          "employee+child": "PARENT_CHILD",
+          "family": "FAMILY"
+        }
+      },
+      "benefit_type": {
+        "source": "benefit_type",
+        "target": "grd_product_code",
+        "type": "TEXT",
+        "required": false,
+        "transform": {
+          "medical": "MED",
+          "dental": "DEN",
+          "vision": "VIS",
+          "life": "LIFE"
+        }
+      }
+    }
+  },
+  "output_schema": {
+    "table_name": "vendor_guardian_life",
+    "columns": [
+      {
+        "name": "grd_record_id",
+        "type": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+      },
+      {
+        "name": "company_id",
+        "type": "UUID REFERENCES clnt.company(company_id)"
+      },
+      {
+        "name": "employee_id",
+        "type": "UUID REFERENCES clnt.employee(employee_id)"
+      },
+      {
+        "name": "grd_policy_number",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_certificate_number",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_employer_name",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_employer_id",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_insured_first",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_insured_last",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_plan_type",
+        "type": "TEXT"
+      },
+      {
+        "name": "grd_product_code",
+        "type": "TEXT"
+      },
+      {
+        "name": "export_date",
+        "type": "TIMESTAMP DEFAULT now()"
+      }
+    ]
+  }
+}

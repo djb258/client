@@ -1,0 +1,43 @@
+# CTB Metadata
+# ctb_id: CTB-B1D994FD62E8
+# ctb_branch: ui
+# ctb_path: ui/apps/my-app/docs/toolbox/profiles.yml
+# ctb_version: 1.0.0
+# created: 2025-10-23T16:37:01.316464
+# checksum: 754536e3
+
+profiles:
+  db:
+    deps: ["@neondatabase/serverless", "prisma"]
+    services: ["neon", "postgres"]
+    patterns: ["connection-pool", "migrations"]
+    
+  deploy:
+    deps: ["vercel", "@vercel/node"]
+    services: ["vercel", "render", "aws"]
+    patterns: ["serverless", "containers"]
+    
+  firebase:
+    deps: ["firebase-admin", "firebase"]
+    services: ["firestore", "auth", "storage"]
+    patterns: ["realtime", "offline-first"]
+    
+  messaging:
+    deps: ["sendgrid", "slack-sdk", "@slack/web-api"]
+    services: ["email", "slack", "webhook"]
+    patterns: ["async", "retry", "dlq"]
+    
+  logging:
+    deps: ["winston", "pino", "undici"]
+    services: ["imo-master", "datadog", "sentry"]
+    patterns: ["structured", "correlation-id"]
+    
+  caching:
+    deps: ["redis", "node-cache"]
+    services: ["redis", "memory", "cdn"]
+    patterns: ["ttl", "invalidation", "warming"]
+    
+  auth:
+    deps: ["jsonwebtoken", "bcrypt", "passport"]
+    services: ["jwt", "oauth", "saml"]
+    patterns: ["middleware", "rbac", "session"]

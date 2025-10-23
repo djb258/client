@@ -1,0 +1,133 @@
+%% CTB System Architecture
+%% Client-Subhive Repository
+%% Version: 1.0.0
+
+graph TB
+    %% External Entities
+    User[👤 User]
+    Admin[👨‍💼 Admin]
+    Composio[⚙️ Composio API]
+    GitHub[🐙 GitHub Actions]
+
+    %% UI Layer
+    subgraph UI["🎨 CTB/UI - Presentation Layer"]
+        NextApp[Next.js App]
+        Components[React Components]
+        Pages[Pages & Routes]
+        API[API Endpoints]
+    end
+
+    %% AI Layer
+    subgraph AI["🤖 CTB/AI - Intelligence Layer"]
+        Agents[AI Agents]
+        HEIR[HEIR Error Handler]
+        Sidecar[Sidecar Telemetry]
+        BartonModules[Barton Modules<br/>Alt 5-30]
+    end
+
+    %% Data Layer
+    subgraph DATA["💾 CTB/DATA - Storage Layer"]
+        PostgreSQL[(PostgreSQL/Neon)]
+        Firebase[(Firebase/Firestore)]
+        Registry[(Registry)]
+    end
+
+    %% System Layer
+    subgraph SYS["⚙️ CTB/SYS - Infrastructure"]
+        GlobalFactory[Global Factory]
+        Scripts[Scripts & Tools]
+        Factory[Factory System]
+        Mechanic[Mechanic Recall]
+        MCPServers[MCP Servers]
+    end
+
+    %% Meta Layer
+    subgraph META["📋 CTB/META - Configuration"]
+        GlobalConfig[global-config.yaml]
+        EnforcementRules[enforcement_rules.json]
+        CTBRegistry[ctb_registry.json]
+        Workflows[GitHub Workflows]
+    end
+
+    %% User Interactions
+    User -->|Browse| NextApp
+    User -->|Submit Data| API
+    Admin -->|Configure| GlobalConfig
+    Admin -->|Trigger| Workflows
+
+    %% UI Layer Flow
+    NextApp -->|Render| Components
+    NextApp -->|Route| Pages
+    API -->|Handle Requests| NextApp
+
+    %% UI to AI
+    API -->|Call Agents| Agents
+    Components -->|Error Handling| HEIR
+    API -->|Emit Events| Sidecar
+
+    %% UI to DATA
+    API -->|Query| PostgreSQL
+    Components -->|Real-time| Firebase
+    API -->|Lookup| Registry
+
+    %% AI Layer Flow
+    Agents -->|Execute| BartonModules
+    BartonModules -->|Log Errors| HEIR
+    HEIR -->|Send Events| Sidecar
+    Agents -->|Use| MCPServers
+
+    %% AI to DATA
+    Agents -->|Read/Write| PostgreSQL
+    HEIR -->|Log to| Firebase
+    Sidecar -->|Store Events| PostgreSQL
+
+    %% AI to SYS
+    Agents -->|Execute| Scripts
+    BartonModules -->|Use| GlobalFactory
+
+    %% DATA Layer Flow
+    PostgreSQL -->|Replicate| Firebase
+    Registry -->|Define Schema| PostgreSQL
+
+    %% DATA to SYS
+    PostgreSQL -->|Backup| Scripts
+    Firebase -->|Sync| Scripts
+
+    %% SYS Layer Flow
+    GlobalFactory -->|Compliance Scripts| Scripts
+    Factory -->|Create Apps| Scripts
+    Mechanic -->|Repair Apps| Scripts
+    Scripts -->|Use| MCPServers
+
+    %% SYS to META
+    GlobalFactory -->|Read Config| GlobalConfig
+    Scripts -->|Check Rules| EnforcementRules
+    GlobalFactory -->|Update| CTBRegistry
+
+    %% META Layer Flow
+    GlobalConfig -->|Configure| Workflows
+    EnforcementRules -->|Enforce| Workflows
+    Workflows -->|Trigger| GitHub
+
+    %% External Integrations
+    Composio -->|API Calls| Agents
+    Composio -->|Scenarios| GlobalConfig
+    GitHub -->|CI/CD| Workflows
+    GitHub -->|Run| Scripts
+
+    %% Styling
+    classDef uiStyle fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef aiStyle fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef dataStyle fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef sysStyle fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    classDef metaStyle fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef externalStyle fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+
+    class NextApp,Components,Pages,API uiStyle
+    class Agents,HEIR,Sidecar,BartonModules aiStyle
+    class PostgreSQL,Firebase,Registry dataStyle
+    class GlobalFactory,Scripts,Factory,Mechanic,MCPServers sysStyle
+    class GlobalConfig,EnforcementRules,CTBRegistry,Workflows metaStyle
+    class User,Admin,Composio,GitHub externalStyle
+
+%% Data Flow Diagram - Detailed View

@@ -1,0 +1,88 @@
+# OR BT System: Operational Repair, Build, Troubleshooting/Training
+# This workflow is managed by the OR BT system for automated database schema management
+# Purpose: Apply Neon database schema changes with operational oversight and compliance
+
+name: OR BT - Apply Neon Schema
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allow manual triggering for troubleshooting
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: OR BT - Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Full history for troubleshooting
+
+      - name: OR BT - Install PostgreSQL client
+        run: |
+          echo "Installing PostgreSQL client for database operations..."
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          echo "PostgreSQL client installation completed."
+
+      - name: OR BT - Validate schema file exists
+        run: |
+          echo "Validating schema file presence..."
+          if [ ! -f "client_subhive_schema.sql" ]; then
+            echo "ERROR: client_subhive_schema.sql not found"
+            exit 1
+          fi
+          echo "Schema file validation passed."
+
+      - name: OR BT - Apply schema to Neon (with error handling)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Starting schema application to Neon database..."
+          echo "Database host: $(echo $DATABASE_URL | sed 's/.*@\([^:]*\).*/\1/')"
+          
+          # Test connection first
+          echo "Testing database connection..."
+          if ! psql "$DATABASE_URL" -c "SELECT 1;" > /dev/null 2>&1; then
+            echo "ERROR: Cannot connect to database"
+            exit 1
+          fi
+          echo "Database connection successful."
+          
+          # Apply schema with detailed logging
+          echo "Applying schema changes..."
+          if psql "$DATABASE_URL" -f client_subhive_schema.sql; then
+            echo "Schema application completed successfully."
+          else
+            echo "ERROR: Schema application failed"
+            exit 1
+          fi
+
+      - name: OR BT - Verify schema application
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Verifying schema application..."
+          # Check if key tables exist
+          TABLES=$(psql "$DATABASE_URL" -t -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'client';")
+          echo "Tables found in client schema:"
+          echo "$TABLES"
+          
+          # Count tables for validation
+          TABLE_COUNT=$(echo "$TABLES" | wc -l)
+          echo "Total tables in client schema: $TABLE_COUNT"
+          
+          if [ "$TABLE_COUNT" -lt 20 ]; then
+            echo "WARNING: Expected at least 20 tables, found $TABLE_COUNT"
+          else
+            echo "Schema verification passed."
+          fi
+
+      - name: OR BT - Log completion
+        run: |
+          echo "=== OR BT System: Schema Migration Complete ==="
+          echo "Timestamp: $(date)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "==============================================" 
