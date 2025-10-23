@@ -12,6 +12,11 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 from enum import Enum
 
+# Fix Windows console encoding for emojis
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+
 
 class RepairCategory(Enum):
     """Categories of repair tasks"""
