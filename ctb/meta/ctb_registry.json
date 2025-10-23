@@ -1,10 +1,10 @@
 {
-  "generated": "2025-10-23T17:48:01.033584",
-  "compliance_score": 79,
+  "generated": "2025-10-23T18:17:14.456879",
+  "compliance_score": 80,
   "stats": {
     "total_files": 232,
-    "tagged_files": 184,
-    "untagged_files": 48,
+    "tagged_files": 186,
+    "untagged_files": 46,
     "orphaned_files": 0,
     "duplicate_ids": 0,
     "invalid_metadata": 0,
@@ -16,7 +16,7 @@
       },
       "data": {
         "files": 11,
-        "tagged": 2,
+        "tagged": 3,
         "issues": 0
       },
       "docs": {
@@ -31,7 +31,7 @@
       },
       "sys": {
         "files": 53,
-        "tagged": 47,
+        "tagged": 48,
         "issues": 0
       },
       "ui": {
@@ -171,6 +171,19 @@
       },
       "size": 3653,
       "modified": "2025-10-23T16:37:00.597840"
+    },
+    "data/tests/test_schemas.py": {
+      "branch": "data",
+      "metadata": {
+        "ctb_id": "CTB-CFD698D4BADF",
+        "ctb_branch": "data",
+        "ctb_path": "data/tests/test_schemas.py",
+        "ctb_version": "1.0.0",
+        "created": "2025-10-23T18:13:37.352110",
+        "checksum": "88ec36f6"
+      },
+      "size": 2785,
+      "modified": "2025-10-23T18:13:37.369829"
     },
     "docs/docs/blueprints/example/manifest.yaml": {
       "branch": "docs",
@@ -704,6 +717,19 @@
       },
       "size": 3700,
       "modified": "2025-10-23T16:37:00.985167"
+    },
+    "sys/tests/test_compliance.py": {
+      "branch": "sys",
+      "metadata": {
+        "ctb_id": "CTB-854AEFB7923A",
+        "ctb_branch": "sys",
+        "ctb_path": "sys/tests/test_compliance.py",
+        "ctb_version": "1.0.0",
+        "created": "2025-10-23T18:13:38.867256",
+        "checksum": "46416099"
+      },
+      "size": 4950,
+      "modified": "2025-10-23T18:13:38.872668"
     },
     "sys/tests/test_doctrine_features.py": {
       "branch": "sys",
@@ -2435,5 +2461,5 @@
       "modified": "2025-10-23T16:37:02.265613"
     }
   },
-  "issues_count": 48
+  "issues_count": 46
 }

@@ -1,4 +1,14 @@
 """
+CTB Metadata
+ctb_id: CTB-854AEFB7923A
+ctb_branch: sys
+ctb_path: sys/tests/test_compliance.py
+ctb_version: 1.0.0
+created: 2025-10-23T18:13:38.867256
+checksum: 46416099
+"""
+
+"""
 CTB System Compliance Tests
 Tests for CTB structure and compliance checking
 """

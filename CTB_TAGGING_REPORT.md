@@ -1,14 +1,14 @@
 # CTB Tagging Report
 
-**Generated:** 2025-10-23 16:37:21
+**Generated:** 2025-10-23 18:13:41
 **Root Path:** C:\Users\CUSTOMER PC\Cursor Repo\client-subhive\ctb
 **Mode:** LIVE
 
 ## Summary
 
-- **Files Scanned:** 239
-- **Files Tagged:** 0
-- **Files Skipped:** 239
+- **Files Scanned:** 255
+- **Files Tagged:** 2
+- **Files Skipped:** 253
 - **Errors:** 0
 
 ## By Branch
@@ -16,27 +16,27 @@
 ### AI
 
 - Tagged: 0
-- Skipped: 18
+- Skipped: 19
 
 ### DATA
 
-- Tagged: 0
-- Skipped: 7
+- Tagged: 1
+- Skipped: 10
 
 ### DOCS
 
 - Tagged: 0
-- Skipped: 13
+- Skipped: 14
 
 ### META
 
 - Tagged: 0
-- Skipped: 6
+- Skipped: 10
 
 ### SYS
 
-- Tagged: 0
-- Skipped: 50
+- Tagged: 1
+- Skipped: 52
 
 ### UI
 
@@ -47,6 +47,8 @@
 
 | Path | CTB ID | Branch | Size |
 |------|--------|--------|------|
+| `data/tests/test_schemas.py` | CTB-CFD698D4BADF | data | 2785 bytes |
+| `sys/tests/test_compliance.py` | CTB-854AEFB7923A | sys | 4950 bytes |
 
 
 ## Metadata Format

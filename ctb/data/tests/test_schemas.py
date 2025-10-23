@@ -1,4 +1,14 @@
 """
+CTB Metadata
+ctb_id: CTB-CFD698D4BADF
+ctb_branch: data
+ctb_path: data/tests/test_schemas.py
+ctb_version: 1.0.0
+created: 2025-10-23T18:13:37.352110
+checksum: 88ec36f6
+"""
+
+"""
 CTB Data Schema Tests
 Tests for database schemas and data models
 """

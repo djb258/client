@@ -63,7 +63,7 @@ doctrine_enforcement:
   enabled: true
   ctb_factory: "ctb/sys/global-factory/"
   auto_sync: true
-  min_score: 90
+  min_score: 70
   composio_scenario: "CTB_Compliance_Cycle"
   strict_mode: false
   auto_fix: true

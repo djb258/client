@@ -1,8 +1,8 @@
 # CTB Audit Report
 
-**Generated:** 2025-10-23 17:48:01
+**Generated:** 2025-10-23 18:17:14
 **Root Path:** C:\Users\CUSTOMER PC\Cursor Repo\client-subhive\ctb
-**Compliance Score:** 79/100
+**Compliance Score:** 80/100
 
 ## Executive Summary
 
@@ -11,21 +11,21 @@
 ### Statistics
 
 - **Total Files Audited:** 232
-- **Tagged Files:** 184 (79.3%)
-- **Untagged Files:** 48
+- **Tagged Files:** 186 (80.2%)
+- **Untagged Files:** 46
 - **Invalid Metadata:** 0
 - **Duplicate IDs:** 0
-- **Total Issues:** 48
+- **Total Issues:** 46
 
 ### By Branch
 
 | Branch | Files | Tagged | Issues |
 |--------|-------|--------|--------|
 | AI | 19 | 8 | 0 |
-| DATA | 11 | 2 | 0 |
+| DATA | 11 | 3 | 0 |
 | DOCS | 14 | 9 | 0 |
 | META | 10 | 2 | 0 |
-| SYS | 53 | 47 | 0 |
+| SYS | 53 | 48 | 0 |
 | UI | 125 | 116 | 0 |
 
 
@@ -41,7 +41,7 @@
 *No errors found.*
 
 
-### Warnings (48)
+### Warnings (46)
 
 - **ai/agents/claude-agents-library/agents/database-specialist.md**: File missing CTB metadata
 - **ai/agents/claude-agents-library/agents/devops-engineer.md**: File missing CTB metadata
@@ -54,7 +54,7 @@
 - **ai/modules/barton-modules/altitude-20000/page-20000.md**: File missing CTB metadata
 - **ai/modules/barton-modules/altitude-30000/page-30000.md**: File missing CTB metadata
 
-*...and 38 more warnings*
+*...and 36 more warnings*
 
 
 ## Recommendations
@@ -78,7 +78,7 @@
 
 ## File Registry
 
-Total registered files: 184
+Total registered files: 186
 
 <details>
 <summary>Click to view file registry</summary>
@@ -95,6 +95,7 @@ Total registered files: 184
 | `ai/packages/sidecar/event_emitter.py` | ai | CTB-C6CE4DF68A42 | 4122 |
 | `data/db/registry/clnt_column_registry.yml` | data | CTB-B707D8EB806A | 5493 |
 | `data/firebase/types/firestore.ts` | data | CTB-026D4A91FCE6 | 3653 |
+| `data/tests/test_schemas.py` | data | CTB-CFD698D4BADF | 2785 |
 | `docs/docs/blueprints/example/manifest.yaml` | docs | CTB-43D6012DD52C | 6095 |
 | `docs/docs/blueprints/imo/manifest.yaml` | docs | CTB-D48D4BBF4022 | 5806 |
 | `docs/docs/blueprints/ui/app.js` | docs | CTB-85494C120B2D | 51968 |
@@ -136,6 +137,7 @@ Total registered files: 184
 | `sys/tests/blueprints/test_overview_example.py` | sys | CTB-8BDFA9E6C3E2 | 4861 |
 | `sys/tests/test_api_smoke.py` | sys | CTB-428D61E0B0A3 | 1112 |
 | `sys/tests/test_blueprint_shell.py` | sys | CTB-59C2DC7270BF | 3700 |
+| `sys/tests/test_compliance.py` | sys | CTB-854AEFB7923A | 4950 |
 | `sys/tests/test_doctrine_features.py` | sys | CTB-F779C782C380 | 4752 |
 | `sys/tests/test_llm_endpoint.py` | sys | CTB-716A8604396D | 7490 |
 | `sys/tools/blueprint_score.py` | sys | CTB-57CAB0D192C7 | 4888 |
@@ -183,10 +185,8 @@ Total registered files: 184
 | `ui/components/barton-components/heir/SystemMonitor.tsx` | ui | CTB-88CDF9E8F539 | 4896 |
 | `ui/components/barton-components/heir/TaskList.tsx` | ui | CTB-8B685E974EDC | 3656 |
 | `ui/components/barton-components/imo/IMOBucketEditor.tsx` | ui | CTB-A33A3DB07D3D | 7501 |
-| `ui/components/barton-components/imo/IMOHEIRStatus.tsx` | ui | CTB-234AA9CFF43D | 8337 |
-| `ui/components/barton-components/imo/IMOOverview.tsx` | ui | CTB-9F0D33C1C123 | 4361 |
 
-*...and 84 more files*
+*...and 86 more files*
 
 </details>
 
