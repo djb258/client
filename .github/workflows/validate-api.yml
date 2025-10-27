@@ -1,0 +1,119 @@
+name: "Barton API Validation Pipeline"
+
+on:
+  push:
+    branches: [main, dev, get-ingest]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  verify-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧩 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🧱 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔑 Set Environment Variables
+        env:
+          NEON_URL: ${{ secrets.NEON_URL }}
+          DATABASE_URL: ${{ secrets.NEON_URL }}
+          BARTON_GATEKEEPER_KEY: ${{ secrets.BARTON_GATEKEEPER_KEY }}
+        run: |
+          echo "NEON_URL is set: $([ -n '${{ secrets.NEON_URL }}' ] && echo 'Yes' || echo 'No')"
+          echo "Environment ready for API validation."
+
+      - name: 🔍 Validate Schema Registry
+        env:
+          NEON_URL: ${{ secrets.NEON_URL }}
+          DATABASE_URL: ${{ secrets.NEON_URL }}
+        run: npm run agent:validate-registry
+        continue-on-error: false
+
+      - name: 🧪 Run Jest Tests
+        run: npm test -- --ci --coverage --reporters=default --reporters=jest-junit
+        env:
+          CI: true
+
+      - name: 📊 Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jest-results
+          path: |
+            ./junit.xml
+            ./coverage/
+          retention-days: 30
+
+      - name: 📈 Upload Coverage to Codecov (Optional)
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/coverage-final.json
+          flags: api-tests
+          name: barton-api-coverage
+        continue-on-error: true
+
+      - name: 💬 Comment PR with Results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coverage = fs.existsSync('./coverage/coverage-summary.json')
+              ? JSON.parse(fs.readFileSync('./coverage/coverage-summary.json', 'utf8'))
+              : null;
+
+            let message = '## 🔍 Barton API Validation Results\n\n';
+            message += '✅ **Schema Registry Validation**: Passed\n';
+            message += '✅ **Jest Test Suite**: Passed\n\n';
+
+            if (coverage && coverage.total) {
+              const { lines, statements, functions, branches } = coverage.total;
+              message += '### 📊 Test Coverage\n\n';
+              message += `- **Lines**: ${lines.pct}%\n`;
+              message += `- **Statements**: ${statements.pct}%\n`;
+              message += `- **Functions**: ${functions.pct}%\n`;
+              message += `- **Branches**: ${branches.pct}%\n\n`;
+            }
+
+            message += '### 📋 Validation Summary\n\n';
+            message += '- ✅ All schemas exist in database\n';
+            message += '- ✅ All tables verified\n';
+            message += '- ✅ Primary keys validated\n';
+            message += '- ✅ Doctrine metadata present\n';
+            message += '- ✅ Registry/manifest consistency\n\n';
+            message += '🎉 All checks passed! This PR is ready for review.\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: ✅ Final Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 Barton API Verification Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Schema registry validated"
+          echo "✅ All tests passed"
+          echo "✅ Coverage report generated"
+          echo ""
+          echo "Branch: $GITHUB_REF"
+          echo "Commit: $GITHUB_SHA"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    env:
+      CI: true

@@ -1,0 +1,82 @@
+{
+  "manifest_version": "1.0",
+  "name": "barton-client-database",
+  "description": "MCP manifest exposing the Barton Client Database schemas for automation and integration.",
+  "version": "0.1.0",
+  "endpoints": [
+    {
+      "path": "/core/company_master",
+      "schema": "core",
+      "table": "company_master",
+      "methods": ["GET", "POST", "PATCH"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/core/employee_master",
+      "schema": "core",
+      "table": "employee_master",
+      "methods": ["GET", "POST", "PATCH"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/core/entity_relationship",
+      "schema": "core",
+      "table": "entity_relationship",
+      "methods": ["GET", "POST"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/benefits/vendor_link",
+      "schema": "benefits",
+      "table": "vendor_link",
+      "methods": ["GET", "POST"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/benefits/employee_vendor_id",
+      "schema": "benefits",
+      "table": "employee_vendor_id",
+      "methods": ["GET", "POST", "PATCH"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/compliance/compliance_vault",
+      "schema": "compliance",
+      "table": "compliance_vault",
+      "methods": ["GET", "POST", "PATCH"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/operations/audit_data_lineage",
+      "schema": "operations",
+      "table": "audit_data_lineage",
+      "methods": ["GET", "POST"],
+      "auth": "readonly"
+    },
+    {
+      "path": "/staging/raw_intake_company",
+      "schema": "staging",
+      "table": "raw_intake_company",
+      "methods": ["GET", "POST"],
+      "auth": "gatekeeper"
+    },
+    {
+      "path": "/staging/raw_intake_employee",
+      "schema": "staging",
+      "table": "raw_intake_employee",
+      "methods": ["GET", "POST"],
+      "auth": "gatekeeper"
+    }
+  ],
+  "security": {
+    "auth_mode": "api_key",
+    "key_env": "BARTON_GATEKEEPER_KEY"
+  },
+  "metadata": {
+    "owner": "Barton Enterprises",
+    "doctrine": "STAMPED",
+    "validator_agent": "barton-validator",
+    "auto_generate_sdk": false,
+    "endpoint_status": "inactive"
+  }
+}

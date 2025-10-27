@@ -56,7 +56,9 @@
     "errors:critical": "tsx scripts/check-errors.ts critical",
     "errors:summary": "tsx scripts/check-errors.ts summary",
     "errors:recent": "tsx scripts/check-errors.ts recent",
-    "agent:validate-env": "tsx scripts/setup_agent_env.ts"
+    "agent:validate-env": "tsx scripts/setup_agent_env.ts",
+    "agent:validate-registry": "node scripts/validate_api_registry.js",
+    "verify:api": "npm run agent:validate-registry && npm test && echo '\n✅ Barton API verification complete.'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
