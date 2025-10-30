@@ -108,11 +108,42 @@
       }
     }
   },
-  "version": "1.0.0",
-  "last_updated": "2025-09-26T12:45:00Z",
+  "version": "1.1.0",
+  "last_updated": "2025-01-27T10:30:00Z",
   "compatibility": {
     "min_python": "3.11",
     "min_node": "18.0.0",
-    "github_actions": "v4+"
+    "github_actions": "v4+",
+    "neon_database": "postgresql-15+",
+    "orbt_compliance": "v1.0+"
+  },
+  "neon_integration": {
+    "enabled": true,
+    "schema_name": "client",
+    "auto_migrate": true,
+    "connection_pooling": true,
+    "ssl_required": true
+  },
+  "orbt_system": {
+    "operational_repair": {
+      "enabled": true,
+      "auto_fix": true,
+      "monitoring": true
+    },
+    "build": {
+      "automated": true,
+      "quality_gates": true,
+      "testing": true
+    },
+    "troubleshooting": {
+      "logging": true,
+      "debugging": true,
+      "error_tracking": true
+    },
+    "training": {
+      "documentation": true,
+      "examples": true,
+      "best_practices": true
+    }
   }
 }
