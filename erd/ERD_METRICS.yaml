@@ -1,0 +1,108 @@
+hub:
+  hub_id: client-subhive
+  hub_name: Client Intake & Vendor Export System
+  schema_file: client_subhive_schema.sql
+  database: Neon PostgreSQL
+tables:
+  ingress:
+    - table_name: clnt2.clnt_i_raw_input
+      description: Raw intake data staging
+      imo_layer: I
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_i_raw_input
+    - table_name: clnt2.clnt_i_profile
+      description: Source system profiles
+      imo_layer: I
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_i_profile
+  middle:
+    - table_name: clnt2.clnt_m_client
+      description: Canonical client records
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_client
+    - table_name: clnt2.clnt_m_person
+      description: Employee/dependent records
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_person
+    - table_name: clnt2.clnt_m_plan
+      description: Benefit plan definitions
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_plan
+    - table_name: clnt2.clnt_m_plan_cost
+      description: Plan cost structures
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_plan_cost
+    - table_name: clnt2.clnt_m_election
+      description: Benefit elections
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_election
+    - table_name: clnt2.clnt_m_vendor_link
+      description: Vendor associations
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_vendor_link
+    - table_name: clnt2.clnt_m_spd
+      description: Summary Plan Descriptions
+      imo_layer: M
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_m_spd
+  egress:
+    - table_name: clnt2.clnt_o_output
+      description: Vendor export records
+      imo_layer: O
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_o_output
+    - table_name: clnt2.clnt_o_output_run
+      description: Export execution logs
+      imo_layer: O
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_o_output_run
+    - table_name: clnt2.clnt_o_compliance
+      description: Compliance reports
+      imo_layer: O
+      count: 0
+      query: SELECT COUNT(*) FROM clnt2.clnt_o_compliance
+aggregates:
+  - name: total_clients
+    description: Total number of clients in the system
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_m_client
+  - name: total_employees
+    description: Total employees across all clients
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_m_person WHERE role = 'employee'
+  - name: total_dependents
+    description: Total dependents across all clients
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_m_person WHERE role = 'dependent'
+  - name: total_active_plans
+    description: Total active benefit plans
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_m_plan
+  - name: total_elections
+    description: Total benefit elections
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_m_election
+  - name: total_exports
+    description: Total vendor exports generated
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_o_output
+  - name: exports_last_24h
+    description: Exports in last 24 hours
+    value: 0
+    query: SELECT COUNT(*) FROM clnt2.clnt_o_output_run WHERE created_at > NOW() - INTERVAL '24 hours'
+sync:
+  last_updated: '2026-01-30T16:06:19.834Z'
+  updated_by: claude-code
+  sync_frequency: on_demand
+  notes: Run 'doppler run -- node scripts/sync_erd_metrics.js' to update
+document_control:
+  created: '2026-01-30'
+  version: 1.0.0
+  status: ACTIVE
+  authority: CC-02
