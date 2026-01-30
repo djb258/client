@@ -1,0 +1,112 @@
+# ===============================================================================
+# REGISTRY — Hub Identity Declaration
+# ===============================================================================
+# Authority: imo-creator (Inherited)
+# Status: REQUIRED — Every hub MUST have a REGISTRY.yaml
+# ===============================================================================
+
+version: "1.0.0"
+last_updated: "2026-01-30"
+
+# ===============================================================================
+# HUB IDENTITY (CC-02)
+# ===============================================================================
+
+hub:
+  hub_id: "client-subhive"
+  hub_name: "Client Intake & Vendor Export System"
+  description: "Manages client data intake through wizard interface, transforms to canonical schema, and exports to vendor-specific formats"
+  owner: "Barton Ops System"
+  sovereign_reference: "imo-creator"
+
+# ===============================================================================
+# CONFORMANCE
+# ===============================================================================
+
+conformance:
+  parent: "imo-creator"
+  doctrine_version: "1.0.0"
+  ctb_version: "1.0.0"
+  domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
+
+# ===============================================================================
+# CTB PLACEMENT
+# ===============================================================================
+
+ctb:
+  branches_used:
+    - sys: true
+    - data: true
+    - app: false
+    - ai: true
+    - ui: true
+    - docs: true
+    - meta: true
+
+# ===============================================================================
+# SUB-HUBS (CC-03)
+# ===============================================================================
+# List major functional boundaries within this hub.
+# Each sub-hub operates at CC-03 relative to the hub.
+# ===============================================================================
+
+subhubs:
+  - subhub_id: "intake"
+    name: "Client Intake"
+    description: "Firebase wizard for company and employee data capture"
+    path: "ctb/ui/apps/"
+
+  - subhub_id: "canonical"
+    name: "Canonical Vault"
+    description: "Neon PostgreSQL canonical data storage"
+    path: "ctb/data/db/neon/"
+
+  - subhub_id: "export"
+    name: "Vendor Export"
+    description: "Vendor-specific data export generation"
+    path: "ctb/sys/scripts/"
+
+# ===============================================================================
+# SPOKES (CC-03 Interfaces)
+# ===============================================================================
+# Spokes are interfaces ONLY. They carry no logic.
+# ===============================================================================
+
+spokes:
+  ingress:
+    - spoke_id: "firebase-wizard"
+      name: "Firebase Intake Wizard"
+      contract: "Firestore security rules"
+
+    - spoke_id: "api-intake"
+      name: "API Intake Endpoint"
+      contract: "REST API schema validation"
+
+  egress:
+    - spoke_id: "vendor-export"
+      name: "Vendor Export Interface"
+      contract: "vendor_output_blueprint schema"
+
+    - spoke_id: "compliance-report"
+      name: "Compliance Reporting"
+      contract: "compliance_vault schema"
+
+# ===============================================================================
+# SECRETS MANAGEMENT
+# ===============================================================================
+
+secrets:
+  provider: "doppler"
+  enforcement: "MANDATORY"
+  policy: |
+    All secrets MUST be sourced from Doppler.
+    No .env files, no hardcoded secrets, no local secret files permitted.
+
+# ===============================================================================
+# DOCUMENT CONTROL
+# ===============================================================================
+
+document_control:
+  created: "2026-01-30"
+  last_modified: "2026-01-30"
+  status: "ACTIVE"

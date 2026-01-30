@@ -10,7 +10,7 @@ from pathlib import Path
 try:
     from .models import HeirCheckRequest, HeirCheckResult
 except ImportError:
-    from src.models import HeirCheckRequest, HeirCheckResult
+    from ctb.ai.models import HeirCheckRequest, HeirCheckResult
 
 # Load environment variables
 load_dotenv()

@@ -1,0 +1,10 @@
+# Doppler Configuration
+# Hub: client-subhive
+# Repository: djb258/client
+#
+# This file configures Doppler secrets management for this hub.
+# All secrets MUST be sourced from Doppler. No exceptions.
+
+setup:
+  project: client-subhive
+  config: dev

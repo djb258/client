@@ -10,7 +10,7 @@ from typing import Dict, Any
 try:
     from .models import SidecarEvent
 except ImportError:
-    from src.models import SidecarEvent
+    from ctb.ai.models import SidecarEvent
 
 # Load environment variables
 load_dotenv()
