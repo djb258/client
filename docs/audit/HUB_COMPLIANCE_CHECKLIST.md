@@ -7,7 +7,9 @@
 | **Doctrine Version** | 1.0.0 |
 | **CC Layer** | CC-02 |
 | **Last Validated** | 2026-01-30 |
-| **Validated By** | Claude Code |
+| **Validated By** | Claude Code (Claude Opus 4.5) |
+| **Template Source** | templates/checklists/HUB_COMPLIANCE.md (synced from imo-creator) |
+| **Template Sync Date** | 2026-01-30 |
 
 ---
 
