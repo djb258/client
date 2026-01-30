@@ -78,6 +78,16 @@ uvicorn src.server.main:app --port 7002 --reload
 
 **Fallback:** If LLM endpoint unavailable, buttons fall back to copy-to-clipboard prompts.
 
+## OR BT System Integration
+
+This app is fully integrated with the **OR BT system** (Operational Repair, Build, Troubleshooting/Training) for comprehensive compliance and operational excellence:
+
+### OR BT Features
+- **Operational Repair**: Automated error detection and self-healing capabilities
+- **Build**: Quality gates, automated testing, and deployment validation
+- **Troubleshooting**: Advanced logging, debugging, and error tracking
+- **Training**: Comprehensive documentation, examples, and best practices
+
 ## HEIR/MCP Integration
 
 This app includes HEIR (Hierarchical Error-handling, ID management, and Reporting) and MCP (Model Context Protocol) integration:
@@ -160,6 +170,11 @@ DOCTRINE_SUBHIVE=03
 DOCTRINE_APP=imo
 DOCTRINE_VER=1
 
+# Neon Database Integration (OR BT Compliant)
+DATABASE_URL=postgresql://neondb_owner:password@ep-xxxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+NEON_SCHEMA=client
+NEON_AUTO_MIGRATE=true
+
 # Optional garage-mcp integration
 GARAGE_MCP_URL=https://your-mcp.example.com
 GARAGE_MCP_TOKEN=your-token-here
@@ -171,6 +186,12 @@ IMOCREATOR_ANTHROPIC_API_KEY=sk-ant-your-key
 
 # Optional UI feature flag
 NEXT_PUBLIC_SHOW_SUBAGENTS=true
+
+# OR BT System Configuration
+ORBT_OPERATIONAL_REPAIR=true
+ORBT_BUILD_QUALITY_GATES=true
+ORBT_TROUBLESHOOTING_LOGGING=true
+ORBT_TRAINING_DOCS=true
 ```
 
 **HEIR/MCP Features:**

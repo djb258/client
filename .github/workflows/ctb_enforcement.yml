@@ -1,0 +1,271 @@
+name: CTB Compliance Enforcement
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'ctb/**'
+      - '.github/workflows/ctb_enforcement.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'ctb/**'
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Enforcement mode'
+        required: false
+        default: 'audit'
+        type: choice
+        options:
+          - audit
+          - remediate
+          - full
+
+jobs:
+  ctb-tagger:
+    name: CTB Metadata Tagger
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run CTB Metadata Tagger
+        run: |
+          python ctb/sys/global-factory/scripts/ctb_metadata_tagger.py ctb/ \
+            --report CTB_TAGGING_REPORT.md
+
+      - name: Upload Tagging Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctb-tagging-report
+          path: CTB_TAGGING_REPORT.md
+          retention-days: 30
+
+      - name: Commit Tagged Files
+        if: github.event_name == 'schedule'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ctb/
+          git diff --staged --quiet || git commit -m "chore: CTB metadata tagging [skip ci]"
+
+      - name: Push Changes
+        if: github.event_name == 'schedule'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  ctb-audit:
+    name: CTB Compliance Audit
+    runs-on: ubuntu-latest
+    needs: [ctb-tagger]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run CTB Audit Generator
+        id: audit
+        continue-on-error: true
+        run: |
+          python ctb/sys/global-factory/scripts/ctb_audit_generator.py ctb/ \
+            --report CTB_AUDIT_REPORT.md
+
+      - name: Upload Audit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctb-audit-report
+          path: |
+            CTB_AUDIT_REPORT.md
+            ctb/meta/ctb_registry.json
+          retention-days: 90
+
+      - name: Check Compliance Score
+        run: |
+          if [ -f "ctb/meta/ctb_registry.json" ]; then
+            SCORE=$(python -c "import json; data=json.load(open('ctb/meta/ctb_registry.json')); print(data.get('compliance_score', 0))")
+            echo "Compliance Score: $SCORE/100"
+
+            if [ "$SCORE" -lt 90 ]; then
+              echo "⚠️  Compliance score below minimum (90)"
+              echo "COMPLIANCE_FAILED=true" >> $GITHUB_ENV
+              exit 1
+            else
+              echo "✅ Compliance score passed"
+              echo "COMPLIANCE_FAILED=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "❌ Registry file not found"
+            exit 1
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('CTB_AUDIT_REPORT.md', 'utf8');
+
+            // Extract summary from report
+            const lines = report.split('\n');
+            const summaryStart = lines.findIndex(l => l.includes('## Executive Summary'));
+            const summaryEnd = lines.findIndex((l, i) => i > summaryStart && l.startsWith('##'));
+            const summary = lines.slice(summaryStart, summaryEnd).join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## CTB Compliance Audit\n\n${summary}\n\n<details>\n<summary>View Full Report</summary>\n\n\`\`\`\n${report}\n\`\`\`\n</details>`
+            });
+
+  ctb-remediate:
+    name: CTB Remediator
+    runs-on: ubuntu-latest
+    needs: [ctb-audit]
+    if: |
+      always() &&
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode != 'audit') ||
+      (github.event_name == 'schedule')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run CTB Remediator
+        run: |
+          python ctb/sys/global-factory/scripts/ctb_remediator.py ctb/ \
+            --report CTB_REMEDIATION_SUMMARY.md
+
+      - name: Upload Remediation Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctb-remediation-summary
+          path: |
+            CTB_REMEDIATION_SUMMARY.md
+            ctb/meta/enforcement_rules.json
+          retention-days: 90
+
+      - name: Commit Remediated Files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ctb/
+          git add ctb/meta/enforcement_rules.json
+          git diff --staged --quiet || git commit -m "fix: CTB compliance remediation [skip ci]"
+
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      - name: Re-run Audit After Remediation
+        run: |
+          python ctb/sys/global-factory/scripts/ctb_audit_generator.py ctb/ \
+            --report CTB_AUDIT_REPORT_POST_REMEDIATION.md
+
+      - name: Upload Post-Remediation Audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctb-audit-post-remediation
+          path: CTB_AUDIT_REPORT_POST_REMEDIATION.md
+          retention-days: 90
+
+  ctb-summary:
+    name: CTB Compliance Summary
+    runs-on: ubuntu-latest
+    needs: [ctb-audit, ctb-remediate]
+    if: always()
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate Summary
+        run: |
+          echo "## CTB Compliance Enforcement Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow:** ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "ctb-audit-report/CTB_AUDIT_REPORT.md" ]; then
+            echo "### Audit Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            grep -A 10 "## Executive Summary" ctb-audit-report/CTB_AUDIT_REPORT.md >> $GITHUB_STEP_SUMMARY || true
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Tagging Report (if applicable)" >> $GITHUB_STEP_SUMMARY
+          echo "- Remediation Summary (if applicable)" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [ctb-summary]
+    if: always() && github.event_name == 'schedule'
+
+    steps:
+      - name: Notify on Failure
+        if: needs.ctb-audit.result == 'failure'
+        run: |
+          echo "⚠️  CTB Compliance check failed. Review audit reports."
+          # Add notification integrations here (Slack, email, etc.)
+
+      - name: Notify on Success
+        if: needs.ctb-audit.result == 'success'
+        run: |
+          echo "✅ CTB Compliance check passed."
+          # Add notification integrations here (Slack, email, etc.)
+
+# Composio Integration (Optional)
+# Uncomment and configure if using Composio for orchestration
+#  composio-trigger:
+#    name: Trigger Composio Scenario
+#    runs-on: ubuntu-latest
+#    if: github.event_name == 'schedule'
+#
+#    steps:
+#      - name: Trigger CTB_Compliance_Cycle
+#        run: |
+#          curl -X POST \
+#            -H "Authorization: Bearer ${{ secrets.COMPOSIO_API_KEY }}" \
+#            -H "Content-Type: application/json" \
+#            -d '{"scenario": "CTB_Compliance_Cycle", "trigger": "scheduled"}' \
+#            ${{ secrets.COMPOSIO_API_URL }}/scenarios/trigger

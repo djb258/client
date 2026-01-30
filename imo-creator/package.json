@@ -25,12 +25,18 @@
     "orchestrate": "python tools/repo_mcp_orchestrator.py",
     "vercel:dev": "vercel dev",
     "vercel:build": "mkdir -p public && cp index.html public/ && cp -r docs public/",
-    "test:urls": "curl https://composio-imo-creator-url.onrender.com/health && curl https://imo-creator.vercel.app"
+    "test:urls": "curl https://composio-imo-creator-url.onrender.com/health && curl https://imo-creator.vercel.app",
+    "db:migrate": "node scripts/run_migrations_via_mcp.ts",
+    "db:setup": "python scripts/setup_neon_composio.py",
+    "orbt:validate": "python tools/compliance_heartbeat.py",
+    "orbt:audit": "python tools/repo_audit.py"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.0",
     "firebase-admin": "^12.0.0",
-    "undici": "^6.19.8"
+    "undici": "^6.19.8",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {},
   "keywords": ["compliance", "orchestration", "garage-mcp", "heir", "imo-creator", "factory", "mechanic"],

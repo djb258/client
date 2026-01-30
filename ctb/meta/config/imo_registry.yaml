@@ -1,0 +1,208 @@
+# CTB Metadata
+# ctb_id: CTB-EE07A4D91AC0
+# ctb_branch: meta
+# ctb_path: meta/config/imo_registry.yaml
+# ctb_version: 1.0.0
+# created: 2025-10-23T16:37:00.670319
+# checksum: 5edf7ca9
+
+# IMO Creator Unified Registry Configuration
+# Central configuration for all IMO Creator tools and Composio integrations
+
+registry:
+  name: "IMO Creator Unified Registry"
+  version: "1.0.0"
+  description: "Central registry for all IMO Creator tools with Composio MCP integration"
+
+composio:
+  # Composio settings - set COMPOSIO_API_KEY environment variable
+  default_apps:
+    - github
+    - slack
+    - notion
+    - discord
+    - email
+  
+  app_configs:
+    github:
+      primary_actions:
+        - create_issue
+        - create_pr  
+        - get_repo_info
+        - list_commits
+        - create_branch
+        - merge_pr
+      
+    slack:
+      primary_actions:
+        - send_message
+        - create_channel
+        - upload_file
+        - get_channel_info
+        - schedule_message
+        
+    notion:
+      primary_actions:
+        - create_page
+        - update_page
+        - create_database
+        - query_database
+        - create_block
+        
+    discord:
+      primary_actions:
+        - send_message
+        - create_channel
+        - get_guild_info
+        - create_role
+        
+    email:
+      primary_actions:
+        - send_email
+        - read_emails
+        - create_draft
+        - search_emails
+
+mcp:
+  # MCP server configurations
+  servers:
+    garage_mcp:
+      command: "python"
+      args: ["garage-mcp/main.py"]
+      env:
+        PYTHONPATH: "garage-mcp"
+        
+    imo_orchestrator:
+      command: "python"
+      args: ["tools/repo_mcp_orchestrator.py"]
+      
+  client_settings:
+    timeout: 300
+    max_retries: 3
+
+tools:
+  # Tool execution settings
+  execution:
+    default_timeout: 600
+    max_concurrent: 3
+    log_level: "INFO"
+    
+  categories:
+    analysis:
+      altitude_range: [15000, 25000]
+      timeout: 300
+      
+    compliance:
+      altitude_range: [10000, 20000] 
+      timeout: 180
+      
+    orchestration:
+      altitude_range: [25000, 35000]
+      timeout: 900
+      
+    integration:
+      altitude_range: [10000, 20000]
+      timeout: 240
+
+workflows:
+  # Predefined workflow configurations
+  complete:
+    description: "Full repository analysis and improvement"
+    phases:
+      - name: "analysis"
+        tools: ["repo_audit", "compliance_checker", "code_analyzer"]
+        altitude: 20000
+        
+      - name: "orchestration" 
+        tools: ["mcp_orchestrator"]
+        altitude: 30000
+        
+      - name: "fixes"
+        tools: ["compliance_fixer"]
+        altitude: 10000
+        
+      - name: "documentation"
+        tools: ["blueprint_visual"]
+        altitude: 15000
+        
+      - name: "monitoring"
+        tools: ["compliance_heartbeat"]
+        altitude: 15000
+        
+  quick_check:
+    description: "Quick compliance and quality check"
+    phases:
+      - name: "check"
+        tools: ["compliance_checker", "repo_audit"]
+        altitude: 20000
+
+  fix_only:
+    description: "Apply fixes to known issues"
+    phases:
+      - name: "fixes"
+        tools: ["compliance_fixer"]
+        altitude: 10000
+
+notifications:
+  # Notification settings via Composio
+  enabled: true
+  
+  channels:
+    slack:
+      enabled: true
+      channel: "#imo-creator-alerts"
+      events: ["workflow_complete", "error", "compliance_failure"]
+      
+    email:
+      enabled: true
+      recipients: ["dev-team@company.com"]
+      events: ["workflow_complete", "critical_error"]
+      
+    github:
+      enabled: true
+      create_issues: true
+      events: ["compliance_failure", "critical_error"]
+
+database:
+  # Database configurations for results storage
+  neon:
+    enabled: true
+    connection_string_env: "NEON_DATABASE_URL"
+    schemas: ["clnt2", "clnt2_i_src"]
+    
+  sqlite_fallback:
+    enabled: true
+    path: "data/imo_registry.db"
+
+heir_doctrine:
+  # HEIR doctrine settings for altitude-based coordination
+  altitudes:
+    strategic: 30000    # High-level planning and orchestration
+    tactical: 20000     # Analysis and decision making
+    operational: 15000  # Documentation and monitoring  
+    implementation: 10000  # Fixes and code changes
+    validation: 5000    # Testing and verification
+    
+  error_handling:
+    max_retries_per_altitude: 3
+    escalation_threshold: 2
+    recovery_strategies: ["retry", "delegate", "escalate", "abort"]
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  handlers:
+    file:
+      enabled: true
+      path: "logs/imo_registry.log"
+      max_size_mb: 10
+      backup_count: 5
+      
+    console:
+      enabled: true
+      
+    composio:
+      enabled: true
+      send_to_slack: true
+      error_threshold: "ERROR"

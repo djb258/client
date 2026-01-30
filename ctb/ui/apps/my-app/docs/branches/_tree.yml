@@ -1,0 +1,14 @@
+# CTB Metadata
+# ctb_id: CTB-6D4198710635
+# ctb_branch: ui
+# ctb_path: ui/apps/my-app/docs/branches/_tree.yml
+# ctb_version: 1.0.0
+# created: 2025-10-23T16:37:01.310048
+# checksum: 09c43cd0
+
+# Root structure of the Christmas tree
+root:
+  - outreach-root
+  - ops-root
+  - data-root
+  - api-root

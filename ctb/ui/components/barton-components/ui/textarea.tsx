@@ -1,0 +1,34 @@
+/*
+ * CTB Metadata
+ * ctb_id: CTB-3ED766193649
+ * ctb_branch: ui
+ * ctb_path: ui/components/barton-components/ui/textarea.tsx
+ * ctb_version: 1.0.0
+ * created: 2025-10-23T16:37:01.757798
+ * checksum: 31f5d6d5
+ */
+
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <textarea
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Textarea.displayName = "Textarea"
+
+export { Textarea }
