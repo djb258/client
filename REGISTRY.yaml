@@ -6,7 +6,7 @@
 # ===============================================================================
 
 version: "1.0.0"
-last_updated: "2026-01-30"
+last_updated: "2026-02-05"
 
 # ===============================================================================
 # HUB IDENTITY (CC-02)
@@ -15,7 +15,7 @@ last_updated: "2026-01-30"
 hub:
   hub_id: "client-subhive"
   hub_name: "Client Intake & Vendor Export System"
-  description: "Manages client data intake through wizard interface, transforms to canonical schema, and exports to vendor-specific formats"
+  description: "Manages client data intake, transforms to canonical schema, and exports to vendor-specific formats"
   owner: "Barton Ops System"
   sovereign_reference: "imo-creator"
 
@@ -25,8 +25,8 @@ hub:
 
 conformance:
   parent: "imo-creator"
-  doctrine_version: "1.0.0"
-  ctb_version: "1.0.0"
+  doctrine_version: "1.5.0"
+  ctb_version: "1.1.0"
   domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
 
 # ===============================================================================
@@ -35,52 +35,41 @@ conformance:
 
 ctb:
   branches_used:
-    - sys: true
-    - data: true
-    - app: false
-    - ai: true
-    - ui: true
-    - docs: true
-    - meta: true
+    sys: true
+    data: true
+    app: true
+    ai: true
+    ui: true
 
 # ===============================================================================
 # SUB-HUBS (CC-03)
-# ===============================================================================
-# List major functional boundaries within this hub.
-# Each sub-hub operates at CC-03 relative to the hub.
 # ===============================================================================
 
 subhubs:
   - subhub_id: "intake"
     name: "Client Intake"
-    description: "Firebase wizard for company and employee data capture"
-    path: "ctb/ui/apps/"
+    description: "API-based intake for company and employee data capture"
+    path: "src/ui/"
 
   - subhub_id: "canonical"
     name: "Canonical Vault"
-    description: "Neon PostgreSQL canonical data storage"
-    path: "ctb/data/db/neon/"
+    description: "Neon PostgreSQL canonical data storage (clnt2 schema)"
+    path: "src/data/"
 
   - subhub_id: "export"
     name: "Vendor Export"
     description: "Vendor-specific data export generation"
-    path: "ctb/sys/scripts/"
+    path: "src/sys/"
 
 # ===============================================================================
 # SPOKES (CC-03 Interfaces)
 # ===============================================================================
-# Spokes are interfaces ONLY. They carry no logic.
-# ===============================================================================
 
 spokes:
   ingress:
-    - spoke_id: "firebase-wizard"
-      name: "Firebase Intake Wizard"
-      contract: "Firestore security rules"
-
     - spoke_id: "api-intake"
       name: "API Intake Endpoint"
-      contract: "REST API schema validation"
+      contract: "Zod schema validation"
 
   egress:
     - spoke_id: "vendor-export"
@@ -97,10 +86,21 @@ spokes:
 
 secrets:
   provider: "doppler"
+  project: "client-subhive"
   enforcement: "MANDATORY"
   policy: |
     All secrets MUST be sourced from Doppler.
     No .env files, no hardcoded secrets, no local secret files permitted.
+
+# ===============================================================================
+# DATABASE
+# ===============================================================================
+
+database:
+  provider: "neon"
+  schema: "clnt2"
+  tables: 12
+  erd_metrics: "erd/ERD_METRICS.yaml"
 
 # ===============================================================================
 # DOCUMENT CONTROL
@@ -108,5 +108,5 @@ secrets:
 
 document_control:
   created: "2026-01-30"
-  last_modified: "2026-01-30"
+  last_modified: "2026-02-05"
   status: "ACTIVE"

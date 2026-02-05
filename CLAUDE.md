@@ -8,7 +8,7 @@
 | **Hub ID** | client-subhive |
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Parent Sovereign** | imo-creator |
-| **Doctrine Version** | 1.0.0 |
+| **Doctrine Version** | 1.5.0 |
 
 ---
 
@@ -89,7 +89,7 @@ If something doesn't serve this transformation, it doesn't belong here.
 | **M - Middle** | `clnt_m_*` | ALL logic lives here | Canonical data, validation, transformation |
 | **O - Egress** | `clnt_o_*` | Output only | Read-only projection, no logic |
 
-### Tables
+### Tables (clnt2 schema)
 
 **Ingress (I)** — Raw staging
 - `clnt_i_raw_input` — Raw intake data
@@ -115,20 +115,23 @@ If something doesn't serve this transformation, it doesn't belong here.
 
 ```
 client/
-├── ctb/                        # Code lives here
+├── src/                        # Code lives here (CTB branches)
 │   ├── sys/                    # System infrastructure, scripts
 │   ├── data/                   # Database schemas, migrations
+│   ├── app/                    # Application logic
 │   ├── ai/                     # Agents, MCP servers
-│   ├── ui/                     # User interface (React)
-│   ├── docs/                   # Internal documentation
-│   └── meta/                   # Metadata, workflows
+│   └── ui/                     # User interface
 ├── docs/                       # Governance documentation
 │   ├── prd/                    # Product Requirements
 │   ├── adr/                    # Architecture Decisions
 │   ├── audit/                  # Audit attestations
 │   └── ui/                     # UI governance
 ├── doctrine/                   # Domain specifications
+├── templates/                  # IMO-Creator templates (synced)
 ├── integrations/               # External service docs
+├── db/                         # Database migrations
+├── erd/                        # ERD metrics
+├── scripts/                    # Root-level scripts
 └── [root governance files]     # IMO_CONTROL, CONSTITUTION, etc.
 ```
 
@@ -155,7 +158,7 @@ NEVER create these folders anywhere:
 | `doctrine/REPO_DOMAIN_SPEC.md` | Domain bindings | CC-02 |
 | `docs/prd/PRD.md` | Hub definition | CC-02 |
 | `docs/adr/ADR-001-architecture.md` | Architecture decisions | CC-03 |
-| `docs/audit/CONSTITUTIONAL_AUDIT_ATTESTATION.md` | Compliance sign-off | CC-02 |
+| `docs/audit/HUB_COMPLIANCE_CHECKLIST.md` | Compliance checklist | CC-02 |
 
 ### UI Governance
 
@@ -166,21 +169,6 @@ NEVER create these folders anywhere:
 | `docs/ui/UI_ERD_client-subhive.md` | Read-only data mirror |
 
 **UI owns no schema, no persistence, no business logic.**
-
----
-
-## HEIR Model (Agent Altitudes)
-
-Agents operate at specific altitudes — they cannot exceed their authority:
-
-| Altitude | Role | Agents |
-|----------|------|--------|
-| 30,000 ft | Strategic orchestration | SUBAGENT-DELEGATOR, REPO-MCP-ORCHESTRATOR |
-| 20,000 ft | Tactical validation | SHQ-INTAKE-VALIDATOR, COMPLIANCE-CHECKER |
-| 10,000 ft | Implementation | VENDOR-EXPORT-AGENT |
-| 5,000 ft | Verification | Structure checks |
-
-Lower altitudes cannot make strategic decisions. Higher altitudes delegate down.
 
 ---
 
@@ -197,8 +185,7 @@ doppler run -- <command>
 
 # Examples
 doppler run -- npm start
-doppler run -- npm run migrate
-doppler run -- python main.py
+doppler run -- node scripts/sync_erd_metrics.js
 ```
 
 ### Required Secrets
@@ -207,7 +194,6 @@ doppler run -- python main.py
 |--------|---------|----------|
 | `HUB_ID` | Hub identifier | Yes |
 | `NEON_DATABASE_URL` | Database connection | Yes |
-| `COMPOSIO_API_KEY` | MCP integration | No |
 
 ### Forbidden
 
@@ -219,6 +205,9 @@ doppler run -- python main.py
 ║   ❌ Hardcoded secrets in code                                       ║
 ║   ❌ secrets.json, credentials.json                                  ║
 ║   ❌ Environment variables not from Doppler                          ║
+║   ❌ Firebase (deprecated)                                           ║
+║   ❌ Vercel (deprecated)                                             ║
+║   ❌ N8N (deprecated)                                                ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -231,10 +220,10 @@ See: `integrations/DOPPLER.md`
 | Task | How To |
 |------|--------|
 | Add database table | Requires ADR → `db/neon/migrations/` |
-| Add new agent | `ctb/ai/` → update PRD |
-| Update UI | `ctb/ui/` → follow `docs/ui/UI_CONSTITUTION.md` |
+| Add new agent | `src/ai/` → update PRD |
+| Update UI | `src/ui/` → follow `docs/ui/UI_CONSTITUTION.md` |
 | Add integration | `integrations/` → update REGISTRY.yaml |
-| Create PR | Use `.github/PULL_REQUEST_TEMPLATE/` |
+| Sync ERD metrics | `node scripts/sync_erd_metrics.js` |
 
 ---
 
@@ -245,13 +234,12 @@ See: `integrations/DOPPLER.md`
 ║                           HARD PROHIBITIONS                           ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║   ❌ Modify parent doctrine (imo-creator templates)                  ║
-║   ❌ Create files outside CTB branches                               ║
+║   ❌ Create files outside CTB branches (src/)                        ║
 ║   ❌ Put logic in Ingress or Egress layers                           ║
 ║   ❌ Use .env files                                                  ║
 ║   ❌ Hardcode secrets                                                ║
 ║   ❌ Create forbidden folders (utils, helpers, lib, etc.)            ║
 ║   ❌ Create schema without ADR                                       ║
-║   ❌ Operate agents outside their altitude                           ║
 ║   ❌ Make UI own data or logic                                       ║
 ║   ❌ Skip the CC descent sequence                                    ║
 ╚══════════════════════════════════════════════════════════════════════╝
@@ -259,22 +247,12 @@ See: `integrations/DOPPLER.md`
 
 ---
 
-## Audit & Compliance
-
-- All changes logged to `shq.audit_log`
-- Errors logged to `shq.error_log`
-- Compliance attestation: `docs/audit/CONSTITUTIONAL_AUDIT_ATTESTATION.md`
-- PR templates enforce governance checks
-
----
-
 ## Key Integrations
 
 | Service | Purpose | Documentation |
 |---------|---------|---------------|
-| Neon | PostgreSQL database | `db/neon/` |
+| Neon | PostgreSQL database (clnt2 schema) | `db/neon/` |
 | Doppler | Secrets management | `integrations/DOPPLER.md` |
-| Composio | MCP server | `ctb/ai/mcp_server.py` |
 
 ---
 
@@ -293,6 +271,6 @@ See: `integrations/DOPPLER.md`
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-01-30 |
-| Version | 1.0.0 |
+| Last Modified | 2026-02-05 |
+| Version | 1.1.0 |
 | Status | ACTIVE |

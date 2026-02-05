@@ -1,3 +1,13 @@
+/*
+ * CTB Metadata
+ * ctb_id: CTB-85494C120B2D
+ * ctb_branch: docs
+ * ctb_path: docs/docs/blueprints/ui/app.js
+ * ctb_version: 1.0.0
+ * created: 2025-10-23T16:37:00.623339
+ * checksum: ae84a4bc
+ */
+
 let manifest = null;
 let progress = null;
 const SLUG = new URL(location.href).searchParams.get('slug') || 'example';

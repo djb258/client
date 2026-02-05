@@ -66,7 +66,7 @@
     },
     "altitude": {
       "branches": ["sys", "data", "app", "ai", "ui"],
-      "path_pattern": "ctb/{sys,data,app,ai,ui}/",
+      "path_pattern": "src/{sys,data,app,ai,ui}/",
       "enforcement": "MANDATORY"
     }
   },

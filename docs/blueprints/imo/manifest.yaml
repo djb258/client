@@ -1,3 +1,11 @@
+# CTB Metadata
+# ctb_id: CTB-D48D4BBF4022
+# ctb_branch: docs
+# ctb_path: docs/docs/blueprints/imo/manifest.yaml
+# ctb_version: 1.0.0
+# created: 2025-10-23T16:37:00.615084
+# checksum: 83947d7c
+
 process: imo
 version: 1.0.0
 mission:

@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 """
+CTB Metadata
+ctb_id: CTB-BC299DCE9625
+ctb_branch: meta
+ctb_path: meta/templates/imo-compliance-check.py
+ctb_version: 1.0.0
+created: 2025-10-23T16:37:00.702793
+checksum: 69147242
+"""
+
+"""
 IMO Creator Compliance Check
 This file was added by IMO Creator to enable automatic compliance monitoring.
 
