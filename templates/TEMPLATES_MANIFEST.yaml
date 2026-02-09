@@ -22,9 +22,11 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 manifest:
-  version: "1.2.0"
-  last_updated: "2026-01-30"
-  total_file_count: 81
+  version: "2.0.0"
+  last_updated: "2026-02-06"
+  total_file_count: 96
+  ctb_hardening_version: "2.0.0"
+  note: "CTB Hardening refactor - ARCHITECTURE.md consolidates architecture doctrine"
   authority: "CONSTITUTIONAL"
   scope: "PARENT"
   repository: "imo-creator"
@@ -100,20 +102,32 @@ files:
   # DOCTRINE (LOCKED - AI CANNOT MODIFY)
   # ═══════════════════════════════════════════════════════════════════════════
   doctrine:
-    - path: "templates/doctrine/CANONICAL_ARCHITECTURE_DOCTRINE.md"
-      purpose: "Root doctrine - CC layers, CTB structure"
+    # PRIMARY ARCHITECTURE DOCTRINE (READ FIRST)
+    - path: "templates/doctrine/ARCHITECTURE.md"
+      purpose: "CTB Constitutional Law - CTB, CC, Hub-Spoke, IMO, Descent, PID, ownership"
       required: true
       locked: true
+      version: "2.0.0"
+      note: "Primary architecture doctrine. Consolidates CANONICAL, HUB_SPOKE, and ALTITUDE."
+
+    # REDIRECT FILES (backward compatibility)
+    - path: "templates/doctrine/CANONICAL_ARCHITECTURE_DOCTRINE.md"
+      purpose: "REDIRECT → ARCHITECTURE.md"
+      required: true
+      locked: true
+      status: "REDIRECT"
 
     - path: "templates/doctrine/HUB_SPOKE_ARCHITECTURE.md"
-      purpose: "Hub/Spoke geometry, IMO model"
+      purpose: "REDIRECT → ARCHITECTURE.md Part IV"
       required: true
       locked: true
+      status: "REDIRECT"
 
     - path: "templates/doctrine/ALTITUDE_DESCENT_MODEL.md"
-      purpose: "Descent gates, altitude levels"
+      purpose: "REDIRECT → ARCHITECTURE.md Part VI"
       required: true
       locked: true
+      status: "REDIRECT"
 
     - path: "templates/doctrine/REPO_REFACTOR_PROTOCOL.md"
       purpose: "Refactor sequence, structure requirements"
@@ -154,6 +168,22 @@ files:
       purpose: "Documentation ERD standards"
       required: true
       locked: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SEMANTIC (OSAM - QUERY ROUTING CONTRACT)
+  # ═══════════════════════════════════════════════════════════════════════════
+  semantic:
+    - path: "templates/semantic/OSAM.md"
+      purpose: "Operational Semantic Access Map - authoritative query-routing contract"
+      required: true
+      locked: true
+      action: "Copy to child repos as doctrine/OSAM.md, fill in domain bindings"
+      note: "OSAM drives ERDs. ERDs may only implement joins declared in OSAM. Failure to include OSAM fails constitutional audit."
+      enforcement:
+        - "OSAM is mandatory for all child repos"
+        - "Must be updated when PRDs or ERDs change"
+        - "Drives ERD validity - ERD joins must exist in OSAM"
+        - "SOURCE/ENRICHMENT tables are NEVER query surfaces"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # CLAUDE PROMPTS (LOCKED - AI CANNOT MODIFY)
@@ -219,6 +249,21 @@ files:
       required: true
       locked: true
 
+    - path: "templates/claude/PRD_MIGRATION.prompt.md"
+      purpose: "Retrofit existing PRDs with HSS (Hub-and-Spoke Set Up)"
+      required: true
+      locked: true
+
+    - path: "templates/claude/PRD_TO_ERD_WORKFLOW.prompt.md"
+      purpose: "PRD validation, question generation, ERD creation workflow"
+      required: true
+      locked: true
+
+    - path: "templates/claude/HUB_DESIGN_DECLARATION_INTAKE.prompt.md"
+      purpose: "Hub declaration intake agent - generates fillable YAML, validates, enforces ordering"
+      required: true
+      locked: true
+
   # ═══════════════════════════════════════════════════════════════════════════
   # AI EMPLOYEE
   # ═══════════════════════════════════════════════════════════════════════════
@@ -230,6 +275,16 @@ files:
     - path: "templates/ai-employee/AI_EMPLOYEE_TASK.yaml"
       purpose: "AI employee task payload format"
       required: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # GPT (CUSTOM GPT INSTRUCTIONS)
+  # ═══════════════════════════════════════════════════════════════════════════
+  gpt:
+    - path: "templates/gpt/PRD_INTAKE_GUIDE.md"
+      purpose: "HSS intake - Custom GPT instructions for PRD information collection"
+      required: false
+      action: "Paste into Custom GPT instructions"
+      note: "HSS (Hub-and-Spoke Setup) intake only - GPT cannot approve tools or architectural decisions"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # TEMPLATES (COPY TO CHILD REPOS)
@@ -274,6 +329,30 @@ files:
       required: true
       action: "Produce after audits"
 
+  erd:
+    - path: "templates/erd/ERD_METRICS.yaml.template"
+      purpose: "Runtime metrics template - sync before work sessions"
+      required: true
+      action: "Copy to child repos, auto-update from database"
+      sync_frequency: "Before each work session, minimum daily"
+      note: "Metrics are VAR (runtime data). MD files are CONST (architecture). Keep them separate."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ARCHITECTURE DOCS (Reference documentation for child repos)
+  # ═══════════════════════════════════════════════════════════════════════════
+  docs_architecture:
+    - path: "templates/docs/architecture/HUBS_AND_SPOKES.md"
+      purpose: "Hub and spoke definitions with enforcement rules"
+      required: true
+      action: "Copy to child repos as reference"
+      note: "NON-AUTHORITATIVE — definitions and enforcement rules"
+
+    - path: "templates/docs/architecture/SYSTEM_FUNNEL_OVERVIEW.md"
+      purpose: "End-to-end lifecycle from idea to execution"
+      required: true
+      action: "Copy to child repos as reference"
+      note: "NON-AUTHORITATIVE — lifecycle explanation"
+
   child:
     - path: "templates/child/DOCTRINE.md.template"
       purpose: "Child repo doctrine pointer template"
@@ -289,6 +368,18 @@ files:
       purpose: "Child repo registry template"
       required: true
       action: "Copy to child repos"
+
+    - path: "templates/child/HUB_DESIGN_DECLARATION.yaml.template"
+      purpose: "Hub design declaration template - must be filled before PRD"
+      required: true
+      action: "Generate per hub, human fills, AI validates"
+      workflow: "Declaration → PRD → ERD → Process"
+
+    - path: "templates/child/REPO_DOMAIN_SPEC.md.template"
+      purpose: "Repository domain specification - bindings for child repos"
+      required: true
+      action: "Generate stub, human fills domain-specific bindings"
+      note: "Child repos HALT without this file"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # CONFIG
@@ -537,9 +628,9 @@ reading_order:
         prerequisites: ["IMO_SYSTEM_SPEC.md"]
 
       - order: 5
-        file: "templates/doctrine/CANONICAL_ARCHITECTURE_DOCTRINE.md"
+        file: "templates/doctrine/ARCHITECTURE.md"
         location: "templates/doctrine/"
-        purpose: "Root doctrine - CC layers, CTB structure"
+        purpose: "Primary architecture doctrine - CC layers, CTB structure, Hub-Spoke, IMO, Descent"
         required: true
         prerequisites: ["AI_EMPLOYEE_OPERATING_CONTRACT.md"]
 
@@ -548,7 +639,7 @@ reading_order:
         location: "templates/"
         purpose: "Tool registry - check before using any tool"
         required: true
-        prerequisites: ["CANONICAL_ARCHITECTURE_DOCTRINE.md"]
+        prerequisites: ["ARCHITECTURE.md"]
 
       - order: 7
         file: "templates/claude/APPLY_DOCTRINE.prompt.md"
@@ -824,6 +915,7 @@ update_manifest:
   always_sync:
     description: "These files are ALWAYS synced on update"
     files:
+      - "templates/doctrine/ARCHITECTURE.md"
       - "templates/doctrine/CANONICAL_ARCHITECTURE_DOCTRINE.md"
       - "templates/doctrine/HUB_SPOKE_ARCHITECTURE.md"
       - "templates/doctrine/ALTITUDE_DESCENT_MODEL.md"

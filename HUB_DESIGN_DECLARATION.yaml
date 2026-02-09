@@ -1,0 +1,135 @@
+# HSS — HUB-AND-SPOKE SET UP
+# ══════════════════════════════════════════════════════════════════════════════
+# This HSS declaration MUST be completed by a human before any PRD, ERD, or Process
+# can be created. AI agents may NOT infer or fill these fields.
+#
+# WORKFLOW:
+#   1. AI generates this file with status: DRAFT
+#   2. Human fills ALL placeholder fields
+#   3. Human changes status to CONFIRMED and signoff.status to SIGNED
+#   4. Human submits to AI for validation
+#   5. AI validates and proceeds to PRD governance
+#
+# GOVERNANCE:
+#   - This file gates PRD creation
+#   - PRD gates ERD creation
+#   - ERD gates Process creation
+#   - No downstream artifact may exist without this declaration
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+hub_design_declaration:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # METADATA
+  # ─────────────────────────────────────────────────────────────────────────────
+  status: CONFIRMED
+  hub_name: "Client Intake & Vendor Export System"
+  hub_id: "client-subhive"
+  hub_type: HUB
+  created_by: "Barton Ops System"
+  created_date: "2026-01-30"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # IDEA / NEED
+  # ─────────────────────────────────────────────────────────────────────────────
+  idea_need:
+    problem_statement: "Employee benefits administration requires structured intake of client company data, employee census, and benefit elections, followed by canonical storage and transformation into vendor-specific export formats. Without a governed pipeline, data quality degrades, vendor exports fail, and compliance is unverifiable."
+    anti_goal: "This hub does NOT handle vendor API integrations, payment processing, user authentication, or email delivery. It does NOT own the sales pipeline or outreach process."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # HUB JUSTIFICATION (CONST → VAR)
+  # ─────────────────────────────────────────────────────────────────────────────
+  hub_justification:
+    const_to_var_transform: "This hub transforms raw client intake data (companies, employees, benefit elections) into canonical Neon records and vendor-specific export files."
+    success_criteria: "Client data passes validation, is stored in canonical schema, and is successfully exported in vendor-specific formats (Guardian Life, Mutual of Omaha) with full audit trail."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # HUB-SPOKE DECISION
+  # ─────────────────────────────────────────────────────────────────────────────
+  hub_spoke_decision:
+    implemented: true
+    rationale: "This hub requires boundary-crossing transport for data intake (API endpoint) and data export (vendor files, compliance reports). Spokes handle transport only; all logic remains in Middle."
+
+    spokes:
+      - spoke_name: "API Intake Endpoint"
+        purpose: "Raw client, employee, and benefit data enters the hub via REST API"
+        direction: INGRESS
+        licensed_capability: "Zod schema validation at boundary"
+
+      - spoke_name: "Vendor Export Interface"
+        purpose: "Vendor-formatted export files exit the hub to downstream consumers"
+        direction: EGRESS
+        licensed_capability: "vendor_output_blueprint schema projection"
+
+      - spoke_name: "Compliance Reporting"
+        purpose: "Compliance reports exit the hub for regulatory purposes"
+        direction: EGRESS
+        licensed_capability: "compliance_vault schema projection"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CANDIDATE CONSTANTS (INPUTS)
+  # ─────────────────────────────────────────────────────────────────────────────
+  candidate_constants:
+    - name: "Company Data"
+      source: "API Intake Endpoint (REST API)"
+      description: "Raw company information from client onboarding process"
+
+    - name: "Employee Data"
+      source: "API Intake Endpoint (REST API)"
+      description: "Raw employee census and benefit election selections"
+
+    - name: "Vendor Blueprints"
+      source: "Configuration (db/vendor_blueprints/)"
+      description: "Vendor-specific field mappings for export format generation"
+
+    - name: "Intake Schema"
+      source: "Zod Validation Rules"
+      description: "Validation rules defining required fields and data types for intake"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CANDIDATE VARIABLES (OUTPUTS)
+  # ─────────────────────────────────────────────────────────────────────────────
+  candidate_variables:
+    - name: "Canonical Company Records"
+      destination: "Neon PostgreSQL (clnt2.clnt_m_client)"
+      description: "Normalized, validated company data in canonical schema"
+
+    - name: "Canonical Employee Records"
+      destination: "Neon PostgreSQL (clnt2.clnt_m_person)"
+      description: "Normalized employee and dependent records"
+
+    - name: "Benefit Elections"
+      destination: "Neon PostgreSQL (clnt2.clnt_m_election)"
+      description: "Validated benefit election records linked to plans and persons"
+
+    - name: "Vendor Export Files"
+      destination: "Neon PostgreSQL (clnt2.clnt_o_output)"
+      description: "Vendor-formatted export records per blueprint mapping"
+
+    - name: "Audit Trail"
+      destination: "Neon PostgreSQL (shq.audit_log)"
+      description: "Complete record of all agent actions and data transformations"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SNAP-ON TOOLS
+  # ─────────────────────────────────────────────────────────────────────────────
+  snap_on_tools: []
+    # No external SNAP-ON tools currently required.
+    # All operations use direct pg client via Neon serverless driver.
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # DOWNSTREAM ARTIFACTS
+  # ─────────────────────────────────────────────────────────────────────────────
+  downstream_artifacts:
+    prd_expected: true
+    erd_expected: true
+    process_expected: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SIGNOFF
+  # ─────────────────────────────────────────────────────────────────────────────
+  signoff:
+    human_owner: "Barton Ops System"
+    ai_agent: "Claude Code"
+    confirmation_date: "2026-02-09"
+    status: UNSIGNED  # Human must change to SIGNED

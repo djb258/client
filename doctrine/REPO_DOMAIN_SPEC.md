@@ -1,127 +1,172 @@
 # Repository Domain Specification
 
-**Hub ID:** client-subhive
-**Hub Name:** Client Intake & Vendor Export System
-**Parent:** imo-creator
+**Repository**: client
+**Domain**: client
+**Parent**: IMO-Creator
+**Status**: ACTIVE
 
 ---
 
-## Purpose
+## CRITICAL: What This File MUST NOT Contain
 
-This document maps generic IMO-Creator roles to domain-specific tables and concepts for the Client Intake & Vendor Export System.
+- NO SQL statements
+- NO code snippets or functions
+- NO workflow logic or decision trees
+- NO scoring formulas or calculations
+- NO implementation details
+- NO prose descriptions of "how it works"
 
----
-
-## Domain Binding: Constants
-
-| Generic Role | Domain Binding | Table/Source |
-|--------------|----------------|--------------|
-| Upstream Authority | imo-creator | Parent doctrine |
-| Raw Input Source | API Intake Endpoint | REST API / Direct Input |
-| Intake Schema | API Validation | Zod schemas |
-| Vendor Blueprints | Configuration | ctb/data/db/registry/ |
+This file contains BINDINGS ONLY -- mapping generic roles to domain-specific names.
 
 ---
 
-## Domain Binding: Variables
+## Domain Identity
 
-| Generic Role | Domain Binding | Table/Destination |
-|--------------|----------------|-------------------|
-| Canonical Entity | Company Record | clnt.company_master |
-| Canonical Entity | Employee Record | clnt.employee_master |
-| Derived Output | Vendor Export | clnt.vendor_output_blueprint |
-| Audit Trail | Process Log | shq.audit_log |
-| Error Log | Error Records | shq.error_log |
+| Field | Value |
+|-------|-------|
+| Domain Name | client |
+| Sovereign Reference | imo-creator |
+| Hub ID | client-subhive |
 
 ---
 
-## IMO Layer Binding
+## Hub and Sub-Hub Structure
 
-### Ingress (I) Layer
-
-| Generic | Domain Specific |
-|---------|-----------------|
-| Raw Input | clnt_i_raw_input |
-| Profile | clnt_i_profile |
-| Staging Schema | staging.raw_intake_* |
-
-### Middle (M) Layer
-
-| Generic | Domain Specific |
-|---------|-----------------|
-| Master Entity | clnt_m_client |
-| Person Entity | clnt_m_person |
-| Plan Entity | clnt_m_plan |
-| Cost Entity | clnt_m_plan_cost |
-| Election Entity | clnt_m_election |
-| Link Entity | clnt_m_vendor_link |
-| Document Entity | clnt_m_spd |
-
-### Egress (O) Layer
-
-| Generic | Domain Specific |
-|---------|-----------------|
-| Output Record | clnt_o_output |
-| Run Log | clnt_o_output_run |
-| Compliance Record | clnt_o_compliance |
+| Hub/Sub-Hub | ID | Purpose (10 words max) |
+|-------------|----|-----------------------|
+| Client Hub | client-subhive | Client intake, canonical storage, vendor export |
+| Intake | intake | API-based intake for company and employee data |
+| Canonical Vault | canonical | Neon PostgreSQL canonical data storage |
+| Vendor Export | export | Vendor-specific data export generation |
 
 ---
 
-## Agent Binding
+## Fact Schema Bindings
 
-| Generic Role | Domain Agent | Altitude |
-|--------------|--------------|----------|
-| Strategic Orchestrator | SUBAGENT-DELEGATOR | 30,000 ft |
-| MCP Orchestrator | REPO-MCP-ORCHESTRATOR | 30,000 ft |
-| Intake Validator | SHQ-INTAKE-VALIDATOR | 20,000 ft |
-| Compliance Checker | COMPLIANCE-CHECKER | 20,000 ft |
-| Export Transformer | VENDOR-EXPORT-AGENT | 10,000 ft |
-
----
-
-## Schema Binding
-
-| Generic Schema | Domain Schema | Purpose |
-|----------------|---------------|---------|
-| Canonical | clnt | Core business data |
-| Audit | shq | System health and logging |
-| Staging | staging | Intake processing |
-| Core | core | Normalized master data |
-| Benefits | benefits | Benefit-specific data |
-| Compliance | compliance | Regulatory data |
-| Operations | operations | Operational tracking |
+| Generic Role | Domain Table | Owner Schema | Description (10 words max) |
+|--------------|--------------|--------------|---------------------------|
+| FACT_TABLE | clnt_m_client | clnt2 | Canonical client identity records |
+| FACT_TABLE | clnt_m_person | clnt2 | Employee and dependent records |
+| FACT_TABLE | clnt_m_plan | clnt2 | Benefit plan definitions |
+| FACT_TABLE | clnt_m_election | clnt2 | Benefit election records |
 
 ---
 
-## Spoke Binding
+## Intent Layer Bindings
 
-### Ingress Spokes
-
-| Spoke ID | Domain Interface | Contract |
-|----------|------------------|----------|
-| api-intake | REST API Endpoint | OpenAPI schema |
-| direct-intake | Direct Data Import | Zod validation schema |
-
-### Egress Spokes
-
-| Spoke ID | Domain Interface | Contract |
-|----------|------------------|----------|
-| vendor-export | Vendor Export API | vendor_output_blueprint |
-| compliance-report | Compliance Reporting | compliance_vault schema |
+| Generic Role | Domain Column/Table | Data Type | Description (10 words max) |
+|--------------|---------------------|-----------|---------------------------|
+| LIFECYCLE_STATE | clnt_m_client.status | VARCHAR | Client lifecycle state (active, suspended, terminated) |
 
 ---
 
-## Traceability
+## External Boundaries
 
-| Artifact | Reference |
-|----------|-----------|
-| Bootstrap Guide | CLAUDE.md |
-| Hub Constitution | CONSTITUTION.md |
-| Hub Doctrine | DOCTRINE.md |
-| Canonical PRD | docs/prd/PRD.md |
-| Architecture ADR | docs/adr/ADR-001-architecture.md |
-| UI Governance | docs/ui/UI_CONSTITUTION.md |
-| Canonical Schema | client_subhive_schema.sql |
+| External System | Direction | Data Exchanged | Boundary Type |
+|-----------------|-----------|----------------|---------------|
+| API Intake Endpoint | INGRESS | Company, employee, benefit data | API |
+| Vendor Export (Guardian Life) | EGRESS | Vendor-formatted export records | File |
+| Vendor Export (Mutual of Omaha) | EGRESS | Vendor-formatted export records | File |
+| Compliance Reporting | EGRESS | Compliance status reports | API |
+
+---
+
+## Data Classes Owned
+
+| Data Class | Tables | Owner Hub | Mutability |
+|------------|--------|-----------|------------|
+| Client Identity | clnt_m_client | client-subhive | CONST |
+| Employee Records | clnt_m_person | client-subhive | CONST |
+| Benefit Plans | clnt_m_plan, clnt_m_plan_cost | client-subhive | CONST |
+| Benefit Elections | clnt_m_election | client-subhive | VAR |
+| Vendor Links | clnt_m_vendor_link | client-subhive | VAR |
+| Summary Plan Descriptions | clnt_m_spd | client-subhive | CONST |
+| Raw Intake | clnt_i_raw_input, clnt_i_profile | client-subhive | VAR |
+| Export Output | clnt_o_output, clnt_o_output_run | client-subhive | VAR |
+| Compliance Records | clnt_o_compliance | client-subhive | VAR |
+
+---
+
+## Approved Tools (Snap-On IDs)
+
+| Tool ID | Purpose | Usage Layer |
+|---------|---------|-------------|
+| NONE | No external SNAP-ON tools currently required | MIDDLE |
+
+**Reference**: templates/SNAP_ON_TOOLBOX.yaml
+
+---
+
+## Lane Definitions
+
+| Lane Name | Tables Included | Isolation Rule |
+|-----------|-----------------|----------------|
+| Intake Lane | clnt_i_raw_input, clnt_i_profile | SOURCE only, no direct query |
+| Canonical Lane | clnt_m_client, clnt_m_person, clnt_m_plan, clnt_m_plan_cost, clnt_m_election, clnt_m_vendor_link, clnt_m_spd | Primary query surface |
+| Export Lane | clnt_o_output, clnt_o_output_run, clnt_o_compliance | Read-only output projection |
+
+---
+
+## Downstream Consumers (Read-Only)
+
+| Consumer | Access Level | Tables Exposed |
+|----------|--------------|----------------|
+| Vendor Export Interface | READ | clnt_o_output, clnt_o_output_run |
+| Compliance Reporting | READ | clnt_o_compliance |
+
+---
+
+## Forbidden Joins
+
+| Source Table | Target Table | Reason |
+|--------------|--------------|--------|
+| clnt_i_raw_input | clnt_o_output | Cross-lane isolation (intake to export) |
+| clnt_i_profile | clnt_o_compliance | Cross-lane isolation (intake to export) |
+| clnt_o_output | clnt_m_person | Egress cannot access Middle directly |
+
+---
+
+## What This Repo Explicitly Does NOT Do
+
+| Excluded Scope | Reason |
+|----------------|--------|
+| Vendor API integrations | Handled by separate hubs |
+| Payment processing | Outside client data domain |
+| User authentication | Infrastructure concern, not client data |
+| Email delivery | Communication hub responsibility |
+| Sales pipeline | Owned by outreach hub |
+
+---
+
+## Domain Lifecycle States
+
+| State | Maps To Canonical | Description |
+|-------|-------------------|-------------|
+| pending | DRAFT | Client intake started, not validated |
+| active | ACTIVE | Client validated and in canonical storage |
+| suspended | SUSPENDED | Client temporarily disabled |
+| terminated | TERMINATED | Client relationship ended |
+
+---
+
+## Binding Completeness Check
+
+Before this file is valid, verify:
+
+- [x] Domain Name: client
+- [x] Sovereign Reference: imo-creator
+- [x] Hub ID: client-subhive
+- [x] At least 1 Hub/Sub-Hub defined
+- [x] At least 1 Fact Schema binding
+- [x] LIFECYCLE_STATE binding present
+- [x] At least 1 External Boundary
+- [x] At least 1 Data Class owned
+- [x] Tool list completed (explicit "NONE")
+- [x] At least 1 Lane definition
+- [x] At least 1 "Does NOT Do" entry
+- [x] All Lifecycle States map to canonical
+- [x] NO SQL, code, or logic present
+- [x] NO [FILL: ...] placeholders remain
 
 ---
 
@@ -130,6 +175,8 @@ This document maps generic IMO-Creator roles to domain-specific tables and conce
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-01-30 |
+| Last Modified | 2026-02-09 |
+| Version | 2.0.0 |
 | Status | ACTIVE |
-| Authority | Inherits from imo-creator |
+| Parent Doctrine | IMO-Creator |
+| Validated | [x] YES |

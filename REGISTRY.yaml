@@ -6,7 +6,7 @@
 # ===============================================================================
 
 version: "1.0.0"
-last_updated: "2026-02-05"
+last_updated: "2026-02-09"
 
 # ===============================================================================
 # HUB IDENTITY (CC-02)
@@ -25,8 +25,8 @@ hub:
 
 conformance:
   parent: "imo-creator"
-  doctrine_version: "1.5.0"
-  ctb_version: "1.1.0"
+  doctrine_version: "2.0.0"
+  ctb_version: "2.0.0"
   domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
 
 # ===============================================================================
@@ -81,32 +81,10 @@ spokes:
       contract: "compliance_vault schema"
 
 # ===============================================================================
-# SECRETS MANAGEMENT
-# ===============================================================================
-
-secrets:
-  provider: "doppler"
-  project: "client-subhive"
-  enforcement: "MANDATORY"
-  policy: |
-    All secrets MUST be sourced from Doppler.
-    No .env files, no hardcoded secrets, no local secret files permitted.
-
-# ===============================================================================
-# DATABASE
-# ===============================================================================
-
-database:
-  provider: "neon"
-  schema: "clnt2"
-  tables: 12
-  erd_metrics: "erd/ERD_METRICS.yaml"
-
-# ===============================================================================
 # DOCUMENT CONTROL
 # ===============================================================================
 
 document_control:
   created: "2026-01-30"
-  last_modified: "2026-02-05"
+  last_modified: "2026-02-09"
   status: "ACTIVE"

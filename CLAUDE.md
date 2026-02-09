@@ -8,7 +8,7 @@
 | **Hub ID** | client-subhive |
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Parent Sovereign** | imo-creator |
-| **Doctrine Version** | 1.5.0 |
+| **Doctrine Version** | 2.0.0 |
 
 ---
 
@@ -45,12 +45,13 @@ imo-creator (Sovereign - CC-01)
 
 | Document | Purpose |
 |----------|---------|
-| CANONICAL_ARCHITECTURE_DOCTRINE.md | Operating physics of the system |
-| ALTITUDE_DESCENT_MODEL.md | CC layer descent sequence |
+| ARCHITECTURE.md (v2.0.0) | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent) |
 | TEMPLATE_IMMUTABILITY.md | AI modification prohibition |
 | IMO_SYSTEM_SPEC.md | System index and quick reference |
 | AI_EMPLOYEE_OPERATING_CONTRACT.md | Agent constraints |
 | SNAP_ON_TOOLBOX.yaml | Tool registry |
+
+> **Note**: ARCHITECTURE.md consolidates the former CANONICAL_ARCHITECTURE_DOCTRINE.md, HUB_SPOKE_ARCHITECTURE.md, and ALTITUDE_DESCENT_MODEL.md.
 
 ---
 
@@ -155,10 +156,15 @@ NEVER create these folders anywhere:
 | `CONSTITUTION.md` | Boundary declaration | CC-02 |
 | `REGISTRY.yaml` | Hub identity | CC-02 |
 | `DOCTRINE.md` | Doctrine adherence | CC-02 |
+| `HUB_DESIGN_DECLARATION.yaml` | Hub existence justification (HSS) | CC-02 |
 | `doctrine/REPO_DOMAIN_SPEC.md` | Domain bindings | CC-02 |
+| `doctrine/OSAM.md` | Semantic Access Map (query routing) | CC-02 |
 | `docs/prd/PRD.md` | Hub definition | CC-02 |
 | `docs/adr/ADR-001-architecture.md` | Architecture decisions | CC-03 |
 | `docs/audit/HUB_COMPLIANCE_CHECKLIST.md` | Compliance checklist | CC-02 |
+| `docs/CTB_GOVERNANCE.md` | CTB table registry and governance | CC-02 |
+| `docs/architecture/HUBS_AND_SPOKES.md` | Hub/spoke reference (explanatory) | CC-02 |
+| `docs/architecture/SYSTEM_FUNNEL_OVERVIEW.md` | System funnel reference (explanatory) | CC-02 |
 
 ### UI Governance
 
@@ -271,6 +277,6 @@ See: `integrations/DOPPLER.md`
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-05 |
-| Version | 1.1.0 |
+| Last Modified | 2026-02-09 |
+| Version | 1.2.0 |
 | Status | ACTIVE |

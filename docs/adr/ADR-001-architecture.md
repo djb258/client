@@ -208,7 +208,7 @@ These are foundational decisions. Rollback would require:
 
 | Artifact | Reference |
 |----------|-----------|
-| Canonical Doctrine | CANONICAL_ARCHITECTURE_DOCTRINE.md |
+| Architecture Doctrine | ARCHITECTURE.md (v2.0.0) |
 | Bootstrap Guide | CLAUDE.md |
 | Hub Constitution | CONSTITUTION.md |
 | Hub Doctrine | DOCTRINE.md |

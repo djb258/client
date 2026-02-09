@@ -246,10 +246,13 @@ UI implementations for this hub MUST follow:
 
 | Artifact | Reference |
 |----------|-----------|
-| Canonical Doctrine | CANONICAL_ARCHITECTURE_DOCTRINE.md |
-| Hub/Spoke Geometry | CANONICAL_ARCHITECTURE_DOCTRINE.md §3 |
+| Architecture Doctrine | ARCHITECTURE.md (v2.0.0) |
+| Hub/Spoke Geometry | ARCHITECTURE.md Part IV |
+| IMO Flow | ARCHITECTURE.md Part V |
+| Descent Gates | ARCHITECTURE.md Part VI |
+| Hub Design Declaration | HUB_DESIGN_DECLARATION.yaml |
+| Semantic Access Map | doctrine/OSAM.md |
 | IMO Schema | client_subhive_schema.sql |
-| Audit Manifest | AUDIT_MANIFEST_LLM.json |
 | UI Constitution | docs/ui/UI_CONSTITUTION.md |
 | Secrets Management | integrations/DOPPLER.md |
 | Domain Bindings | doctrine/REPO_DOMAIN_SPEC.md |

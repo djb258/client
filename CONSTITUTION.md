@@ -77,8 +77,7 @@ All operations in this repository are bound by:
 
 | Document | Location | Purpose |
 |----------|----------|---------|
-| CANONICAL_ARCHITECTURE_DOCTRINE.md | imo-creator/templates/doctrine/ | Operating physics |
-| ALTITUDE_DESCENT_MODEL.md | imo-creator/templates/doctrine/ | CC descent sequence |
+| ARCHITECTURE.md (v2.0.0) | imo-creator/templates/doctrine/ | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent) |
 | TEMPLATE_IMMUTABILITY.md | imo-creator/templates/doctrine/ | AI modification prohibition |
 | IMO_SYSTEM_SPEC.md | imo-creator/templates/ | System index |
 | AI_EMPLOYEE_OPERATING_CONTRACT.md | imo-creator/templates/ | Agent constraints |

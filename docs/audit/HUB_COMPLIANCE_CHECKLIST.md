@@ -4,12 +4,23 @@
 
 | Field | Value |
 |-------|-------|
-| **Doctrine Version** | 1.0.0 |
+| **Doctrine Version** | 2.0.0 |
 | **CC Layer** | CC-02 |
-| **Last Validated** | 2026-01-30 |
-| **Validated By** | Claude Code (Claude Opus 4.5) |
+| **Last Validated** | 2026-02-09 |
+| **Validated By** | Claude Code (Claude Opus 4.6) |
 | **Template Source** | templates/checklists/HUB_COMPLIANCE.md (synced from imo-creator) |
-| **Template Sync Date** | 2026-01-30 |
+| **Template Sync Date** | 2026-02-09 |
+
+### Zero-Tolerance Enforcement Rule (IMMUTABLE)
+
+```
+You CANNOT mark a hub as COMPLIANT if:
+  1. ANY CRITICAL items are unchecked
+  2. ANY HIGH violations exist (unfixed)
+
+HIGH violations are NOT "fix later" items.
+This is an IMMUTABLE RULE. No exceptions.
+```
 
 ---
 
@@ -103,7 +114,28 @@
 
 ---
 
-## §A.6 Process Compliance (Execution Declaration)
+## §A.6 OSAM Compliance (Semantic Access Map)
+
+| Priority | Check | Status |
+|----------|-------|--------|
+| CRITICAL | [x] OSAM exists at doctrine/OSAM.md | PASS |
+| CRITICAL | [x] Universal join key declared (client_id, UUID) | PASS |
+| CRITICAL | [x] Spine table identified (clnt_m_client) | PASS |
+| CRITICAL | [x] All sub-hubs listed with table ownership | PASS |
+| CRITICAL | [x] All allowed joins explicitly declared | PASS |
+| CRITICAL | [x] All tables classified (QUERY/SOURCE/ENRICHMENT/AUDIT) | PASS |
+| CRITICAL | [x] No queries target SOURCE/ENRICHMENT tables as primary surface | PASS |
+
+| Field | Value |
+|-------|-------|
+| OSAM Location | doctrine/OSAM.md |
+| OSAM Version | 1.0.0 |
+| Universal Join Key | client_id (UUID) |
+| Spine Table | clnt2.clnt_m_client |
+
+---
+
+## §A.7 Process Compliance (Execution Declaration)
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -309,6 +341,32 @@
 
 ---
 
+## §B.12 Documentation Alignment & ERD Metrics
+
+| Priority | Check | Status |
+|----------|-------|--------|
+| CRITICAL | [x] DOCTRINE.md references ARCHITECTURE.md (not old files) | PASS |
+| HIGH | [x] CTB Governance document exists (docs/CTB_GOVERNANCE.md) | PASS |
+| HIGH | [x] erd/ERD_METRICS.yaml exists (created from template) | PASS |
+| HIGH | [x] ERD_METRICS.yaml sync configuration present | PASS |
+| MEDIUM | [x] No MD files reference old CANONICAL_ARCHITECTURE_DOCTRINE.md | PASS |
+| MEDIUM | [x] No MD files reference old ALTITUDE_DESCENT_MODEL.md | PASS |
+| MEDIUM | [x] No MD files reference old HUB_SPOKE_ARCHITECTURE.md as authoritative | PASS |
+
+---
+
+## §B.13 CTB Hardening Migration Verification
+
+| Priority | Check | Status |
+|----------|-------|--------|
+| HIGH | [x] DOCTRINE.md references ARCHITECTURE.md v2.0.0 | PASS |
+| HIGH | [x] CLAUDE.md binding doctrine table references ARCHITECTURE.md | PASS |
+| MEDIUM | [x] HUB_DESIGN_DECLARATION.yaml exists at repo root | PASS |
+| MEDIUM | [x] doctrine/OSAM.md exists and is valid | PASS |
+| MEDIUM | [x] docs/architecture/ directory exists with reference docs | PASS |
+
+---
+
 ## Traceability
 
 | Priority | Check | Status |
@@ -317,7 +375,7 @@
 | CRITICAL | [x] ADR exists for each decision (CC-03) | PASS |
 | HIGH | [ ] Work item linked | N/A (foundational) |
 | HIGH | [x] PR linked (CC-04) | PASS |
-| HIGH | [x] Canonical Doctrine referenced | PASS |
+| HIGH | [x] Architecture Doctrine referenced (ARCHITECTURE.md v2.0.0) | PASS |
 
 ---
 
@@ -371,7 +429,7 @@ IF BOTH = 0                →  MAY proceed to mark COMPLIANT. ✅
 ## Step 4: AI Agent Acknowledgment
 
 ```
-I, Claude Code (Claude Opus 4.5), acknowledge that:
+I, Claude Code (Claude Opus 4.6), acknowledge that:
 
 [x] I have read CONSTITUTION.md §Violation Zero Tolerance
 [x] I understand that ANY violation = FAIL
@@ -390,13 +448,16 @@ Status selected above: COMPLIANT
 
 | Part | Section | CRITICAL Items | Count |
 |------|---------|----------------|-------|
-| A | Constitutional Validity | 4 | 4 / 4 |
-| A | PRD Compliance | 8 | 8 / 8 |
-| A | ERD Compliance | 6 | 6 / 6 |
-| A | Pressure Test | 4 | 4 / 4 |
-| A | Upstream Flow Test | 5 | 5 / 5 |
-| A | Process Compliance | 6 | 6 / 6 |
-| B | All Operational Sections | 30+ | ALL PASS |
+| A | §A.1 Constitutional Validity | 4 | 4 / 4 |
+| A | §A.2 PRD Compliance | 8 | 8 / 8 |
+| A | §A.3 ERD Compliance | 6 | 6 / 6 |
+| A | §A.4 Pressure Test | 4 | 4 / 4 |
+| A | §A.5 Upstream Flow Test | 5 | 5 / 5 |
+| A | §A.6 OSAM Compliance | 7 | 7 / 7 |
+| A | §A.7 Process Compliance | 6 | 6 / 6 |
+| B | §B.1-B.11 Operational Sections | 30+ | ALL PASS |
+| B | §B.12 Documentation Alignment | 3 | 3 / 3 |
+| B | §B.13 CTB Hardening Migration | 2 | 2 / 2 |
 
 | Priority | Must Have | Count |
 |----------|-----------|-------|
@@ -439,6 +500,8 @@ Status selected above: COMPLIANT
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Auditor | Claude Code (Claude Opus 4.5) |
-| Branch | ctb-compliance/constitutional-remediation |
+| Last Modified | 2026-02-09 |
+| Auditor | Claude Code (Claude Opus 4.6) |
+| Branch | main |
 | Status | COMPLIANT |
+| Template Version | 2.0.0 (synced from imo-creator 2026-02-09) |
