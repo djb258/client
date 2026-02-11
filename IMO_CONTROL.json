@@ -2,8 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "IMO_CONTROL",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "created": "2026-01-30",
+    "last_modified": "2026-02-11",
     "authority": "imo-creator",
     "status": "ACTIVE",
     "description": "Child repo governance contract for Client Intake & Vendor Export System",
@@ -11,7 +12,7 @@
   },
 
   "control_plane": {
-    "control_version": "1.0.0",
+    "control_version": "2.0.0",
     "upstream_repo": "imo-creator",
     "upstream_commit": "e8556c2",
     "drift_detection": {
@@ -33,11 +34,15 @@
     "repo_name": "client",
     "hub_id": "client-subhive",
     "sovereign_reference": "imo-creator",
-    "domain_spec": "doctrine/REPO_DOMAIN_SPEC.md"
+    "domain_spec": "doctrine/REPO_DOMAIN_SPEC.md",
+    "osam": "doctrine/OSAM.md",
+    "schema": "clnt",
+    "spine_table": "clnt.client_hub",
+    "universal_join_key": "client_id"
   },
 
   "lifecycle": {
-    "current_phase": "structural_instantiation",
+    "current_phase": "documentation_enforcement",
     "allowed_phases": [
       "constitutional_admission",
       "structural_instantiation",
@@ -57,13 +62,31 @@
       "required_files": [
         "REGISTRY.yaml",
         "DOCTRINE.md",
-        "README.md"
+        "README.md",
+        "heir.doctrine.yaml"
       ]
     },
     "altitude": {
       "branches": ["sys", "data", "app", "ai", "ui"],
       "path_pattern": "src/{sys,data,app,ai,ui}/",
       "enforcement": "MANDATORY"
+    }
+  },
+
+  "schema": {
+    "name": "clnt",
+    "database": "Neon PostgreSQL",
+    "total_tables": 13,
+    "total_views": 0,
+    "spokes": {
+      "S1": {"name": "Hub", "tables": ["client_hub", "client_master"]},
+      "S2": {"name": "Plan", "tables": ["plan", "plan_quote"]},
+      "S3": {"name": "Intake", "tables": ["intake_batch", "intake_record"]},
+      "S4": {"name": "Vault", "tables": ["person", "election"]},
+      "S5": {"name": "Vendor", "tables": ["vendor", "external_identity_map"]},
+      "S6": {"name": "Service", "tables": ["service_request"]},
+      "S7": {"name": "Compliance", "tables": ["compliance_flag"]},
+      "S8": {"name": "Audit", "tables": ["audit_event"]}
     }
   },
 
@@ -75,13 +98,19 @@
     "must": [
       "Check IMO_CONTROL.json exists before any work",
       "Read doctrine/REPO_DOMAIN_SPEC.md for domain bindings",
+      "Read doctrine/OSAM.md for query routing contracts",
       "Enforce CTB altitude structure",
-      "Refuse to modify parent doctrine"
+      "Refuse to modify parent doctrine",
+      "Route all queries through OSAM-declared paths",
+      "HALT on undeclared join attempts"
     ],
     "must_not": [
       "Modify parent doctrine files",
       "Skip descent gates",
-      "Invent structure beyond doctrine"
+      "Invent structure beyond doctrine",
+      "Query STAGING tables as business surfaces",
+      "Query AUDIT tables as business surfaces",
+      "Create joins not declared in OSAM"
     ]
   }
 }

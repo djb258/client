@@ -5,8 +5,8 @@
 # Status: REQUIRED — Every hub MUST have a REGISTRY.yaml
 # ===============================================================================
 
-version: "1.0.0"
-last_updated: "2026-02-09"
+version: "2.0.0"
+last_updated: "2026-02-11"
 
 # ===============================================================================
 # HUB IDENTITY (CC-02)
@@ -28,6 +28,7 @@ conformance:
   doctrine_version: "2.0.0"
   ctb_version: "2.0.0"
   domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
+  osam: "doctrine/OSAM.md"
 
 # ===============================================================================
 # CTB PLACEMENT
@@ -42,24 +43,62 @@ ctb:
     ui: true
 
 # ===============================================================================
-# SUB-HUBS (CC-03)
+# SUB-HUBS / SPOKES (CTB Spoke Structure S1-S8)
 # ===============================================================================
 
 subhubs:
-  - subhub_id: "intake"
-    name: "Client Intake"
-    description: "API-based intake for company and employee data capture"
-    path: "src/ui/"
+  - subhub_id: "s1-hub"
+    name: "S1: Hub"
+    description: "Root client identity and legal details"
+    tables:
+      - "clnt.client_hub"
+      - "clnt.client_master"
 
-  - subhub_id: "canonical"
-    name: "Canonical Vault"
-    description: "Neon PostgreSQL canonical data storage (clnt2 schema)"
-    path: "src/data/"
+  - subhub_id: "s2-plan"
+    name: "S2: Plan"
+    description: "Benefit plans and renewal quote intake"
+    tables:
+      - "clnt.plan"
+      - "clnt.plan_quote"
 
-  - subhub_id: "export"
-    name: "Vendor Export"
-    description: "Vendor-specific data export generation"
-    path: "src/sys/"
+  - subhub_id: "s3-intake"
+    name: "S3: Intake"
+    description: "Enrollment staging (one-way to vault)"
+    tables:
+      - "clnt.intake_batch"
+      - "clnt.intake_record"
+
+  - subhub_id: "s4-vault"
+    name: "S4: Vault"
+    description: "Employee identity and benefit elections"
+    tables:
+      - "clnt.person"
+      - "clnt.election"
+
+  - subhub_id: "s5-vendor"
+    name: "S5: Vendor"
+    description: "Vendor identity and ID translation"
+    tables:
+      - "clnt.vendor"
+      - "clnt.external_identity_map"
+
+  - subhub_id: "s6-service"
+    name: "S6: Service"
+    description: "Service ticket tracking"
+    tables:
+      - "clnt.service_request"
+
+  - subhub_id: "s7-compliance"
+    name: "S7: Compliance"
+    description: "Compliance flag tracking"
+    tables:
+      - "clnt.compliance_flag"
+
+  - subhub_id: "s8-audit"
+    name: "S8: Audit"
+    description: "Append-only system audit trail"
+    tables:
+      - "clnt.audit_event"
 
 # ===============================================================================
 # SPOKES (CC-03 Interfaces)
@@ -78,7 +117,19 @@ spokes:
 
     - spoke_id: "compliance-report"
       name: "Compliance Reporting"
-      contract: "compliance_vault schema"
+      contract: "compliance_flag schema"
+
+# ===============================================================================
+# SCHEMA
+# ===============================================================================
+
+schema:
+  name: "clnt"
+  database: "Neon PostgreSQL"
+  total_tables: 13
+  total_views: 0
+  universal_join_key: "client_id"
+  spine_table: "clnt.client_hub"
 
 # ===============================================================================
 # DOCUMENT CONTROL
@@ -86,5 +137,5 @@ spokes:
 
 document_control:
   created: "2026-01-30"
-  last_modified: "2026-02-09"
+  last_modified: "2026-02-11"
   status: "ACTIVE"

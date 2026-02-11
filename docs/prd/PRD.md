@@ -4,8 +4,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Doctrine Version** | 1.0.0 |
-| **CTB Version** | 1.0.0 |
+| **Doctrine Version** | 2.0.0 |
+| **CTB Version** | 2.0.0 |
 | **CC Layer** | CC-02 |
 
 ---
@@ -26,19 +26,20 @@
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Hub ID** | client-subhive |
 | **Owner** | Barton Ops System |
-| **Version** | 1.0.0 |
+| **Version** | 2.0.0 |
 
 ---
 
 ## 3. Purpose & Transformation Declaration
 
-This hub manages the intake of client data through a wizard interface, transforms it into a canonical schema, and exports it to vendor-specific formats.
+This hub manages the intake of client data, transforms it into a canonical schema stored in Neon PostgreSQL, and exports to vendor-specific formats.
 
 ### Transformation Statement (REQUIRED)
 
 | Field | Value |
 |-------|-------|
-| **Transformation Summary** | This system transforms **raw client intake data** (companies, employees, benefit elections) into **canonical Neon records** and **vendor-specific export files**. |
+| **Transformation Summary** | This system transforms **raw client intake data** (companies, employees, benefit elections, renewal quotes) into **canonical Neon records** and **vendor-specific export files**. |
+| **Success Criteria** | Data validates against schema, stores canonically in `clnt` schema, exports successfully with audit trail. |
 
 ### Constants (Inputs)
 
@@ -46,6 +47,7 @@ This hub manages the intake of client data through a wizard interface, transform
 |----------|--------|-------------|
 | Company Data | API Intake Endpoint | Raw company information from intake process |
 | Employee Data | API Intake Endpoint | Raw employee census and benefit selections |
+| Renewal Quotes | Quote Intake | Carrier quotes for benefit renewal cycles |
 | Vendor Blueprints | Configuration | Vendor-specific field mappings |
 | Intake Schema | Zod Validation | Validation rules for intake data |
 
@@ -53,25 +55,29 @@ This hub manages the intake of client data through a wizard interface, transform
 
 | Variable | Destination | Description |
 |----------|-------------|-------------|
-| Canonical Company Records | Neon `clnt.company_master` | Normalized company data |
-| Canonical Employee Records | Neon `clnt.employee_master` | Normalized employee data |
-| Benefit Elections | Neon `clnt.employee_benefit_enrollment` | Election records |
-| Vendor Export Files | Neon `clnt.vendor_output_blueprint` | Vendor-formatted exports |
-| Audit Trail | Neon `shq.audit_log` | All agent actions logged |
+| Canonical Client Identity | Neon `clnt.client_hub` + `clnt.client_master` | Normalized client identity and legal details |
+| Canonical Employee Records | Neon `clnt.person` | Normalized employee/dependent data |
+| Benefit Plans | Neon `clnt.plan` | Active plans with embedded rates |
+| Plan Quotes | Neon `clnt.plan_quote` | Received carrier quotes for comparison |
+| Benefit Elections | Neon `clnt.election` | Person-to-plan election records |
+| Vendor Identity | Neon `clnt.vendor` + `clnt.external_identity_map` | Vendor records and ID translation |
+| Service Requests | Neon `clnt.service_request` | Service ticket tracking |
+| Compliance Flags | Neon `clnt.compliance_flag` | Compliance flag tracking |
+| Audit Trail | Neon `clnt.audit_event` | Append-only system audit trail |
 
 ### Pass Structure
 
 | Pass | Type | IMO Layer | Description |
 |------|------|-----------|-------------|
-| Intake Capture | CAPTURE | I (Ingress) | Collect data via API intake |
-| Validation & Normalization | COMPUTE | M (Middle) | Validate, transform, store in Neon |
-| Export Generation | GOVERN | O (Egress) | Generate vendor-specific outputs |
+| Intake Capture | CAPTURE | I (Ingress) | Collect data via API intake into staging tables |
+| Validation & Normalization | COMPUTE | M (Middle) | Validate, transform, store in canonical `clnt` schema |
+| Export Generation | GOVERN | O (Egress) | Generate vendor-specific outputs and compliance flags |
 
 ### Scope Boundary
 
 | Scope | Description |
 |-------|-------------|
-| **IN SCOPE** | Client company intake, employee census intake, benefit election capture, data validation, canonical storage, vendor export generation, audit logging |
+| **IN SCOPE** | Client company intake, employee census intake, benefit election capture, renewal quote intake, quote-to-plan promotion, data validation, canonical storage, vendor identity mapping, service tracking, compliance flagging, audit logging |
 | **OUT OF SCOPE** | Vendor API integrations (handled by separate hubs), payment processing, user authentication, email delivery |
 
 ---
@@ -81,7 +87,7 @@ This hub manages the intake of client data through a wizard interface, transform
 | Field | Value | CC Layer |
 |-------|-------|----------|
 | **Trunk** | ctb/ | CC-02 |
-| **Branch** | sys/, data/, ai/, ui/, docs/, meta/ | CC-02 |
+| **Branch** | sys/, data/, app/, ai/, ui/ | CC-02 |
 | **Leaf** | Individual files within branches | CC-02 |
 
 ---
@@ -90,19 +96,21 @@ This hub manages the intake of client data through a wizard interface, transform
 
 | Layer | Role | Description | CC Layer |
 |-------|------|-------------|----------|
-| **I — Ingress** | Dumb input only | API intake captures raw data; no logic, no state | CC-02 |
-| **M — Middle** | Logic, decisions, state | Neon canonical schema, validation agents, transformation logic | CC-02 |
-| **O — Egress** | Output only | Vendor export tables, compliance reports; no logic, no state | CC-02 |
+| **I -- Ingress** | Dumb input only | API intake captures raw data into staging (S3: intake_batch, intake_record); no logic, no state | CC-02 |
+| **M -- Middle** | Logic, decisions, state | Canonical `clnt` schema (S1-S2, S4-S7), validation, transformation, quote promotion logic | CC-02 |
+| **O -- Egress** | Output only | Audit trail (S8: audit_event), compliance reports; no logic, no state | CC-02 |
 
 ---
 
 ## 6. Spokes (CC-03 Interfaces)
 
-| Spoke Name | Type | Direction | Contract | CC Layer |
-|------------|------|-----------|----------|----------|
-| API Intake Endpoint | I | Inbound | Zod validation schema | CC-03 |
-| Vendor Export API | O | Outbound | vendor_output_blueprint schema | CC-03 |
-| Compliance Report | O | Outbound | compliance_vault schema | CC-03 |
+**Hub-Spoke Status**: IMPLEMENTED
+
+| Spoke Name | Type | Direction | Licensed Capability | Contract | CC Layer |
+|------------|------|-----------|---------------------|----------|----------|
+| API Intake Endpoint | INGRESS | Inbound | Data capture | Zod validation schema | CC-03 |
+| Vendor Export API | EGRESS | Outbound | Data export | vendor_output_blueprint schema | CC-03 |
+| Compliance Report | EGRESS | Outbound | Compliance output | compliance_flag schema | CC-03 |
 
 ---
 
@@ -112,10 +120,12 @@ This hub manages the intake of client data through a wizard interface, transform
 |---------|------|------------|----------|
 | Hub ID | Constant | Immutable | CC-02 |
 | Hub Name | Constant | ADR-gated | CC-02 |
-| Canonical Schema | Constant | ADR-gated | CC-02 |
-| IMO Table Prefixes | Constant | Immutable | CC-02 |
+| Canonical Schema (`clnt`) | Constant | ADR-gated | CC-02 |
+| CTB Spoke Structure (S1-S8) | Constant | ADR-gated | CC-02 |
+| Universal Join Key (`client_id`) | Constant | Immutable | CC-02 |
 | Vendor Mappings | Variable | Configuration | CC-03 |
 | Validation Rules | Variable | Configuration | CC-03 |
+| Quote Status Lifecycle | Variable | Operational | CC-04 |
 
 ---
 
@@ -136,8 +146,9 @@ This hub manages the intake of client data through a wizard interface, transform
 | Guard Rail | Type | Threshold | CC Layer |
 |------------|------|-----------|----------|
 | Intake Validation | Validation | All required fields present | CC-03 |
-| Schema Compliance | Validation | All tables follow IMO naming | CC-03 |
-| Blueprint Versioning | Validation | validator_signature required | CC-04 |
+| Schema Compliance | Validation | All tables in `clnt` schema with client_id FK | CC-03 |
+| Quote Status Enforcement | Validation | Status must be received/presented/selected/rejected | CC-04 |
+| Promotion Integrity | Validation | Rates copied on promotion; plan is self-contained | CC-04 |
 
 ---
 
@@ -168,9 +179,10 @@ This hub manages the intake of client data through a wizard interface, transform
 | Failure | Severity | CC Layer | Remediation |
 |---------|----------|----------|-------------|
 | Intake API fails | HIGH | CC-03 | Retry with exponential backoff |
-| Neon promotion fails | CRITICAL | CC-02 | Roll back, log to shq.error_log |
+| Neon promotion fails | CRITICAL | CC-02 | Roll back, log to audit_event |
 | Vendor export malformed | HIGH | CC-03 | Validate against blueprint, retry |
 | Audit log write fails | CRITICAL | CC-04 | Block all operations until resolved |
+| Quote promotion conflict | HIGH | CC-04 | Validate one selected per benefit/cycle |
 
 ---
 
@@ -180,7 +192,7 @@ This hub manages the intake of client data through a wizard interface, transform
 |-------|-------|
 | **PID Pattern** | `client-subhive-${TIMESTAMP}-${RANDOM_HEX}` |
 | **Retry Policy** | New PID per retry |
-| **Audit Trail** | Required via shq.audit_log |
+| **Audit Trail** | Required via clnt.audit_event |
 
 ---
 
@@ -192,7 +204,7 @@ Human override is permitted for:
 - Compliance exemptions (CC-01 authority required, ADR mandatory)
 - Kill switch activation (CC-02 or CC-01 authority)
 
-All overrides MUST be logged to shq.audit_log with human identifier.
+All overrides MUST be logged to clnt.audit_event with human identifier.
 
 ---
 
@@ -200,19 +212,9 @@ All overrides MUST be logged to shq.audit_log with human identifier.
 
 | Type | Description | CC Layer |
 |------|-------------|----------|
-| **Logs** | shq.audit_log, shq.error_log | CC-04 |
-| **Metrics** | Compliance score, intake success rate | CC-04 |
-| **Alerts** | Critical errors via sidecar telemetry | CC-03/CC-04 |
-
----
-
-## Approval
-
-| Role | Name | Date |
-|------|------|------|
-| Sovereign (CC-01) | imo-creator | 2026-01-30 |
-| Hub Owner (CC-02) | Barton Ops System | 2026-01-30 |
-| Reviewer | Pending | |
+| **Logs** | clnt.audit_event (append-only) | CC-04 |
+| **Metrics** | ERD_METRICS.yaml (daily sync from Neon) | CC-04 |
+| **Alerts** | Critical errors via threshold breach in ERD_METRICS | CC-03/CC-04 |
 
 ---
 
@@ -221,7 +223,7 @@ All overrides MUST be logged to shq.audit_log with human identifier.
 | Field | Value |
 |-------|-------|
 | **Provider** | Doppler (MANDATORY) |
-| **Project** | client-subhive |
+| **Project** | barton-outreach-core (DB access), client-subhive (hub config) |
 | **Documentation** | integrations/DOPPLER.md |
 
 All runtime configuration MUST be sourced via Doppler. No .env files permitted.
@@ -242,6 +244,16 @@ UI implementations for this hub MUST follow:
 
 ---
 
+## Approval
+
+| Role | Name | Date |
+|------|------|------|
+| Sovereign (CC-01) | imo-creator | 2026-01-30 |
+| Hub Owner (CC-02) | Barton Ops System | 2026-02-11 |
+| Reviewer | Pending | |
+
+---
+
 ## Traceability
 
 | Artifact | Reference |
@@ -251,8 +263,23 @@ UI implementations for this hub MUST follow:
 | IMO Flow | ARCHITECTURE.md Part V |
 | Descent Gates | ARCHITECTURE.md Part VI |
 | Hub Design Declaration | HUB_DESIGN_DECLARATION.yaml |
-| Semantic Access Map | doctrine/OSAM.md |
-| IMO Schema | client_subhive_schema.sql |
+| **Governing OSAM** | doctrine/OSAM.md |
+| **OSAM Version** | 2.0.0 |
+| **Governing ERD** | db/neon/migrations/SCHEMA_ER_DIAGRAM.md |
+| **Governing Process** | docs/prd/PRD.md (Section 3: Pass Structure) |
+| CTB Map | docs/CTB_MAP.md |
+| CTB Governance | docs/CTB_GOVERNANCE.md |
+| ADR-002 | docs/adr/ADR-002-ctb-consolidated-backbone.md |
+| ADR-004 | docs/adr/ADR-004-renewal-downgraded-to-plan-support.md |
 | UI Constitution | docs/ui/UI_CONSTITUTION.md |
 | Secrets Management | integrations/DOPPLER.md |
 | Domain Bindings | doctrine/REPO_DOMAIN_SPEC.md |
+
+## OSAM Compliance Declaration (MANDATORY)
+
+| Check | Status |
+|-------|--------|
+| [x] Governing OSAM referenced above | doctrine/OSAM.md v2.0.0 |
+| [x] All questions in this PRD can be answered via OSAM query routes | Verified |
+| [x] No new query paths introduced in this PRD | Verified |
+| [x] All required tables exist in OSAM | 13 tables declared |

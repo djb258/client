@@ -35,9 +35,14 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 | Hub/Sub-Hub | ID | Purpose (10 words max) |
 |-------------|----|-----------------------|
 | Client Hub | client-subhive | Client intake, canonical storage, vendor export |
-| Intake | intake | API-based intake for company and employee data |
-| Canonical Vault | canonical | Neon PostgreSQL canonical data storage |
-| Vendor Export | export | Vendor-specific data export generation |
+| S1 Hub | hub | Root client identity and legal details |
+| S2 Plan | plan | Benefit plans and renewal quote intake |
+| S3 Intake | intake | Enrollment staging (one-way) |
+| S4 Vault | vault | Employee identity and benefit elections |
+| S5 Vendor | vendor | Vendor identity and ID translation |
+| S6 Service | service | Service ticket tracking |
+| S7 Compliance | compliance | Compliance flag tracking |
+| S8 Audit | audit | Append-only system audit trail |
 
 ---
 
@@ -45,10 +50,12 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Generic Role | Domain Table | Owner Schema | Description (10 words max) |
 |--------------|--------------|--------------|---------------------------|
-| FACT_TABLE | clnt_m_client | clnt2 | Canonical client identity records |
-| FACT_TABLE | clnt_m_person | clnt2 | Employee and dependent records |
-| FACT_TABLE | clnt_m_plan | clnt2 | Benefit plan definitions |
-| FACT_TABLE | clnt_m_election | clnt2 | Benefit election records |
+| FACT_TABLE | client_hub | clnt | Root client identity (FROZEN after creation) |
+| FACT_TABLE | client_master | clnt | Client legal and business details |
+| FACT_TABLE | plan | clnt | Canonical benefit plans with embedded rates |
+| FACT_TABLE | person | clnt | Employee and dependent records |
+| FACT_TABLE | election | clnt | Benefit election bridge (person to plan) |
+| SUPPORT_TABLE | plan_quote | clnt | Received carrier quotes for comparison |
 
 ---
 
@@ -56,7 +63,8 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Generic Role | Domain Column/Table | Data Type | Description (10 words max) |
 |--------------|---------------------|-----------|---------------------------|
-| LIFECYCLE_STATE | clnt_m_client.status | VARCHAR | Client lifecycle state (active, suspended, terminated) |
+| LIFECYCLE_STATE | client_hub.status | TEXT | Client lifecycle state (active, suspended, terminated) |
+| QUOTE_LIFECYCLE | plan_quote.status | TEXT | Quote status (received, presented, selected, rejected) |
 
 ---
 
@@ -65,9 +73,10 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 | External System | Direction | Data Exchanged | Boundary Type |
 |-----------------|-----------|----------------|---------------|
 | API Intake Endpoint | INGRESS | Company, employee, benefit data | API |
+| Quote Intake | INGRESS | Carrier renewal quotes | API |
 | Vendor Export (Guardian Life) | EGRESS | Vendor-formatted export records | File |
 | Vendor Export (Mutual of Omaha) | EGRESS | Vendor-formatted export records | File |
-| Compliance Reporting | EGRESS | Compliance status reports | API |
+| Compliance Reporting | EGRESS | Compliance flag reports | API |
 
 ---
 
@@ -75,15 +84,16 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Data Class | Tables | Owner Hub | Mutability |
 |------------|--------|-----------|------------|
-| Client Identity | clnt_m_client | client-subhive | CONST |
-| Employee Records | clnt_m_person | client-subhive | CONST |
-| Benefit Plans | clnt_m_plan, clnt_m_plan_cost | client-subhive | CONST |
-| Benefit Elections | clnt_m_election | client-subhive | VAR |
-| Vendor Links | clnt_m_vendor_link | client-subhive | VAR |
-| Summary Plan Descriptions | clnt_m_spd | client-subhive | CONST |
-| Raw Intake | clnt_i_raw_input, clnt_i_profile | client-subhive | VAR |
-| Export Output | clnt_o_output, clnt_o_output_run | client-subhive | VAR |
-| Compliance Records | clnt_o_compliance | client-subhive | VAR |
+| Client Identity | client_hub, client_master | client-subhive | CONST |
+| Employee Records | person | client-subhive | CONST |
+| Benefit Plans | plan | client-subhive | CONST |
+| Plan Quotes | plan_quote | client-subhive | VAR |
+| Benefit Elections | election | client-subhive | VAR |
+| Vendor Identity | vendor, external_identity_map | client-subhive | VAR |
+| Service Tracking | service_request | client-subhive | VAR |
+| Compliance Flags | compliance_flag | client-subhive | VAR |
+| Raw Intake | intake_batch, intake_record | client-subhive | VAR |
+| Audit Trail | audit_event | client-subhive | CONST (append-only) |
 
 ---
 
@@ -101,9 +111,9 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Lane Name | Tables Included | Isolation Rule |
 |-----------|-----------------|----------------|
-| Intake Lane | clnt_i_raw_input, clnt_i_profile | SOURCE only, no direct query |
-| Canonical Lane | clnt_m_client, clnt_m_person, clnt_m_plan, clnt_m_plan_cost, clnt_m_election, clnt_m_vendor_link, clnt_m_spd | Primary query surface |
-| Export Lane | clnt_o_output, clnt_o_output_run, clnt_o_compliance | Read-only output projection |
+| Intake Lane | intake_batch, intake_record | STAGING only, one-way to Vault, no direct query |
+| Canonical Lane | client_hub, client_master, plan, plan_quote, person, election, vendor, external_identity_map, service_request, compliance_flag | Primary query surface |
+| Audit Lane | audit_event | Append-only, system write only, no business query |
 
 ---
 
@@ -111,8 +121,8 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Consumer | Access Level | Tables Exposed |
 |----------|--------------|----------------|
-| Vendor Export Interface | READ | clnt_o_output, clnt_o_output_run |
-| Compliance Reporting | READ | clnt_o_compliance |
+| Vendor Export Interface | READ | vendor, external_identity_map |
+| Compliance Reporting | READ | compliance_flag |
 
 ---
 
@@ -120,9 +130,10 @@ This file contains BINDINGS ONLY -- mapping generic roles to domain-specific nam
 
 | Source Table | Target Table | Reason |
 |--------------|--------------|--------|
-| clnt_i_raw_input | clnt_o_output | Cross-lane isolation (intake to export) |
-| clnt_i_profile | clnt_o_compliance | Cross-lane isolation (intake to export) |
-| clnt_o_output | clnt_m_person | Egress cannot access Middle directly |
+| intake_record | person (direct) | Intake -> Vault is one-way; must route through promotion |
+| intake_record | plan (direct) | Intake -> Plan is one-way; must route through promotion |
+| audit_event | Any table (as business query) | Audit is system log, not business query surface |
+| external_identity_map | client_hub (ID replacement) | External IDs must never replace internal UUIDs |
 
 ---
 
@@ -175,8 +186,8 @@ Before this file is valid, verify:
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-09 |
-| Version | 2.0.0 |
+| Last Modified | 2026-02-11 |
+| Version | 3.0.0 |
 | Status | ACTIVE |
 | Parent Doctrine | IMO-Creator |
 | Validated | [x] YES |

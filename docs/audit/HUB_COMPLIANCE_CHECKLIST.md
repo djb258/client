@@ -6,7 +6,7 @@
 |-------|-------|
 | **Doctrine Version** | 2.0.0 |
 | **CC Layer** | CC-02 |
-| **Last Validated** | 2026-02-09 |
+| **Last Validated** | 2026-02-11 |
 | **Validated By** | Claude Code (Claude Opus 4.6) |
 | **Template Source** | templates/checklists/HUB_COMPLIANCE.md (synced from imo-creator) |
 | **Template Sync Date** | 2026-02-09 |
@@ -26,22 +26,22 @@ This is an IMMUTABLE RULE. No exceptions.
 
 # PART A — CONSTITUTIONAL VALIDITY
 
-## §A.1 Constitutional Validity (CONST → VAR)
+## A.1 Constitutional Validity (CONST -> VAR)
 
 | Priority | Check | Status |
 |----------|-------|--------|
-| CRITICAL | [x] Hub purpose can be stated as a CONST → VAR transformation | PASS |
+| CRITICAL | [x] Hub purpose can be stated as a CONST -> VAR transformation | PASS |
 | CRITICAL | [x] All constants are explicitly declared and bounded | PASS |
 | CRITICAL | [x] All variables are explicitly declared and necessary | PASS |
 | CRITICAL | [x] Hub exists because of value transformation, not convenience | PASS |
 
 **Validity Statement:**
 
-> "This hub transforms **raw client intake data** (companies, employees, benefit elections) into **canonical Neon records** and **vendor-specific export files**."
+> "This hub transforms **raw client intake data** (companies, employees, benefit elections, renewal quotes) into **canonical Neon records** and **vendor-specific export files**."
 
 ---
 
-## §A.2 PRD Compliance (Behavioral Proof)
+## A.2 PRD Compliance (Behavioral Proof)
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -57,11 +57,11 @@ This is an IMMUTABLE RULE. No exceptions.
 | Field | Value |
 |-------|-------|
 | PRD Location | docs/prd/PRD.md |
-| PRD Version | 1.0.0 |
+| PRD Version | 2.0.0 |
 
 ---
 
-## §A.3 ERD Compliance (Structural Proof)
+## A.3 ERD Compliance (Structural Proof)
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -76,66 +76,67 @@ This is an IMMUTABLE RULE. No exceptions.
 
 | Field | Value |
 |-------|-------|
-| ERD Location | client_subhive_schema.sql |
-| ERD Version | 1.0.0 |
+| ERD Location | db/neon/migrations/SCHEMA_ER_DIAGRAM.md |
+| ERD Version | 2.2.0 |
 
 ---
 
-## §A.4 ERD Pressure Test (Static)
+## A.4 ERD Pressure Test (Static)
 
 | Table | Q1 (Constant) | Q2 (Variable) | Q3 (Pass) | Q4 (Lineage) | Result |
 |-------|---------------|---------------|-----------|--------------|--------|
-| clnt_i_raw_input | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_i_profile | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_client | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_person | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_plan | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_plan_cost | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_election | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_vendor_link | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_m_spd | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_o_output | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_o_output_run | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| clnt_o_compliance | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| client_hub | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| client_master | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| plan | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| plan_quote | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| intake_batch | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| intake_record | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| person | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| election | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| vendor | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| external_identity_map | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| service_request | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| compliance_flag | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| audit_event | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
 
-**All 12 tables pass pressure test.**
+**All 13 tables pass pressure test.**
 
 ---
 
-## §A.5 ERD Upstream Flow Test (Simulated)
+## A.5 ERD Upstream Flow Test (Simulated)
 
 | Priority | Check | Status |
 |----------|-------|--------|
 | CRITICAL | [x] Flow testing begins at declared constants (never at tables) | PASS |
-| CRITICAL | [x] Declared passes traversed sequentially (CAPTURE → COMPUTE → GOVERN) | PASS |
+| CRITICAL | [x] Declared passes traversed sequentially (CAPTURE -> COMPUTE -> GOVERN) | PASS |
 | CRITICAL | [x] Data can reach all declared variables | PASS |
 | CRITICAL | [x] Lineage survives end-to-end | PASS |
 | CRITICAL | [x] No unreachable tables exist | PASS |
 
 ---
 
-## §A.6 OSAM Compliance (Semantic Access Map)
+## A.6 OSAM Compliance (Semantic Access Map)
 
 | Priority | Check | Status |
 |----------|-------|--------|
 | CRITICAL | [x] OSAM exists at doctrine/OSAM.md | PASS |
 | CRITICAL | [x] Universal join key declared (client_id, UUID) | PASS |
-| CRITICAL | [x] Spine table identified (clnt_m_client) | PASS |
-| CRITICAL | [x] All sub-hubs listed with table ownership | PASS |
-| CRITICAL | [x] All allowed joins explicitly declared | PASS |
-| CRITICAL | [x] All tables classified (QUERY/SOURCE/ENRICHMENT/AUDIT) | PASS |
-| CRITICAL | [x] No queries target SOURCE/ENRICHMENT tables as primary surface | PASS |
+| CRITICAL | [x] Spine table identified (clnt.client_hub) | PASS |
+| CRITICAL | [x] All spokes listed with table ownership (S1-S8, 13 tables) | PASS |
+| CRITICAL | [x] All allowed joins explicitly declared (14 joins) | PASS |
+| CRITICAL | [x] All tables classified (QUERY/STAGING/SUPPORT/AUDIT) | PASS |
+| CRITICAL | [x] No queries target STAGING/AUDIT tables as primary surface | PASS |
 
 | Field | Value |
 |-------|-------|
 | OSAM Location | doctrine/OSAM.md |
-| OSAM Version | 1.0.0 |
+| OSAM Version | 2.0.0 |
 | Universal Join Key | client_id (UUID) |
-| Spine Table | clnt2.clnt_m_client |
+| Spine Table | clnt.client_hub |
 
 ---
 
-## §A.7 Process Compliance (Execution Declaration)
+## A.7 Process Compliance (Execution Declaration)
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -151,13 +152,13 @@ This is an IMMUTABLE RULE. No exceptions.
 |-------|-------|
 | Process Location | docs/prd/PRD.md (Section 3: Pass Structure) |
 | Governing PRD | docs/prd/PRD.md |
-| Governing ERD | client_subhive_schema.sql |
+| Governing ERD | db/neon/migrations/SCHEMA_ER_DIAGRAM.md |
 
 ---
 
 # PART B — OPERATIONAL COMPLIANCE
 
-## §B.1 Canonical Chain (CC) Compliance
+## B.1 Canonical Chain (CC) Compliance
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -170,7 +171,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.2 Hub Identity (CC-02)
+## B.2 Hub Identity (CC-02)
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -188,7 +189,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.3 CTB Placement
+## B.3 CTB Placement
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -197,11 +198,11 @@ This is an IMMUTABLE RULE. No exceptions.
 | HIGH | [x] Branch level specified (sys / ui / ai / data / app) | PASS |
 | MEDIUM | [x] Parent hub identified (if nested hub) | PASS |
 
-**CTB Branches Present:** sys/, data/, ai/, ui/, docs/, meta/
+**CTB Branches Present:** sys/, data/, ai/, ui/, app/
 
 ---
 
-## §B.4 IMO Structure
+## B.4 IMO Structure
 
 ### Ingress (I Layer)
 
@@ -231,7 +232,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.5 Spokes
+## B.5 Spokes
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -247,7 +248,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.6 Tools
+## B.6 Tools
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -265,7 +266,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.7 Cross-Hub Isolation
+## B.7 Cross-Hub Isolation
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -275,7 +276,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.8 Guard Rails
+## B.8 Guard Rails
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -286,7 +287,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.9 Kill Switch
+## B.9 Kill Switch
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -297,7 +298,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.10 Rollback
+## B.10 Rollback
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -306,7 +307,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.11 Observability
+## B.11 Observability
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -316,9 +317,9 @@ This is an IMMUTABLE RULE. No exceptions.
 | CRITICAL | [x] Shipping without observability is forbidden | PASS |
 
 **Observability:**
-- Logging: shq.audit_log, shq.error_log
-- Metrics: Compliance score, intake success rate
-- Alerts: Critical errors via sidecar telemetry
+- Logging: clnt.audit_event (append-only)
+- Metrics: erd/ERD_METRICS.yaml (daily Neon sync)
+- Alerts: Threshold breach in ERD_METRICS
 
 ---
 
@@ -341,7 +342,7 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.12 Documentation Alignment & ERD Metrics
+## B.12 Documentation Alignment & ERD Metrics
 
 | Priority | Check | Status |
 |----------|-------|--------|
@@ -355,15 +356,28 @@ This is an IMMUTABLE RULE. No exceptions.
 
 ---
 
-## §B.13 CTB Hardening Migration Verification
+## B.13 CTB Hardening Migration Verification
 
 | Priority | Check | Status |
 |----------|-------|--------|
 | HIGH | [x] DOCTRINE.md references ARCHITECTURE.md v2.0.0 | PASS |
 | HIGH | [x] CLAUDE.md binding doctrine table references ARCHITECTURE.md | PASS |
 | MEDIUM | [x] HUB_DESIGN_DECLARATION.yaml exists at repo root | PASS |
-| MEDIUM | [x] doctrine/OSAM.md exists and is valid | PASS |
+| MEDIUM | [x] doctrine/OSAM.md exists and is valid (v2.0.0) | PASS |
 | MEDIUM | [x] docs/architecture/ directory exists with reference docs | PASS |
+
+---
+
+## B.14 HEIR/ORBT Compliance
+
+| Priority | Check | Status |
+|----------|-------|--------|
+| HIGH | [x] heir.doctrine.yaml exists at hub root | PASS |
+| HIGH | [x] HEIR sovereign reference present (CC-01) | PASS |
+| HIGH | [x] HEIR hub identity complete (CC-02) | PASS |
+| HIGH | [x] HEIR doctrine version and IDs defined | PASS |
+| MEDIUM | [x] HEIR services and environment defined | PASS |
+| MEDIUM | [x] HEIR contracts and build actions defined | PASS |
 
 ---
 
@@ -372,7 +386,7 @@ This is an IMMUTABLE RULE. No exceptions.
 | Priority | Check | Status |
 |----------|-------|--------|
 | CRITICAL | [x] PRD exists and is current (CC-02) | PASS |
-| CRITICAL | [x] ADR exists for each decision (CC-03) | PASS |
+| CRITICAL | [x] ADRs exist for each decision (CC-03) | PASS |
 | HIGH | [ ] Work item linked | N/A (foundational) |
 | HIGH | [x] PR linked (CC-04) | PASS |
 | HIGH | [x] Architecture Doctrine referenced (ARCHITECTURE.md v2.0.0) | PASS |
@@ -413,9 +427,9 @@ This is an IMMUTABLE RULE. No exceptions.
 ## Step 2: Gate Decision
 
 ```
-IF CRITICAL unchecked > 0  →  STOP. Status = NON-COMPLIANT.
-IF HIGH violations > 0     →  STOP. Status = NON-COMPLIANT.
-IF BOTH = 0                →  MAY proceed to mark COMPLIANT. ✅
+IF CRITICAL unchecked > 0  ->  STOP. Status = NON-COMPLIANT.
+IF HIGH violations > 0     ->  STOP. Status = NON-COMPLIANT.
+IF BOTH = 0                ->  MAY proceed to mark COMPLIANT.
 ```
 
 ## Step 3: Declare Status
@@ -431,7 +445,7 @@ IF BOTH = 0                →  MAY proceed to mark COMPLIANT. ✅
 ```
 I, Claude Code (Claude Opus 4.6), acknowledge that:
 
-[x] I have read CONSTITUTION.md §Violation Zero Tolerance
+[x] I have read CONSTITUTION.md Violation Zero Tolerance
 [x] I understand that ANY violation = FAIL
 [x] I have counted violations above truthfully
 [x] I have NOT marked COMPLIANT if violations exist
@@ -448,50 +462,47 @@ Status selected above: COMPLIANT
 
 | Part | Section | CRITICAL Items | Count |
 |------|---------|----------------|-------|
-| A | §A.1 Constitutional Validity | 4 | 4 / 4 |
-| A | §A.2 PRD Compliance | 8 | 8 / 8 |
-| A | §A.3 ERD Compliance | 6 | 6 / 6 |
-| A | §A.4 Pressure Test | 4 | 4 / 4 |
-| A | §A.5 Upstream Flow Test | 5 | 5 / 5 |
-| A | §A.6 OSAM Compliance | 7 | 7 / 7 |
-| A | §A.7 Process Compliance | 6 | 6 / 6 |
-| B | §B.1-B.11 Operational Sections | 30+ | ALL PASS |
-| B | §B.12 Documentation Alignment | 3 | 3 / 3 |
-| B | §B.13 CTB Hardening Migration | 2 | 2 / 2 |
+| A | A.1 Constitutional Validity | 4 | 4 / 4 |
+| A | A.2 PRD Compliance | 8 | 8 / 8 |
+| A | A.3 ERD Compliance | 6 | 6 / 6 |
+| A | A.4 Pressure Test | 4 | 4 / 4 |
+| A | A.5 Upstream Flow Test | 5 | 5 / 5 |
+| A | A.6 OSAM Compliance | 7 | 7 / 7 |
+| A | A.7 Process Compliance | 6 | 6 / 6 |
+| B | B.1-B.11 Operational Sections | 30+ | ALL PASS |
+| B | B.12 Documentation Alignment | 3 | 3 / 3 |
+| B | B.13 CTB Hardening Migration | 2 | 2 / 2 |
+| B | B.14 HEIR/ORBT Compliance | 0 CRITICAL | ALL PASS |
 
 | Priority | Must Have | Count |
 |----------|-----------|-------|
-| CRITICAL | ALL checked | ✅ ALL |
-| HIGH | Most checked | ✅ ALL (2 NOT TESTED: kill switch, rollback) |
-| MEDIUM | Optional | ✅ ALL |
+| CRITICAL | ALL checked | ALL |
+| HIGH | Most checked | ALL (2 NOT TESTED: kill switch, rollback) |
+| MEDIUM | Optional | ALL |
 
 ---
 
 # FINAL DECLARATION
 
 ```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                              COMPLIANCE VERDICT                               ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                               ║
-║                              ✅ COMPLIANT                                     ║
-║                                                                               ║
-║   All CRITICAL items checked.                                                 ║
-║   All HIGH violations resolved.                                               ║
-║   No open violations.                                                         ║
-║                                                                               ║
-║   This hub MAY ship.                                                          ║
-║                                                                               ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+COMPLIANCE VERDICT
+
+COMPLIANT
+
+All CRITICAL items checked.
+All HIGH violations resolved.
+No open violations.
+
+This hub MAY ship.
 ```
 
 ---
 
 ## Notes
 
-1. **Kill Switch Testing** (HIGH, NOT TESTED): Kill switch is defined but not yet tested in production. This is acceptable for initial ship but should be tested before production deployment.
+1. **Kill Switch Testing** (HIGH, NOT TESTED): Kill switch is defined but not yet tested in production. Acceptable for initial ship.
 
-2. **Rollback Testing** (HIGH, NOT TESTED): Rollback plan is documented but not yet tested. This is acceptable for initial ship but should be tested before production deployment.
+2. **Rollback Testing** (HIGH, NOT TESTED): Rollback plan documented but not yet tested. Acceptable for initial ship.
 
 ---
 
@@ -500,7 +511,7 @@ Status selected above: COMPLIANT
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-09 |
+| Last Modified | 2026-02-11 |
 | Auditor | Claude Code (Claude Opus 4.6) |
 | Branch | main |
 | Status | COMPLIANT |

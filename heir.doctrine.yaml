@@ -1,0 +1,209 @@
+# HEIR Doctrine — Client Intake & Vendor Export System
+# ===============================================================================
+# HEIR = Hub Environment Identity Record
+# CC Layer: CC-03 (Validation Interface)
+# Reference: ARCHITECTURE.md (CTB Constitutional Law v2.0.0)
+# ===============================================================================
+
+# --- Conformance ---
+conformance:
+  doctrine_version: "2.0.0"
+  ctb_version: "2.0.0"
+  schema_version: "HEIR/2.0"
+
+# --- Sovereign Declaration (CC-01) ---
+sovereign:
+  identity: "imo-creator"
+  boundary: "djb258/imo-creator"
+
+# --- Hub Identity (CC-02) ---
+hub:
+  name: "Client Intake & Vendor Export System"
+  id: "client-subhive"
+  purpose: "Intake client data, transform to canonical schema, export to vendor-specific formats"
+  ctb_placement:
+    trunk: "ctb/"
+    branch: "sys/, data/, app/, ai/, ui/"
+    leaf: "Individual files within branches"
+
+# --- Process Identity (CC-04) ---
+process:
+  id_pattern: "client-subhive-${TIMESTAMP}-${RANDOM_HEX}"
+  session_pattern: "client-subhive-session-${SESSION_ID}"
+
+# --- IMO Structure ---
+imo:
+  ingress:
+    description: "API intake captures raw data into staging tables (S3: intake_batch, intake_record)"
+    spokes:
+      - spoke_id: "api-intake"
+        name: "API Intake Endpoint"
+        contract: "Zod schema validation"
+        tables:
+          - "clnt.intake_batch"
+          - "clnt.intake_record"
+  middle:
+    description: "Canonical clnt schema (S1-S2, S4-S7): validation, transformation, quote promotion logic"
+    owns_logic: true
+    owns_state: true
+    spokes:
+      - spoke_id: "s1-hub"
+        name: "S1: Hub"
+        tables: ["clnt.client_hub", "clnt.client_master"]
+      - spoke_id: "s2-plan"
+        name: "S2: Plan"
+        tables: ["clnt.plan", "clnt.plan_quote"]
+      - spoke_id: "s4-vault"
+        name: "S4: Vault"
+        tables: ["clnt.person", "clnt.election"]
+      - spoke_id: "s5-vendor"
+        name: "S5: Vendor"
+        tables: ["clnt.vendor", "clnt.external_identity_map"]
+      - spoke_id: "s6-service"
+        name: "S6: Service"
+        tables: ["clnt.service_request"]
+      - spoke_id: "s7-compliance"
+        name: "S7: Compliance"
+        tables: ["clnt.compliance_flag"]
+  egress:
+    description: "Audit trail (S8: audit_event), compliance reports, vendor exports"
+    spokes:
+      - spoke_id: "vendor-export"
+        name: "Vendor Export Interface"
+        contract: "vendor_output_blueprint schema"
+      - spoke_id: "compliance-report"
+        name: "Compliance Reporting"
+        contract: "compliance_flag schema"
+      - spoke_id: "s8-audit"
+        name: "S8: Audit"
+        tables: ["clnt.audit_event"]
+
+# --- Meta ---
+meta:
+  app_name: "Client Intake & Vendor Export System"
+  repo_slug: "djb258/client"
+  stack:
+    - "Node.js"
+    - "Neon PostgreSQL"
+    - "Doppler"
+
+# --- Doctrine Compliance ---
+doctrine:
+  version: "2.0.0"
+  unique_id: "client-subhive-${TIMESTAMP}-${RANDOM_HEX}"
+  process_id: "client-subhive-process-${SESSION_ID}"
+  schema_version: "HEIR/2.0"
+
+# --- Services (Abstract) ---
+services:
+  - name: "client-api"
+    port: "3000"
+    type: "API"
+    description: "Client intake and management API"
+
+# --- Environment ---
+environment:
+  secrets_provider: "Doppler"
+  projects:
+    - name: "barton-outreach-core"
+      config: "dev"
+      purpose: "Database access (NEON_DATABASE_URL)"
+    - name: "client-subhive"
+      config: "dev"
+      purpose: "Hub-specific configuration (HUB_ID)"
+  variables:
+    - key: "HUB_ID"
+      source: "${DOPPLER:HUB_ID}"
+      required: true
+    - key: "NEON_DATABASE_URL"
+      source: "${DOPPLER:NEON_DATABASE_URL}"
+      required: true
+
+# --- Deliverables (CC-03 Interfaces) ---
+deliverables:
+  repos:
+    - name: "client"
+      visibility: "private"
+      owner: "djb258"
+  services:
+    - name: "client-api"
+      port: "3000"
+  env:
+    HUB_ID: "${DOPPLER:HUB_ID}"
+    NEON_DATABASE_URL: "${DOPPLER:NEON_DATABASE_URL}"
+
+# --- Contracts ---
+contracts:
+  acceptance:
+    - "All HEIR checks pass in CI"
+    - "All 13 tables exist in clnt schema"
+    - "OSAM query routing verified (14 declared joins)"
+    - "No undeclared joins in ERD"
+    - "Doppler secrets accessible"
+    - "Audit trail writes succeed"
+
+# --- Build Actions ---
+build:
+  ci_checks:
+    - "python -m packages.heir.checks"
+    - "node scripts/sync_erd_metrics.js"
+  validation:
+    - "HEIR doctrine validation"
+    - "OSAM join path validation"
+    - "CTB spoke structure validation"
+
+# --- ORBT (Operate, Repair, Build, Train) ---
+orbt:
+  operate:
+    altitude: "60k ft"
+    description: "Runtime monitoring, ERD metrics sync, audit trail"
+    actions:
+      - "Sync ERD metrics daily"
+      - "Monitor audit_event writes"
+      - "Validate Doppler secret access"
+  repair:
+    altitude: "30k ft"
+    description: "Error recovery, data integrity checks, compliance remediation"
+    actions:
+      - "Intake batch error recovery"
+      - "Quote promotion conflict resolution"
+      - "Compliance flag remediation"
+  build:
+    altitude: "15k ft"
+    description: "Schema migrations, spoke additions, ADR execution"
+    actions:
+      - "Execute ADR-gated migrations"
+      - "Add new spoke tables (requires ADR)"
+      - "Update OSAM join declarations"
+  train:
+    altitude: "5k ft"
+    description: "Agent training, validation rule updates, process refinement"
+    actions:
+      - "Update agent OSAM routing rules"
+      - "Refine intake validation schemas"
+      - "Update vendor export blueprints"
+
+# --- Traceability ---
+traceability:
+  prd: "docs/prd/PRD.md"
+  osam: "doctrine/OSAM.md"
+  domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
+  erd: "db/neon/migrations/SCHEMA_ER_DIAGRAM.md"
+  erd_metrics: "erd/ERD_METRICS.yaml"
+  ctb_governance: "docs/CTB_GOVERNANCE.md"
+  compliance_checklist: "docs/audit/HUB_COMPLIANCE_CHECKLIST.md"
+  adrs:
+    - "docs/adr/ADR-001-architecture.md"
+    - "docs/adr/ADR-002-ctb-consolidated-backbone.md"
+    - "docs/adr/ADR-004-renewal-downgraded-to-plan-support.md"
+
+# ===============================================================================
+# DOCUMENT CONTROL
+# ===============================================================================
+document_control:
+  created: "2026-02-11"
+  last_modified: "2026-02-11"
+  version: "1.0.0"
+  status: "ACTIVE"
+  authority: "CC-03 (Validation Interface)"
+  template_source: "imo-creator/templates/integrations/heir.doctrine.yaml.template"

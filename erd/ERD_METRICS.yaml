@@ -13,15 +13,15 @@
 # SYNC METADATA
 # ─────────────────────────────────────────────────────────────────────────────────
 sync:
-  last_updated: '2026-01-30T16:06:19.834Z'
+  last_updated: '2026-02-11T00:00:00.000Z'
   updated_by: claude-code
   source: doppler://neon/client-subhive
-  next_sync_due: '2026-02-10T16:06:19.834Z'
+  next_sync_due: '2026-02-12T00:00:00.000Z'
   frequency: daily
   stale_after_hours: 24
   auto_sync_on_session: true
   sync_frequency: on_demand
-  notes: Run 'doppler run -- node scripts/sync_erd_metrics.js' to update
+  notes: Run 'doppler run --project barton-outreach-core --config dev -- psql "$DATABASE_URL"' to query
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # HUB IDENTITY
@@ -30,126 +30,140 @@ hub:
   hub_id: client-subhive
   hub_name: Client Intake & Vendor Export System
   sovereign_id: imo-creator
-  erd_version: "1.0.0"
-  schema_file: client_subhive_schema.sql
+  erd_version: "2.2.0"
+  schema: clnt
   database: Neon PostgreSQL
+  adr: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-support
 
 # ─────────────────────────────────────────────────────────────────────────────────
-# TABLE METRICS
+# TABLE METRICS (CTB Spoke Structure)
 # ─────────────────────────────────────────────────────────────────────────────────
 tables:
-  ingress:
-    - table_name: clnt2.clnt_i_raw_input
-      description: Raw intake data staging
-      imo_layer: I
+  s1_hub:
+    - table_name: clnt.client_hub
+      description: Root client identity (read-only after creation)
+      spoke: S1
+      leaf_type: FROZEN
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_i_raw_input
-    - table_name: clnt2.clnt_i_profile
-      description: Source system profiles
-      imo_layer: I
+      query: SELECT COUNT(*) FROM clnt.client_hub
+    - table_name: clnt.client_master
+      description: Client legal/business details
+      spoke: S1
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_i_profile
-  middle:
-    - table_name: clnt2.clnt_m_client
-      description: Canonical client records
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.client_master
+  s2_plan:
+    - table_name: clnt.plan
+      description: Benefit plans with fixed cost tiers (canonical source of truth for active rates)
+      spoke: S2
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_client
-    - table_name: clnt2.clnt_m_person
-      description: Employee/dependent records
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.plan
+    - table_name: clnt.plan_quote
+      description: Received quotes. Multiple per benefit/year allowed. Promotion copies rates into plan.
+      spoke: S2
+      leaf_type: SUPPORT
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_person
-    - table_name: clnt2.clnt_m_plan
-      description: Benefit plan definitions
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.plan_quote
+  s3_intake:
+    - table_name: clnt.intake_batch
+      description: Enrollment batch upload header
+      spoke: S3
+      leaf_type: STAGING
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_plan
-    - table_name: clnt2.clnt_m_plan_cost
-      description: Plan cost structures
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.intake_batch
+    - table_name: clnt.intake_record
+      description: Individual raw intake records
+      spoke: S3
+      leaf_type: STAGING
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_plan_cost
-    - table_name: clnt2.clnt_m_election
-      description: Benefit elections
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.intake_record
+  s4_vault:
+    - table_name: clnt.person
+      description: Employee/dependent identity
+      spoke: S4
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_election
-    - table_name: clnt2.clnt_m_vendor_link
-      description: Vendor associations
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.person
+    - table_name: clnt.election
+      description: Benefit election bridge (person → plan)
+      spoke: S4
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_vendor_link
-    - table_name: clnt2.clnt_m_spd
-      description: Summary Plan Descriptions
-      imo_layer: M
+      query: SELECT COUNT(*) FROM clnt.election
+  s5_vendor:
+    - table_name: clnt.vendor
+      description: Vendor identity per client
+      spoke: S5
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_m_spd
-  egress:
-    - table_name: clnt2.clnt_o_output
-      description: Vendor export records
-      imo_layer: O
+      query: SELECT COUNT(*) FROM clnt.vendor
+    - table_name: clnt.external_identity_map
+      description: Internal-to-external ID translation
+      spoke: S5
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_o_output
-    - table_name: clnt2.clnt_o_output_run
-      description: Export execution logs
-      imo_layer: O
+      query: SELECT COUNT(*) FROM clnt.external_identity_map
+  s6_service:
+    - table_name: clnt.service_request
+      description: Service ticket tracking
+      spoke: S6
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_o_output_run
-    - table_name: clnt2.clnt_o_compliance
-      description: Compliance reports
-      imo_layer: O
+      query: SELECT COUNT(*) FROM clnt.service_request
+  s7_compliance:
+    - table_name: clnt.compliance_flag
+      description: Compliance flag tracking
+      spoke: S7
+      leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt2.clnt_o_compliance
+      query: SELECT COUNT(*) FROM clnt.compliance_flag
+  s8_audit:
+    - table_name: clnt.audit_event
+      description: Append-only system audit trail
+      spoke: S8
+      leaf_type: AUDIT
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.audit_event
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# VIEWS (Read-only, no table storage)
+# ─────────────────────────────────────────────────────────────────────────────────
+views: []
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # AGGREGATE METRICS
 # ─────────────────────────────────────────────────────────────────────────────────
 aggregates:
+  total_tables: 13
+  total_views: 0
   total_records_all_tables: 0
   total_clients: 0
-  total_employees: 0
-  total_dependents: 0
-  total_active_plans: 0
+  total_persons: 0
+  total_plans: 0
+  total_plan_quotes: 0
   total_elections: 0
-  total_exports: 0
-  exports_last_24h: 0
-
-# ─────────────────────────────────────────────────────────────────────────────────
-# FILTER/EXCLUSION METRICS
-# ─────────────────────────────────────────────────────────────────────────────────
-filters:
-  total_excluded: 0
-  exclusion_reasons: []
-
-# ─────────────────────────────────────────────────────────────────────────────────
-# DATA QUALITY METRICS
-# ─────────────────────────────────────────────────────────────────────────────────
-data_quality:
-  null_rate_percent: 0
-  duplicate_rate_percent: 0
-  last_quality_check: '2026-01-30T16:06:19.834Z'
-  quality_status: PASS
+  total_vendors: 0
+  total_audit_events: 0
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # SYNC QUERIES (Reference)
 # ─────────────────────────────────────────────────────────────────────────────────
 queries:
   total_clients: |
-    SELECT COUNT(*) FROM clnt2.clnt_m_client;
-  total_employees: |
-    SELECT COUNT(*) FROM clnt2.clnt_m_person WHERE role = 'employee';
-  total_dependents: |
-    SELECT COUNT(*) FROM clnt2.clnt_m_person WHERE role = 'dependent';
-  total_active_plans: |
-    SELECT COUNT(*) FROM clnt2.clnt_m_plan;
+    SELECT COUNT(*) FROM clnt.client_hub;
+  total_persons: |
+    SELECT COUNT(*) FROM clnt.person;
+  total_plans: |
+    SELECT COUNT(*) FROM clnt.plan;
+  total_plan_quotes: |
+    SELECT COUNT(*) FROM clnt.plan_quote;
   total_elections: |
-    SELECT COUNT(*) FROM clnt2.clnt_m_election;
-  total_exports: |
-    SELECT COUNT(*) FROM clnt2.clnt_o_output;
-  exports_last_24h: |
-    SELECT COUNT(*) FROM clnt2.clnt_o_output_run
-    WHERE created_at > NOW() - INTERVAL '24 hours';
+    SELECT COUNT(*) FROM clnt.election;
+  total_vendors: |
+    SELECT COUNT(*) FROM clnt.vendor;
+  total_audit_events: |
+    SELECT COUNT(*) FROM clnt.audit_event;
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # ALERTS / THRESHOLDS
@@ -165,10 +179,10 @@ alerts: []
 # DOCUMENT CONTROL
 # ===============================================================================
 document_control:
-  template_version: "1.0.0"
+  template_version: "2.0.0"
   template_source: "imo-creator/templates/erd/ERD_METRICS.yaml.template"
   created: '2026-01-30'
-  version: 2.0.0
+  version: 2.2.0
   status: ACTIVE
   authority: CC-04
   change_protocol: "Auto-updated by sync process"

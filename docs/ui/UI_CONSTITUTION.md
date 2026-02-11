@@ -157,7 +157,7 @@ All UI governance artifacts can be regenerated from canonical system doctrine. T
 | Hub Constitution | CONSTITUTION.md |
 | Hub Doctrine | DOCTRINE.md |
 | Canonical PRD | docs/prd/PRD.md |
-| Canonical Schema | client_subhive_schema.sql |
+| Canonical Schema | clnt (Neon PostgreSQL) |
 | Domain Bindings | doctrine/REPO_DOMAIN_SPEC.md |
 | Bootstrap Guide | CLAUDE.md |
 
@@ -168,8 +168,8 @@ All UI governance artifacts can be regenerated from canonical system doctrine. T
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-01-30 |
-| Version | 1.0.0 |
+| Last Modified | 2026-02-11 |
+| Version | 2.0.0 |
 | Status | ACTIVE |
 | Authority | Derived from IMO_CONTROL.json |
 | Change Protocol | ADR + HUMAN APPROVAL REQUIRED |
