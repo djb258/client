@@ -14,7 +14,7 @@
   "control_plane": {
     "control_version": "2.0.0",
     "upstream_repo": "imo-creator",
-    "upstream_commit": "e8556c2",
+    "upstream_commit": "e9406bcb0",
     "drift_detection": {
       "enabled": true,
       "warn_on_outdated": true,

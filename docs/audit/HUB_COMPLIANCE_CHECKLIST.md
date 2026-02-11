@@ -9,7 +9,7 @@
 | **Last Validated** | 2026-02-11 |
 | **Validated By** | Claude Code (Claude Opus 4.6) |
 | **Template Source** | templates/checklists/HUB_COMPLIANCE.md (synced from imo-creator) |
-| **Template Sync Date** | 2026-02-09 |
+| **Template Sync Date** | 2026-02-11 (imo-creator @ e9406bcb0) |
 
 ### Zero-Tolerance Enforcement Rule (IMMUTABLE)
 
@@ -515,4 +515,4 @@ This hub MAY ship.
 | Auditor | Claude Code (Claude Opus 4.6) |
 | Branch | main |
 | Status | COMPLIANT |
-| Template Version | 2.0.0 (synced from imo-creator 2026-02-09) |
+| Template Version | 2.0.0 (synced from imo-creator @ e9406bcb0, 2026-02-11) |
