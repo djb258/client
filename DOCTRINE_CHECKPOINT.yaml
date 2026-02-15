@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# DOCTRINE CHECKPOINT
+# ═══════════════════════════════════════════════════════════════════════════════
+# Authority: imo-creator (Constitutional)
+# Purpose: Lightweight plan-before-you-build gate for CC (Claude Code / AI agents)
+# Enforcement: Pre-commit hook CHECK 11 — blocks commits with missing/stale checkpoints
+#
+# WHEN TO FILL THIS:
+#   Before EVERY coding session. The pre-commit hook rejects commits if this
+#   file is missing, stale (>24 hours), or has unfilled fields.
+#
+# HOW TO FILL THIS:
+#   1. Read CC_OPERATIONAL_DIGEST.md (TIER 1 — the field manual)
+#   2. Answer each field below based on what you're about to build
+#   3. Save this file, then write code and commit
+#   Takes ~10 seconds. Not 10 minutes.
+#
+# STALENESS RULE:
+#   This checkpoint expires after 24 hours. If you start a new session,
+#   refresh it. This prevents "fill once and coast forever."
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# When was this checkpoint last filled?
+last_verified: "2026-02-15"
+
+# Who verified it?
+verified_by: "claude-code"
+
+# Must match CC_OPERATIONAL_DIGEST.md header version
+digest_version: "1.0.0"
+
+checkpoint:
+  # What CTB branch does this change touch?
+  ctb_branch_target: "data"
+
+  # Is the change in a hub or spoke?
+  hub_or_spoke: "hub"
+
+  # Where does processing logic live?
+  logic_placement: "src/data/spokes/"
+
+  # Does this require an ADR?
+  requires_adr: "no"
+
+  # Does this change database schema?
+  registry_impact: "no"
+
+  # Which error table catches failures?
+  error_table_identified: "n/a"
+
+  # CONST -> VAR: What constant is being transformed into what variable?
+  transformation: "n/a"
+
+  # Does validate-schema-completeness.sh pass?
+  schema_completeness_verified: "n/a"

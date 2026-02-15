@@ -1,672 +1,1083 @@
 # clnt_column_registry.yml
-# Column registry for client-subhive canonical schema
+# SINGLE SOURCE OF TRUTH — Schema Map for client-subhive
+#
+# This file is the canonical definition of every table, column, relationship,
+# and constraint in the clnt schema. All TypeScript types, Zod schemas, ERD
+# diagrams, and barrel exports are GENERATED from this file.
+#
+# DO NOT hand-edit generated files. Change this registry, run codegen.
 #
 # Schema: clnt
-# Version: 2.3.0
-# Source: db/neon/migrations/20_ctb_consolidated_backbone.sql
-#         db/neon/migrations/30_remove_renewal_add_plan_quote.sql
-#         db/neon/migrations/35_client_projection.sql
+# Version: 3.0.0
+# Codegen: scripts/codegen-schema.ts
 # Last Updated: 2026-02-15
+#
+# Governance chain: OSAM → this file → codegen → generated TypeScript
+# ADR references: ADR-002, ADR-004, ADR-005, ADR-006
 
-version: "2.3.0"
+version: "3.0.0"
 schema: clnt
-total_tables: 14
+total_tables: 16
 universal_join_key: client_id
+spine_table: client
+codegen_output: src/data/spokes
+hub_output: src/data/hub
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPOKE DEFINITIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+spokes:
+  s1-hub:
+    name: Hub
+    purpose: "Client Identity & Configuration"
+    canonical: client
+    error: client_error
+    tables: [client, client_error]
+
+  s2-plan:
+    name: Plan
+    purpose: "Benefits & Quote Intake"
+    canonical: plan
+    error: plan_error
+    tables: [plan, plan_error, plan_quote]
+
+  s3-employee:
+    name: Employee
+    purpose: "Enrollment & Employee Identity"
+    canonical: person
+    error: employee_error
+    tables: [person, employee_error, election, enrollment_intake, intake_record]
+
+  s4-vendor:
+    name: Vendor
+    purpose: "Vendor Identity & Billing"
+    canonical: vendor
+    error: vendor_error
+    tables: [vendor, vendor_error, external_identity_map, invoice]
+
+  s5-service:
+    name: Service
+    purpose: "Service Ticket Tracking & Dashboards"
+    canonical: service_request
+    error: service_error
+    tables: [service_request, service_error]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TYPE MAPPINGS (SQL → TypeScript / Zod)
+# ═══════════════════════════════════════════════════════════════════════════
+
+type_map:
+  UUID:
+    ts: "string"
+    zod: "z.string().uuid()"
+  TEXT:
+    ts: "string"
+    zod: "z.string()"
+  INT:
+    ts: "number"
+    zod: "z.number().int()"
+  NUMERIC:
+    ts: "string"
+    zod: "z.string()"
+  TIMESTAMPTZ:
+    ts: "string"
+    zod: "z.string().datetime({ offset: true })"
+  DATE:
+    ts: "string"
+    zod: "z.string().date()"
+  JSONB:
+    ts: "Record<string, unknown>"
+    zod: "z.record(z.string(), z.unknown())"
+  BOOLEAN:
+    ts: "boolean"
+    zod: "z.boolean()"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CHECK CONSTRAINTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+check_constraints:
+  coverage_tier: [EE, ES, EC, FAM]
+  entity_type: [person, plan]
+  plan_quote_status: [received, presented, selected, rejected]
+  invoice_status: [received, approved, paid, disputed]
+  error_severity: [warning, error, critical]
+  error_status: [open, resolved, dismissed]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TABLE DEFINITIONS
+# ═══════════════════════════════════════════════════════════════════════════
 
 tables:
-  # ═══════════════════════════════════════════════════════════════════
-  # S1: HUB — Root Identity
-  # ═══════════════════════════════════════════════════════════════════
 
-  client_hub:
-    spoke: S1
-    leaf_type: FROZEN
-    description: "Root client identity. Read-only after creation."
+  # ─────────────────────────────────────────────────────────────────────────
+  # S1: HUB — Client Identity & Configuration
+  # ─────────────────────────────────────────────────────────────────────────
+
+  client:
+    spoke: s1-hub
+    leaf_type: CANONICAL
+    description: "Canonical client record. Sovereign identity + business details + UI projection config."
     pk: client_id
+    fk: []
+    write_rules:
+      insert: true
+      update: true
     columns:
       - name: client_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK + universal join key"
-      - name: created_at
-        type: TIMESTAMPTZ
+        auto_managed: true
+        description: "Sovereign identity. Immutable UUID primary key. Universal join key."
+      - name: legal_name
+        type: TEXT
         required: true
-        default: NOW()
-        description: "Record creation timestamp"
+        description: "Legal company name as registered."
+      - name: fein
+        type: TEXT
+        required: false
+        description: "Federal Employer Identification Number."
+      - name: domicile_state
+        type: TEXT
+        required: false
+        description: "Two-letter state code of legal domicile."
+      - name: effective_date
+        type: DATE
+        required: false
+        description: "Client effective date for coverage."
       - name: status
         type: TEXT
         required: true
         default: "'active'"
-        description: "Client lifecycle state"
+        description: "Client lifecycle state (active, terminated, suspended)."
       - name: source
         type: TEXT
         required: false
-        description: "Origin system identifier"
+        description: "Origin system identifier (manual, api, migration)."
       - name: version
         type: INT
         required: true
         default: "1"
-        description: "Record version counter"
-
-  client_master:
-    spoke: S1
-    leaf_type: CANONICAL
-    description: "Client legal and business details. 1:1 with client_hub."
-    pk: client_id
-    fk: [client_hub.client_id]
-    columns:
-      - name: client_id
-        type: UUID
-        required: true
-        description: "PK + FK to client_hub"
-      - name: legal_name
-        type: TEXT
-        required: true
-        description: "Legal company name"
-      - name: fein
-        type: TEXT
-        required: false
-        description: "Federal EIN"
-      - name: domicile_state
-        type: TEXT
-        required: false
-        description: "State of domicile"
-      - name: effective_date
-        type: DATE
-        required: false
-        description: "Client effective date"
-      - name: created_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Record creation timestamp"
-      - name: updated_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Auto-updated via trigger"
-
-  client_projection:
-    spoke: S1
-    leaf_type: SUPPORT
-    description: "Per-client UI projection configuration. 1:1 with client_hub. ADR-005."
-    pk: client_id
-    fk: [client_hub.client_id]
-    columns:
-      - name: client_id
-        type: UUID
-        required: true
-        description: "PK + FK to client_hub"
+        description: "Record version counter for optimistic concurrency."
       - name: domain
         type: TEXT
         required: false
-        description: "Custom domain"
+        description: "Custom domain for client portal."
       - name: label_override
         type: TEXT
         required: false
-        description: "Display name override"
+        description: "Display name override for UI rendering."
       - name: logo_url
         type: TEXT
         required: false
-        description: "Client logo URL"
+        description: "Client logo URL for branding."
       - name: color_primary
         type: TEXT
         required: false
-        description: "Primary brand color"
+        description: "Primary brand color (hex)."
       - name: color_accent
         type: TEXT
         required: false
-        description: "Accent brand color"
+        description: "Accent brand color (hex)."
       - name: feature_flags
         type: JSONB
         required: true
         default: "'{}'"
-        description: "Feature toggles"
+        ts_override: "Record<string, unknown>"
+        zod_override: "z.record(z.string(), z.unknown())"
+        description: "Feature toggle configuration."
       - name: dashboard_blocks
         type: JSONB
         required: true
         default: "'[]'"
-        description: "Dashboard block configuration"
+        ts_override: "unknown[]"
+        zod_override: "z.array(z.unknown())"
+        description: "Dashboard block layout configuration."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
 
-  # ═══════════════════════════════════════════════════════════════════
+  client_error:
+    spoke: s1-hub
+    leaf_type: ERROR
+    description: "Client-level error tracking. Captures processing failures for client operations."
+    pk: client_error_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: false
+    columns:
+      - name: client_error_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: source_entity
+        type: TEXT
+        required: true
+        description: "Table or process that produced the error."
+      - name: source_id
+        type: UUID
+        required: false
+        description: "UUID of the entity that caused the error. Nullable if system-level."
+      - name: error_code
+        type: TEXT
+        required: true
+        description: "Machine-readable error code for programmatic handling."
+      - name: error_message
+        type: TEXT
+        required: true
+        description: "Human-readable error description."
+      - name: severity
+        type: TEXT
+        required: true
+        default: "'error'"
+        check: error_severity
+        description: "Error severity level. CHECK: warning, error, critical."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        check: error_status
+        description: "Error lifecycle. CHECK: open, resolved, dismissed."
+      - name: context
+        type: JSONB
+        required: false
+        ts_override: "Record<string, unknown> | null"
+        zod_override: "z.record(z.string(), z.unknown()).nullable()"
+        description: "Additional error context and metadata."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Append-only."
+
+  # ─────────────────────────────────────────────────────────────────────────
   # S2: PLAN — Benefits & Quote Intake
-  # ═══════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────
 
   plan:
-    spoke: S2
+    spoke: s2-plan
     leaf_type: CANONICAL
-    description: "Canonical benefit plans with embedded fixed cost tiers."
+    description: "Canonical benefit plan with embedded fixed cost tiers."
     pk: plan_id
-    fk: [client_hub.client_id, plan_quote.plan_quote_id]
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
     columns:
       - name: plan_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: benefit_type
         type: TEXT
         required: true
-        description: "medical, dental, vision, life, etc."
+        description: "Benefit category: medical, dental, vision, life, etc."
       - name: carrier_id
         type: TEXT
         required: false
-        description: "Carrier identifier"
+        description: "Carrier identifier for this plan."
       - name: effective_date
         type: DATE
         required: false
-        description: "Plan effective date"
+        description: "Plan effective date for coverage period."
       - name: status
         type: TEXT
         required: true
         default: "'active'"
-        description: "Plan lifecycle state"
+        description: "Plan lifecycle state (active, terminated, pending)."
       - name: version
         type: INT
         required: true
         default: "1"
-        description: "Record version counter"
+        description: "Record version counter for optimistic concurrency."
       - name: rate_ee
         type: NUMERIC(10,2)
         required: false
-        description: "Employee rate"
+        description: "Employee-only rate tier."
       - name: rate_es
         type: NUMERIC(10,2)
         required: false
-        description: "Employee + Spouse rate"
+        description: "Employee + Spouse rate tier."
       - name: rate_ec
         type: NUMERIC(10,2)
         required: false
-        description: "Employee + Children rate"
+        description: "Employee + Children rate tier."
       - name: rate_fam
         type: NUMERIC(10,2)
         required: false
-        description: "Family rate"
+        description: "Family rate tier."
       - name: employer_rate_ee
         type: NUMERIC(10,2)
         required: false
-        description: "Employer contribution (EE)"
+        description: "Employer contribution for Employee tier."
       - name: employer_rate_es
         type: NUMERIC(10,2)
         required: false
-        description: "Employer contribution (ES)"
+        description: "Employer contribution for Employee + Spouse tier."
       - name: employer_rate_ec
         type: NUMERIC(10,2)
         required: false
-        description: "Employer contribution (EC)"
+        description: "Employer contribution for Employee + Children tier."
       - name: employer_rate_fam
         type: NUMERIC(10,2)
         required: false
-        description: "Employer contribution (FAM)"
+        description: "Employer contribution for Family tier."
       - name: source_quote_id
         type: UUID
         required: false
-        description: "FK to plan_quote (promotion lineage). NULL for manual/migration plans."
+        description: "FK to plan_quote. Tracks promotion lineage. NULL for manual/migration plans."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
+
+  plan_error:
+    spoke: s2-plan
+    leaf_type: ERROR
+    description: "Plan-level error tracking. Captures failures in plan imports, rate validation, quote promotion."
+    pk: plan_error_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: false
+    columns:
+      - name: plan_error_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: source_entity
+        type: TEXT
+        required: true
+        description: "Table or process that produced the error."
+      - name: source_id
+        type: UUID
+        required: false
+        description: "UUID of the entity that caused the error."
+      - name: error_code
+        type: TEXT
+        required: true
+        description: "Machine-readable error code."
+      - name: error_message
+        type: TEXT
+        required: true
+        description: "Human-readable error description."
+      - name: severity
+        type: TEXT
+        required: true
+        default: "'error'"
+        check: error_severity
+        description: "Error severity. CHECK: warning, error, critical."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        check: error_status
+        description: "Error lifecycle. CHECK: open, resolved, dismissed."
+      - name: context
+        type: JSONB
+        required: false
+        ts_override: "Record<string, unknown> | null"
+        zod_override: "z.record(z.string(), z.unknown()).nullable()"
+        description: "Additional error context and metadata."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Append-only."
 
   plan_quote:
-    spoke: S2
+    spoke: s2-plan
     leaf_type: SUPPORT
-    description: "Received carrier quotes. Multiple per benefit/year allowed."
+    description: "Received carrier quotes. Multiple per benefit type/year allowed."
     pk: plan_quote_id
-    fk: [client_hub.client_id]
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
+    updatable_columns: [status]
     columns:
       - name: plan_quote_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: benefit_type
         type: TEXT
         required: true
-        description: "Benefit type"
+        description: "Benefit category this quote covers."
       - name: carrier_id
         type: TEXT
         required: true
-        description: "Carrier identifier"
+        description: "Carrier identifier submitting the quote."
       - name: effective_year
         type: INT
         required: true
-        description: "Plan year for this quote"
+        description: "Plan year this quote applies to."
       - name: rate_ee
         type: NUMERIC(10,2)
         required: false
-        description: "Employee rate"
+        description: "Quoted Employee-only rate."
       - name: rate_es
         type: NUMERIC(10,2)
         required: false
-        description: "Employee + Spouse rate"
+        description: "Quoted Employee + Spouse rate."
       - name: rate_ec
         type: NUMERIC(10,2)
         required: false
-        description: "Employee + Children rate"
+        description: "Quoted Employee + Children rate."
       - name: rate_fam
         type: NUMERIC(10,2)
         required: false
-        description: "Family rate"
+        description: "Quoted Family rate."
       - name: source
         type: TEXT
         required: false
-        description: "Origin of quote"
+        description: "Origin of quote (broker, carrier portal, RFP)."
       - name: received_date
         type: DATE
         required: false
-        description: "Date quote was received"
+        description: "Date the quote was received."
       - name: status
         type: TEXT
         required: true
         default: "'received'"
-        description: "CHECK: received, presented, selected, rejected"
+        check: plan_quote_status
+        description: "Quote lifecycle. CHECK: received, presented, selected, rejected."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Append-mostly."
 
-  # ═══════════════════════════════════════════════════════════════════
-  # S3: INTAKE — Enrollment Staging
-  # ═══════════════════════════════════════════════════════════════════
-
-  intake_batch:
-    spoke: S3
-    leaf_type: STAGING
-    description: "Batch upload header. Staging only."
-    pk: intake_batch_id
-    fk: [client_hub.client_id]
-    columns:
-      - name: intake_batch_id
-        type: UUID
-        required: true
-        default: gen_random_uuid()
-        description: "PK"
-      - name: client_id
-        type: UUID
-        required: true
-        description: "FK to client_hub"
-      - name: upload_date
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Upload timestamp"
-      - name: status
-        type: TEXT
-        required: true
-        default: "'pending'"
-        description: "Batch processing status"
-      - name: created_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Record creation timestamp"
-      - name: updated_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Auto-updated via trigger"
-
-  intake_record:
-    spoke: S3
-    leaf_type: STAGING
-    description: "Individual raw intake records. Immutable after insert."
-    pk: intake_record_id
-    fk: [client_hub.client_id, intake_batch.intake_batch_id]
-    columns:
-      - name: intake_record_id
-        type: UUID
-        required: true
-        default: gen_random_uuid()
-        description: "PK"
-      - name: client_id
-        type: UUID
-        required: true
-        description: "FK to client_hub"
-      - name: intake_batch_id
-        type: UUID
-        required: true
-        description: "FK to intake_batch"
-      - name: raw_payload
-        type: JSONB
-        required: true
-        description: "Raw intake data"
-      - name: created_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Record creation timestamp"
-
-  # ═══════════════════════════════════════════════════════════════════
-  # S4: VAULT — Employee Identity & Elections
-  # ═══════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────
+  # S3: EMPLOYEE — Enrollment & Employee Identity
+  # ─────────────────────────────────────────────────────────────────────────
 
   person:
-    spoke: S4
+    spoke: s3-employee
     leaf_type: CANONICAL
-    description: "Employee/dependent identity. Never stores raw SSN."
+    description: "Employee/dependent identity. Promoted from enrollment_intake after validation. Never stores raw SSN."
     pk: person_id
-    fk: [client_hub.client_id]
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
     columns:
       - name: person_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: first_name
         type: TEXT
         required: true
-        description: "First name"
+        description: "First name."
       - name: last_name
         type: TEXT
         required: true
-        description: "Last name"
+        description: "Last name."
       - name: ssn_hash
         type: TEXT
         required: false
-        description: "Hashed SSN (never raw)"
+        description: "Hashed SSN. Never stores raw SSN."
       - name: status
         type: TEXT
         required: true
         default: "'active'"
-        description: "Person status"
+        description: "Person lifecycle state (active, terminated, on_leave)."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
+
+  employee_error:
+    spoke: s3-employee
+    leaf_type: ERROR
+    description: "Employee-level error tracking. Captures enrollment validation failures, promotion errors."
+    pk: employee_error_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: false
+    columns:
+      - name: employee_error_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: source_entity
+        type: TEXT
+        required: true
+        description: "Table or process that produced the error."
+      - name: source_id
+        type: UUID
+        required: false
+        description: "UUID of the entity that caused the error."
+      - name: error_code
+        type: TEXT
+        required: true
+        description: "Machine-readable error code."
+      - name: error_message
+        type: TEXT
+        required: true
+        description: "Human-readable error description."
+      - name: severity
+        type: TEXT
+        required: true
+        default: "'error'"
+        check: error_severity
+        description: "Error severity. CHECK: warning, error, critical."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        check: error_status
+        description: "Error lifecycle. CHECK: open, resolved, dismissed."
+      - name: context
+        type: JSONB
+        required: false
+        ts_override: "Record<string, unknown> | null"
+        zod_override: "z.record(z.string(), z.unknown()).nullable()"
+        description: "Additional error context and metadata."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Append-only."
 
   election:
-    spoke: S4
-    leaf_type: CANONICAL
+    spoke: s3-employee
+    leaf_type: SUPPORT
     description: "Benefit election bridge. Links person to plan with coverage tier."
     pk: election_id
-    fk: [client_hub.client_id, person.person_id, plan.plan_id]
+    fk: [client.client_id, person.person_id, plan.plan_id]
+    write_rules:
+      insert: true
+      update: true
+    updatable_columns: [coverage_tier, effective_date]
     columns:
       - name: election_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: person_id
         type: UUID
         required: true
-        description: "FK to person"
+        description: "FK to clnt.person. The employee making the election."
       - name: plan_id
         type: UUID
         required: true
-        description: "FK to plan"
+        description: "FK to clnt.plan. The plan being elected."
       - name: coverage_tier
         type: TEXT
         required: true
-        description: "CHECK: EE, ES, EC, FAM"
+        check: coverage_tier
+        description: "Coverage tier. CHECK: EE, ES, EC, FAM."
       - name: effective_date
         type: DATE
         required: true
-        description: "Election effective date"
+        description: "Election effective date."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
 
-  # ═══════════════════════════════════════════════════════════════════
-  # S5: VENDOR — Identity & ID Translation
-  # ═══════════════════════════════════════════════════════════════════
+  enrollment_intake:
+    spoke: s3-employee
+    leaf_type: STAGING
+    description: "Batch enrollment upload header. Staging only. Data promotes to person after validation."
+    pk: enrollment_intake_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
+    updatable_columns: [status]
+    columns:
+      - name: enrollment_intake_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: upload_date
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Upload timestamp. Auto-set."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'pending'"
+        description: "Batch processing status (pending, processing, completed, failed)."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp."
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
+
+  intake_record:
+    spoke: s3-employee
+    leaf_type: STAGING
+    description: "Individual raw intake records. Immutable after insert. Linked to enrollment_intake batch."
+    pk: intake_record_id
+    fk: [client.client_id, enrollment_intake.enrollment_intake_id]
+    write_rules:
+      insert: true
+      update: false
+    columns:
+      - name: intake_record_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: enrollment_intake_id
+        type: UUID
+        required: true
+        description: "FK to clnt.enrollment_intake. Parent batch."
+      - name: raw_payload
+        type: JSONB
+        required: true
+        ts_override: "Record<string, unknown>"
+        zod_override: "z.record(z.string(), z.unknown())"
+        description: "Raw intake data payload."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Immutable."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # S4: VENDOR — Vendor Identity & Billing
+  # ─────────────────────────────────────────────────────────────────────────
 
   vendor:
-    spoke: S5
+    spoke: s4-vendor
     leaf_type: CANONICAL
     description: "Vendor identity per client."
     pk: vendor_id
-    fk: [client_hub.client_id]
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
     columns:
       - name: vendor_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: vendor_name
         type: TEXT
         required: true
-        description: "Vendor name"
+        description: "Vendor display name."
       - name: vendor_type
         type: TEXT
         required: false
-        description: "Vendor type"
+        description: "Vendor classification (carrier, tpa, broker, etc.)."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
+
+  vendor_error:
+    spoke: s4-vendor
+    leaf_type: ERROR
+    description: "Vendor-level error tracking. Captures failures in vendor integrations, ID mapping, invoice processing."
+    pk: vendor_error_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: false
+    columns:
+      - name: vendor_error_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: source_entity
+        type: TEXT
+        required: true
+        description: "Table or process that produced the error."
+      - name: source_id
+        type: UUID
+        required: false
+        description: "UUID of the entity that caused the error."
+      - name: error_code
+        type: TEXT
+        required: true
+        description: "Machine-readable error code."
+      - name: error_message
+        type: TEXT
+        required: true
+        description: "Human-readable error description."
+      - name: severity
+        type: TEXT
+        required: true
+        default: "'error'"
+        check: error_severity
+        description: "Error severity. CHECK: warning, error, critical."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        check: error_status
+        description: "Error lifecycle. CHECK: open, resolved, dismissed."
+      - name: context
+        type: JSONB
+        required: false
+        ts_override: "Record<string, unknown> | null"
+        zod_override: "z.record(z.string(), z.unknown()).nullable()"
+        description: "Additional error context and metadata."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Append-only."
 
   external_identity_map:
-    spoke: S5
-    leaf_type: CANONICAL
+    spoke: s4-vendor
+    leaf_type: SUPPORT
     description: "Internal-to-external ID translation. External IDs never replace internal UUIDs."
     pk: external_identity_id
-    fk: [client_hub.client_id, vendor.vendor_id]
+    fk: [client.client_id, vendor.vendor_id]
+    write_rules:
+      insert: true
+      update: true
+    updatable_columns: [status, effective_date]
     columns:
       - name: external_identity_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: entity_type
         type: TEXT
         required: true
-        description: "CHECK: person, plan"
+        check: entity_type
+        description: "What entity is mapped. CHECK: person, plan."
       - name: internal_id
         type: UUID
         required: true
-        description: "Internal entity UUID"
+        description: "Internal entity UUID being mapped."
       - name: vendor_id
         type: UUID
         required: true
-        description: "FK to vendor"
+        description: "FK to clnt.vendor. Which vendor owns this external ID."
       - name: external_id_value
         type: TEXT
         required: true
-        description: "Vendor's external ID"
+        description: "The vendor's external identifier value."
       - name: effective_date
         type: DATE
         required: false
-        description: "Effective date"
+        description: "Effective date of this mapping."
       - name: status
         type: TEXT
         required: true
         default: "'active'"
-        description: "Mapping status"
+        description: "Mapping lifecycle state (active, inactive)."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
 
-  # ═══════════════════════════════════════════════════════════════════
-  # S6: SERVICE — Ticket Tracking
-  # ═══════════════════════════════════════════════════════════════════
+  invoice:
+    spoke: s4-vendor
+    leaf_type: SUPPORT
+    description: "Vendor invoices tied to a client. Tracks billing from vendors."
+    pk: invoice_id
+    fk: [client.client_id, vendor.vendor_id]
+    write_rules:
+      insert: true
+      update: true
+    updatable_columns: [status, due_date]
+    columns:
+      - name: invoice_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to clnt.client. Sovereign join key."
+      - name: vendor_id
+        type: UUID
+        required: true
+        description: "FK to clnt.vendor. Vendor that issued this invoice."
+      - name: invoice_number
+        type: TEXT
+        required: true
+        description: "Vendor's invoice reference number."
+      - name: amount
+        type: NUMERIC(12,2)
+        required: true
+        description: "Invoice total amount."
+      - name: invoice_date
+        type: DATE
+        required: true
+        description: "Date on the invoice."
+      - name: due_date
+        type: DATE
+        required: false
+        description: "Payment due date."
+      - name: status
+        type: TEXT
+        required: true
+        default: "'received'"
+        check: invoice_status
+        description: "Invoice lifecycle. CHECK: received, approved, paid, disputed."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # S5: SERVICE — Ticket Tracking & Dashboards
+  # ─────────────────────────────────────────────────────────────────────────
 
   service_request:
-    spoke: S6
+    spoke: s5-service
     leaf_type: CANONICAL
-    description: "Service ticket tracking."
+    description: "Service ticket tracking. Will grow to support dashboard features."
     pk: service_request_id
-    fk: [client_hub.client_id]
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: true
     columns:
       - name: service_request_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
+        description: "FK to clnt.client. Sovereign join key."
       - name: category
         type: TEXT
         required: true
-        description: "Request category"
+        description: "Request category (enrollment, billing, general, etc.)."
       - name: status
         type: TEXT
         required: true
         default: "'open'"
-        description: "Request status"
+        description: "Request lifecycle state (open, in_progress, resolved, closed)."
       - name: opened_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "When the request was opened"
+        auto_managed: true
+        description: "When the request was opened. Auto-set."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Auto-set, never modified."
       - name: updated_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Auto-updated via trigger"
+        auto_managed: true
+        description: "Last modification timestamp. Auto-updated via trigger."
 
-  # ═══════════════════════════════════════════════════════════════════
-  # S7: COMPLIANCE — Flag Tracking
-  # ═══════════════════════════════════════════════════════════════════
-
-  compliance_flag:
-    spoke: S7
-    leaf_type: CANONICAL
-    description: "Compliance flag tracking per client."
-    pk: compliance_flag_id
-    fk: [client_hub.client_id]
+  service_error:
+    spoke: s5-service
+    leaf_type: ERROR
+    description: "Service-level error tracking. Captures failures in service request processing."
+    pk: service_error_id
+    fk: [client.client_id]
+    write_rules:
+      insert: true
+      update: false
     columns:
-      - name: compliance_flag_id
+      - name: service_error_id
         type: UUID
         required: true
         default: gen_random_uuid()
-        description: "PK"
+        auto_managed: true
+        description: "Primary key. Auto-generated UUID."
       - name: client_id
         type: UUID
         required: true
-        description: "FK to client_hub"
-      - name: flag_type
+        description: "FK to clnt.client. Sovereign join key."
+      - name: source_entity
         type: TEXT
         required: true
-        description: "Type of compliance flag"
+        description: "Table or process that produced the error."
+      - name: source_id
+        type: UUID
+        required: false
+        description: "UUID of the entity that caused the error."
+      - name: error_code
+        type: TEXT
+        required: true
+        description: "Machine-readable error code."
+      - name: error_message
+        type: TEXT
+        required: true
+        description: "Human-readable error description."
+      - name: severity
+        type: TEXT
+        required: true
+        default: "'error'"
+        check: error_severity
+        description: "Error severity. CHECK: warning, error, critical."
       - name: status
         type: TEXT
         required: true
         default: "'open'"
-        description: "Flag status"
-      - name: effective_date
-        type: DATE
+        check: error_status
+        description: "Error lifecycle. CHECK: open, resolved, dismissed."
+      - name: context
+        type: JSONB
         required: false
-        description: "Effective date"
+        ts_override: "Record<string, unknown> | null"
+        zod_override: "z.record(z.string(), z.unknown()).nullable()"
+        description: "Additional error context and metadata."
       - name: created_at
         type: TIMESTAMPTZ
         required: true
         default: NOW()
-        description: "Record creation timestamp"
-      - name: updated_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Auto-updated via trigger"
-
-  # ═══════════════════════════════════════════════════════════════════
-  # S8: AUDIT — System Trail
-  # ═══════════════════════════════════════════════════════════════════
-
-  audit_event:
-    spoke: S8
-    leaf_type: AUDIT
-    description: "Append-only system audit trail. No updates, no deletes."
-    pk: audit_event_id
-    fk: [client_hub.client_id]
-    columns:
-      - name: audit_event_id
-        type: UUID
-        required: true
-        default: gen_random_uuid()
-        description: "PK"
-      - name: client_id
-        type: UUID
-        required: true
-        description: "FK to client_hub"
-      - name: entity_type
-        type: TEXT
-        required: true
-        description: "What was acted on"
-      - name: entity_id
-        type: UUID
-        required: true
-        description: "ID of the entity"
-      - name: action
-        type: TEXT
-        required: true
-        description: "What happened"
-      - name: created_at
-        type: TIMESTAMPTZ
-        required: true
-        default: NOW()
-        description: "Record creation timestamp"
+        auto_managed: true
+        description: "Record creation timestamp. Append-only."

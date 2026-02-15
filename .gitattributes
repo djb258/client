@@ -1,0 +1,10 @@
+# Generated files — produced by scripts/codegen-schema.ts from column registry.
+# DO NOT HAND-EDIT. Run: npx tsx scripts/codegen-schema.ts
+#
+# linguist-generated: suppresses these files in GitHub diffs and stats
+# diff=codegen: custom diff driver marker (optional, for future use)
+
+src/data/spokes/*/types.ts  linguist-generated=true diff=codegen
+src/data/spokes/*/schema.ts linguist-generated=true diff=codegen
+src/data/spokes/index.ts    linguist-generated=true diff=codegen
+src/data/ERD.md              linguist-generated=true diff=codegen
