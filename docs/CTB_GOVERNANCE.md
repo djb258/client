@@ -24,20 +24,21 @@ This document defines the CTB (Christmas Tree Backbone) governance structure for
 
 ```
 Schema: clnt
-Tables: 13
+Tables: 14
+Views: 1
 Spokes: S1-S8
-ADR: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-support
+ADR: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-support, ADR-005-client-projection-support
 ```
 
 ### 1.2 Quick Reference
 
 | Metric | Value |
 |--------|-------|
-| Total Tables Registered | 13 |
-| Views | 0 |
+| Total Tables Registered | 14 |
+| Views | 1 (v_client_dashboard) |
 | Frozen Tables | 1 (client_hub) |
 | Canonical Tables | 9 |
-| Support Tables | 1 (plan_quote) |
+| Support Tables | 2 (plan_quote, client_projection) |
 | Staging Tables | 2 |
 | Audit Tables | 1 |
 | Current Violations | 0 |
@@ -51,7 +52,7 @@ ADR: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-suppo
 |-----------|-------|-------------|-------------------|
 | **FROZEN** | 1 | Hub identity (read-only after creation) | Insert once, no updates |
 | **CANONICAL** | 9 | Core data tables | Normal write access |
-| **SUPPORT** | 1 | Support data (plan_quote) | Append-mostly, status updates only |
+| **SUPPORT** | 2 | Support data (plan_quote, client_projection) | Append-mostly, status/config updates |
 | **STAGING** | 2 | Intake/staging tables | Temporary, batch-scoped |
 | **AUDIT** | 1 | System audit trail | Append-only, no updates or deletes |
 
@@ -61,6 +62,7 @@ ADR: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-suppo
 |--------|-------|-------|-----------|------------|
 | clnt | client_hub | S1 | FROZEN | Insert once |
 | clnt | client_master | S1 | CANONICAL | Normal |
+| clnt | client_projection | S1 | SUPPORT | Config updates (ADR-005) |
 | clnt | plan | S2 | CANONICAL | Normal |
 | clnt | plan_quote | S2 | SUPPORT | Append-mostly, status updates only |
 | clnt | intake_batch | S3 | STAGING | Batch-scoped |
@@ -134,7 +136,7 @@ All primary keys are UUID via `gen_random_uuid()`. No SERIAL, no TEXT, no compos
 | MISSING_CLIENT_ID | 0 | All tables compliant |
 | WRONG_PK_TYPE | 0 | All UUIDs |
 | LATERAL_JOIN | 0 | Not yet audited |
-| UNREGISTERED_TABLE | 0 | All 13 registered |
+| UNREGISTERED_TABLE | 0 | All 14 registered |
 
 ---
 
@@ -148,6 +150,7 @@ All primary keys are UUID via `gen_random_uuid()`. No SERIAL, no TEXT, no compos
 | CTB Consolidation | v2.0.0 | 2026-02-11 | Single `clnt` schema, 12 tables, S1-S8 spokes |
 | Renewal Sub-Hub | v2.1.0 | 2026-02-11 | +2 tables (S9), +3 views — SUPERSEDED by v2.2.0 |
 | Plan Quote Support | v2.2.0 | 2026-02-11 | Renewal removed (ADR-004). +plan_quote under S2, -renewal_cycle, -renewal_error, -3 views. 13 tables |
+| Client Projection | v2.3.0 | 2026-02-15 | +client_projection (S1 SUPPORT), +v_client_dashboard (view). ADR-005. 14 tables, 1 view |
 
 ---
 
@@ -205,6 +208,8 @@ Tables should be deprecated before deletion:
 | Migration (backbone) | `db/neon/migrations/20_ctb_consolidated_backbone.sql` | Schema DDL |
 | Migration (renewal — superseded) | `db/neon/migrations/25_add_renewal_subhub.sql` | Renewal sub-hub DDL (dropped by migration 30) |
 | Migration (plan quote) | `db/neon/migrations/30_remove_renewal_add_plan_quote.sql` | Remove renewal, add plan_quote |
+| ADR-005 | `docs/adr/ADR-005-client-projection-support.md` | Client projection support |
+| Migration (projection) | `db/neon/migrations/35_client_projection.sql` | client_projection + v_client_dashboard |
 | Architecture Doctrine | `templates/doctrine/ARCHITECTURE.md` | CTB constitutional law |
 
 ---
@@ -213,9 +218,9 @@ Tables should be deprecated before deletion:
 
 | Field | Value |
 |-------|-------|
-| Version | 2.2.0 |
+| Version | 2.3.0 |
 | Created | 2026-02-09 |
-| Last Modified | 2026-02-11 |
+| Last Modified | 2026-02-15 |
 | Author | Claude Code |
 | Status | ACTIVE |
 | Review Cycle | Quarterly |

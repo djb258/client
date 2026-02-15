@@ -59,7 +59,7 @@ client-subhive (CC-02)
     |
 clnt.client_hub (Universal Join Key: client_id)
     |
-    |--- S1 Hub ---------> [client_hub, client_master]
+    |--- S1 Hub ---------> [client_hub, client_master, client_projection]
     |--- S2 Plan --------> [plan, plan_quote]
     |--- S3 Intake ------> [intake_batch, intake_record]
     |--- S4 Vault -------> [person, election]
@@ -118,6 +118,8 @@ universal_join_key:
 | Service tickets | `service_request` | `client_hub` -> `service_request` | |
 | Compliance flags | `compliance_flag` | `client_hub` -> `compliance_flag` | |
 | Audit trail | `audit_event` | `client_hub` -> `audit_event` | Append-only, not business query surface |
+| Client UI projection | `client_projection` | `client_hub` -> `client_projection` | SUPPORT table, 1:1 with spine (ADR-005) |
+| Dashboard rendering | `v_client_dashboard` | View (hub + master + projection) | Read-only view for lovable.dev |
 
 ### Routing Rules
 
@@ -188,6 +190,7 @@ spokes:
     tables:
       - "client_hub"
       - "client_master"
+      - "client_projection"
 
   - name: "S2: Plan"
     cc_layer: CC-03
@@ -267,6 +270,7 @@ Only joins declared in this section are permitted. All other joins are INVALID.
 | `client_hub` | `service_request` | `client_id` | 1:N | Client has service requests |
 | `client_hub` | `compliance_flag` | `client_id` | 1:N | Client has compliance flags |
 | `client_hub` | `audit_event` | `client_id` | 1:N | Client has audit events |
+| `client_hub` | `client_projection` | `client_id` | 1:1 | Client UI projection (ADR-005) |
 
 ### Join Rules
 
@@ -316,6 +320,7 @@ Only joins declared in this section are permitted. All other joins are INVALID.
 | `external_identity_map` | QUERY | YES | S5 | Internal-to-external ID translation |
 | `service_request` | QUERY | YES | S6 | Service ticket tracking |
 | `compliance_flag` | QUERY | YES | S7 | Compliance flag tracking |
+| `client_projection` | SUPPORT | YES (limited) | S1 | Per-client UI projection config (ADR-005) |
 | `audit_event` | AUDIT | **NO** | S8 | System audit trail (append-only) |
 
 ### Classification Rules
@@ -379,6 +384,7 @@ Agent is HALTED. Awaiting resolution.
 |---------|------|--------|---------|
 | 1.0.0 | 2026-02-09 | Claude Code | Initial OSAM declaration (clnt2 schema) |
 | 2.0.0 | 2026-02-11 | Claude Code | Complete rewrite for clnt CTB backbone (ADR-002, ADR-004) |
+| 2.1.0 | 2026-02-15 | Claude Code | Add client_projection (S1 SUPPORT) + v_client_dashboard view (ADR-005) |
 
 ---
 
@@ -390,10 +396,10 @@ Before OSAM is considered valid:
 |-------|--------|
 | [x] Universal join key declared | client_id (UUID) |
 | [x] Spine table identified | clnt.client_hub |
-| [x] All spokes listed with table ownership | S1-S8 (8 spokes, 13 tables) |
-| [x] All allowed joins explicitly declared | 14 joins declared |
-| [x] All tables classified (QUERY/STAGING/SUPPORT/AUDIT) | 13 tables classified |
-| [x] Query routing table complete | 13 question types routed |
+| [x] All spokes listed with table ownership | S1-S8 (8 spokes, 14 tables) |
+| [x] All allowed joins explicitly declared | 15 joins declared |
+| [x] All tables classified (QUERY/STAGING/SUPPORT/AUDIT) | 14 tables classified |
+| [x] Query routing table complete | 15 question types routed |
 | [x] STOP conditions understood | Query + Semantic conditions defined |
 | [x] No undeclared joins exist in ERD | Verified against CTB_MAP.md |
 
@@ -416,10 +422,10 @@ Before OSAM is considered valid:
 | Field | Value |
 |-------|-------|
 | Created | 2026-02-09 |
-| Last Modified | 2026-02-11 |
-| Version | 2.0.0 |
+| Last Modified | 2026-02-15 |
+| Version | 2.1.0 |
 | Status | LOCKED |
 | Authority | CONSTITUTIONAL |
 | Derives From | CONSTITUTION.md (Transformation Law) |
 | Change Protocol | ADR + HUMAN APPROVAL REQUIRED |
-| ADR References | ADR-002, ADR-004 |
+| ADR References | ADR-002, ADR-004, ADR-005 |

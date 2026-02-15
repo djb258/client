@@ -1,200 +1,672 @@
-# CTB Metadata
-# ctb_id: CTB-B707D8EB806A
-# ctb_branch: data
-# ctb_path: data/db/registry/clnt_column_registry.yml
-# ctb_version: 1.0.0
-# created: 2025-10-23T16:37:00.579164
-# checksum: 58dce2b5
-
 # clnt_column_registry.yml
 # Column registry for client-subhive canonical schema
+#
+# Schema: clnt
+# Version: 2.3.0
+# Source: db/neon/migrations/20_ctb_consolidated_backbone.sql
+#         db/neon/migrations/30_remove_renewal_add_plan_quote.sql
+#         db/neon/migrations/35_client_projection.sql
+# Last Updated: 2026-02-15
 
-version: "1.0"
+version: "2.3.0"
 schema: clnt
+total_tables: 14
+universal_join_key: client_id
 
 tables:
-  company:
-    columns:
-      - name: company_id
-        type: UUID
-        required: true
-        description: Primary key
-      - name: company_name
-        type: TEXT
-        required: true
-        description: Legal company name
-      - name: ein
-        type: TEXT
-        required: false
-        description: Employer Identification Number (XX-XXXXXXX)
-      - name: address
-        type: TEXT
-        required: false
-        description: Company mailing address
-      - name: industry
-        type: TEXT
-        required: false
-        description: Industry classification
-      - name: internal_group_number
-        type: TEXT
-        required: false
-        description: Internal group identifier
-      - name: vendor_group_numbers
-        type: JSONB
-        required: false
-        description: Vendor-specific group numbers mapping
-      - name: renewal_date
-        type: DATE
-        required: false
-        description: Benefits renewal date
-      - name: hr_tone
-        type: JSONB
-        required: false
-        description: HR communication style preferences
+  # ═══════════════════════════════════════════════════════════════════
+  # S1: HUB — Root Identity
+  # ═══════════════════════════════════════════════════════════════════
 
-  employee:
+  client_hub:
+    spoke: S1
+    leaf_type: FROZEN
+    description: "Root client identity. Read-only after creation."
+    pk: client_id
     columns:
-      - name: employee_id
+      - name: client_id
         type: UUID
         required: true
-        description: Primary key
-      - name: company_id
-        type: UUID
+        default: gen_random_uuid()
+        description: "PK + universal join key"
+      - name: created_at
+        type: TIMESTAMPTZ
         required: true
-        description: Foreign key to company
-      - name: first_name
-        type: TEXT
-        required: true
-        description: Employee first name
-      - name: last_name
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: status
         type: TEXT
         required: true
-        description: Employee last name
-      - name: internal_employee_number
+        default: "'active'"
+        description: "Client lifecycle state"
+      - name: source
         type: TEXT
         required: false
-        description: Internal employee identifier
-      - name: vendor_employee_ids
-        type: JSONB
-        required: false
-        description: Vendor-specific employee IDs mapping
-      - name: benefit_type
-        type: TEXT
-        required: false
-        description: Type of benefit (medical, dental, vision, life)
-      - name: coverage_tier
-        type: TEXT
-        required: false
-        description: Coverage tier (employee, employee+spouse, employee+child, family)
-      - name: dependents
-        type: JSONB
-        required: false
-        description: Array of dependent information
+        description: "Origin system identifier"
+      - name: version
+        type: INT
+        required: true
+        default: "1"
+        description: "Record version counter"
 
-  vendor_linkage:
+  client_master:
+    spoke: S1
+    leaf_type: CANONICAL
+    description: "Client legal and business details. 1:1 with client_hub."
+    pk: client_id
+    fk: [client_hub.client_id]
     columns:
-      - name: linkage_id
+      - name: client_id
         type: UUID
         required: true
-        description: Primary key
-      - name: company_id
-        type: UUID
-        required: true
-        description: Foreign key to company
-      - name: vendor_name
+        description: "PK + FK to client_hub"
+      - name: legal_name
         type: TEXT
         required: true
-        description: Vendor identifier
-      - name: vendor_group_number
+        description: "Legal company name"
+      - name: fein
         type: TEXT
         required: false
-        description: Vendor-assigned group number
-      - name: vendor_config
-        type: JSONB
-        required: false
-        description: Vendor-specific configuration
-      - name: active
-        type: BOOLEAN
-        required: true
-        description: Active status
-
-  benefits:
-    columns:
-      - name: benefit_id
-        type: UUID
-        required: true
-        description: Primary key
-      - name: company_id
-        type: UUID
-        required: true
-        description: Foreign key to company
-      - name: benefit_type
-        type: TEXT
-        required: true
-        description: Type of benefit
-      - name: benefit_description
+        description: "Federal EIN"
+      - name: domicile_state
         type: TEXT
         required: false
-        description: Benefit description
+        description: "State of domicile"
       - name: effective_date
         type: DATE
         required: false
-        description: Benefit effective date
-      - name: termination_date
-        type: DATE
-        required: false
-        description: Benefit termination date
-      - name: config
-        type: JSONB
-        required: false
-        description: Benefit configuration
+        description: "Client effective date"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
 
-  tiers:
+  client_projection:
+    spoke: S1
+    leaf_type: SUPPORT
+    description: "Per-client UI projection configuration. 1:1 with client_hub. ADR-005."
+    pk: client_id
+    fk: [client_hub.client_id]
     columns:
-      - name: tier_id
+      - name: client_id
         type: UUID
         required: true
-        description: Primary key
-      - name: benefit_id
+        description: "PK + FK to client_hub"
+      - name: domain
+        type: TEXT
+        required: false
+        description: "Custom domain"
+      - name: label_override
+        type: TEXT
+        required: false
+        description: "Display name override"
+      - name: logo_url
+        type: TEXT
+        required: false
+        description: "Client logo URL"
+      - name: color_primary
+        type: TEXT
+        required: false
+        description: "Primary brand color"
+      - name: color_accent
+        type: TEXT
+        required: false
+        description: "Accent brand color"
+      - name: feature_flags
+        type: JSONB
+        required: true
+        default: "'{}'"
+        description: "Feature toggles"
+      - name: dashboard_blocks
+        type: JSONB
+        required: true
+        default: "'[]'"
+        description: "Dashboard block configuration"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S2: PLAN — Benefits & Quote Intake
+  # ═══════════════════════════════════════════════════════════════════
+
+  plan:
+    spoke: S2
+    leaf_type: CANONICAL
+    description: "Canonical benefit plans with embedded fixed cost tiers."
+    pk: plan_id
+    fk: [client_hub.client_id, plan_quote.plan_quote_id]
+    columns:
+      - name: plan_id
         type: UUID
         required: true
-        description: Foreign key to benefits
-      - name: tier_name
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: benefit_type
         type: TEXT
         required: true
-        description: Tier name
-      - name: tier_config
-        type: JSONB
+        description: "medical, dental, vision, life, etc."
+      - name: carrier_id
+        type: TEXT
         required: false
-        description: Tier configuration
-
-  enrollments:
-    columns:
-      - name: enrollment_id
-        type: UUID
-        required: true
-        description: Primary key
-      - name: employee_id
-        type: UUID
-        required: true
-        description: Foreign key to employee
-      - name: benefit_id
-        type: UUID
-        required: true
-        description: Foreign key to benefits
-      - name: tier_id
-        type: UUID
-        required: false
-        description: Foreign key to tiers
-      - name: enrollment_date
+        description: "Carrier identifier"
+      - name: effective_date
         type: DATE
         required: false
-        description: Enrollment date
+        description: "Plan effective date"
       - name: status
         type: TEXT
+        required: true
+        default: "'active'"
+        description: "Plan lifecycle state"
+      - name: version
+        type: INT
+        required: true
+        default: "1"
+        description: "Record version counter"
+      - name: rate_ee
+        type: NUMERIC(10,2)
         required: false
-        description: Enrollment status (active, terminated, pending)
-      - name: config
+        description: "Employee rate"
+      - name: rate_es
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employee + Spouse rate"
+      - name: rate_ec
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employee + Children rate"
+      - name: rate_fam
+        type: NUMERIC(10,2)
+        required: false
+        description: "Family rate"
+      - name: employer_rate_ee
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employer contribution (EE)"
+      - name: employer_rate_es
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employer contribution (ES)"
+      - name: employer_rate_ec
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employer contribution (EC)"
+      - name: employer_rate_fam
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employer contribution (FAM)"
+      - name: source_quote_id
+        type: UUID
+        required: false
+        description: "FK to plan_quote (promotion lineage). NULL for manual/migration plans."
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  plan_quote:
+    spoke: S2
+    leaf_type: SUPPORT
+    description: "Received carrier quotes. Multiple per benefit/year allowed."
+    pk: plan_quote_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: plan_quote_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: benefit_type
+        type: TEXT
+        required: true
+        description: "Benefit type"
+      - name: carrier_id
+        type: TEXT
+        required: true
+        description: "Carrier identifier"
+      - name: effective_year
+        type: INT
+        required: true
+        description: "Plan year for this quote"
+      - name: rate_ee
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employee rate"
+      - name: rate_es
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employee + Spouse rate"
+      - name: rate_ec
+        type: NUMERIC(10,2)
+        required: false
+        description: "Employee + Children rate"
+      - name: rate_fam
+        type: NUMERIC(10,2)
+        required: false
+        description: "Family rate"
+      - name: source
+        type: TEXT
+        required: false
+        description: "Origin of quote"
+      - name: received_date
+        type: DATE
+        required: false
+        description: "Date quote was received"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'received'"
+        description: "CHECK: received, presented, selected, rejected"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S3: INTAKE — Enrollment Staging
+  # ═══════════════════════════════════════════════════════════════════
+
+  intake_batch:
+    spoke: S3
+    leaf_type: STAGING
+    description: "Batch upload header. Staging only."
+    pk: intake_batch_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: intake_batch_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: upload_date
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Upload timestamp"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'pending'"
+        description: "Batch processing status"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  intake_record:
+    spoke: S3
+    leaf_type: STAGING
+    description: "Individual raw intake records. Immutable after insert."
+    pk: intake_record_id
+    fk: [client_hub.client_id, intake_batch.intake_batch_id]
+    columns:
+      - name: intake_record_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: intake_batch_id
+        type: UUID
+        required: true
+        description: "FK to intake_batch"
+      - name: raw_payload
         type: JSONB
+        required: true
+        description: "Raw intake data"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S4: VAULT — Employee Identity & Elections
+  # ═══════════════════════════════════════════════════════════════════
+
+  person:
+    spoke: S4
+    leaf_type: CANONICAL
+    description: "Employee/dependent identity. Never stores raw SSN."
+    pk: person_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: person_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: first_name
+        type: TEXT
+        required: true
+        description: "First name"
+      - name: last_name
+        type: TEXT
+        required: true
+        description: "Last name"
+      - name: ssn_hash
+        type: TEXT
         required: false
-        description: Enrollment configuration
+        description: "Hashed SSN (never raw)"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'active'"
+        description: "Person status"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  election:
+    spoke: S4
+    leaf_type: CANONICAL
+    description: "Benefit election bridge. Links person to plan with coverage tier."
+    pk: election_id
+    fk: [client_hub.client_id, person.person_id, plan.plan_id]
+    columns:
+      - name: election_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: person_id
+        type: UUID
+        required: true
+        description: "FK to person"
+      - name: plan_id
+        type: UUID
+        required: true
+        description: "FK to plan"
+      - name: coverage_tier
+        type: TEXT
+        required: true
+        description: "CHECK: EE, ES, EC, FAM"
+      - name: effective_date
+        type: DATE
+        required: true
+        description: "Election effective date"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S5: VENDOR — Identity & ID Translation
+  # ═══════════════════════════════════════════════════════════════════
+
+  vendor:
+    spoke: S5
+    leaf_type: CANONICAL
+    description: "Vendor identity per client."
+    pk: vendor_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: vendor_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: vendor_name
+        type: TEXT
+        required: true
+        description: "Vendor name"
+      - name: vendor_type
+        type: TEXT
+        required: false
+        description: "Vendor type"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  external_identity_map:
+    spoke: S5
+    leaf_type: CANONICAL
+    description: "Internal-to-external ID translation. External IDs never replace internal UUIDs."
+    pk: external_identity_id
+    fk: [client_hub.client_id, vendor.vendor_id]
+    columns:
+      - name: external_identity_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: entity_type
+        type: TEXT
+        required: true
+        description: "CHECK: person, plan"
+      - name: internal_id
+        type: UUID
+        required: true
+        description: "Internal entity UUID"
+      - name: vendor_id
+        type: UUID
+        required: true
+        description: "FK to vendor"
+      - name: external_id_value
+        type: TEXT
+        required: true
+        description: "Vendor's external ID"
+      - name: effective_date
+        type: DATE
+        required: false
+        description: "Effective date"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'active'"
+        description: "Mapping status"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S6: SERVICE — Ticket Tracking
+  # ═══════════════════════════════════════════════════════════════════
+
+  service_request:
+    spoke: S6
+    leaf_type: CANONICAL
+    description: "Service ticket tracking."
+    pk: service_request_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: service_request_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: category
+        type: TEXT
+        required: true
+        description: "Request category"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        description: "Request status"
+      - name: opened_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "When the request was opened"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S7: COMPLIANCE — Flag Tracking
+  # ═══════════════════════════════════════════════════════════════════
+
+  compliance_flag:
+    spoke: S7
+    leaf_type: CANONICAL
+    description: "Compliance flag tracking per client."
+    pk: compliance_flag_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: compliance_flag_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: flag_type
+        type: TEXT
+        required: true
+        description: "Type of compliance flag"
+      - name: status
+        type: TEXT
+        required: true
+        default: "'open'"
+        description: "Flag status"
+      - name: effective_date
+        type: DATE
+        required: false
+        description: "Effective date"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"
+      - name: updated_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Auto-updated via trigger"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # S8: AUDIT — System Trail
+  # ═══════════════════════════════════════════════════════════════════
+
+  audit_event:
+    spoke: S8
+    leaf_type: AUDIT
+    description: "Append-only system audit trail. No updates, no deletes."
+    pk: audit_event_id
+    fk: [client_hub.client_id]
+    columns:
+      - name: audit_event_id
+        type: UUID
+        required: true
+        default: gen_random_uuid()
+        description: "PK"
+      - name: client_id
+        type: UUID
+        required: true
+        description: "FK to client_hub"
+      - name: entity_type
+        type: TEXT
+        required: true
+        description: "What was acted on"
+      - name: entity_id
+        type: UUID
+        required: true
+        description: "ID of the entity"
+      - name: action
+        type: TEXT
+        required: true
+        description: "What happened"
+      - name: created_at
+        type: TIMESTAMPTZ
+        required: true
+        default: NOW()
+        description: "Record creation timestamp"

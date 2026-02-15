@@ -30,10 +30,10 @@ hub:
   hub_id: client-subhive
   hub_name: Client Intake & Vendor Export System
   sovereign_id: imo-creator
-  erd_version: "2.2.0"
+  erd_version: "2.3.0"
   schema: clnt
   database: Neon PostgreSQL
-  adr: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-support
+  adr: ADR-002-ctb-consolidated-backbone, ADR-004-renewal-downgraded-to-plan-support, ADR-005-client-projection-support
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # TABLE METRICS (CTB Spoke Structure)
@@ -52,6 +52,12 @@ tables:
       leaf_type: CANONICAL
       count: 0
       query: SELECT COUNT(*) FROM clnt.client_master
+    - table_name: clnt.client_projection
+      description: Per-client UI projection configuration (ADR-005)
+      spoke: S1
+      leaf_type: SUPPORT
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.client_projection
   s2_plan:
     - table_name: clnt.plan
       description: Benefit plans with fixed cost tiers (canonical source of truth for active rates)
@@ -129,14 +135,18 @@ tables:
 # ─────────────────────────────────────────────────────────────────────────────────
 # VIEWS (Read-only, no table storage)
 # ─────────────────────────────────────────────────────────────────────────────────
-views: []
+views:
+  - view_name: clnt.v_client_dashboard
+    description: Read-only dashboard surface for lovable.dev (ADR-005)
+    spoke: S1
+    source_tables: [client_hub, client_master, client_projection]
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # AGGREGATE METRICS
 # ─────────────────────────────────────────────────────────────────────────────────
 aggregates:
-  total_tables: 13
-  total_views: 0
+  total_tables: 14
+  total_views: 1
   total_records_all_tables: 0
   total_clients: 0
   total_persons: 0
@@ -182,7 +192,7 @@ document_control:
   template_version: "2.0.0"
   template_source: "imo-creator/templates/erd/ERD_METRICS.yaml.template"
   created: '2026-01-30'
-  version: 2.2.0
+  version: 2.3.0
   status: ACTIVE
   authority: CC-04
   change_protocol: "Auto-updated by sync process"

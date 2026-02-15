@@ -90,25 +90,25 @@ hub_design_declaration:
   # CANDIDATE VARIABLES (OUTPUTS)
   # ─────────────────────────────────────────────────────────────────────────────
   candidate_variables:
-    - name: "Canonical Company Records"
-      destination: "Neon PostgreSQL (clnt2.clnt_m_client)"
-      description: "Normalized, validated company data in canonical schema"
+    - name: "Canonical Client Identity"
+      destination: "Neon PostgreSQL (clnt.client_hub + clnt.client_master)"
+      description: "Normalized client identity and legal details"
 
     - name: "Canonical Employee Records"
-      destination: "Neon PostgreSQL (clnt2.clnt_m_person)"
+      destination: "Neon PostgreSQL (clnt.person)"
       description: "Normalized employee and dependent records"
 
     - name: "Benefit Elections"
-      destination: "Neon PostgreSQL (clnt2.clnt_m_election)"
+      destination: "Neon PostgreSQL (clnt.election)"
       description: "Validated benefit election records linked to plans and persons"
 
-    - name: "Vendor Export Files"
-      destination: "Neon PostgreSQL (clnt2.clnt_o_output)"
-      description: "Vendor-formatted export records per blueprint mapping"
+    - name: "Vendor Identity"
+      destination: "Neon PostgreSQL (clnt.vendor + clnt.external_identity_map)"
+      description: "Vendor records and internal-to-external ID translation"
 
     - name: "Audit Trail"
-      destination: "Neon PostgreSQL (shq.audit_log)"
-      description: "Complete record of all agent actions and data transformations"
+      destination: "Neon PostgreSQL (clnt.audit_event)"
+      description: "Append-only system audit trail of all actions"
 
   # ─────────────────────────────────────────────────────────────────────────────
   # SNAP-ON TOOLS
