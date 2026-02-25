@@ -99,7 +99,7 @@ fi
 # ───────────────────────────────────────────────────────────────────
 # CHECK 6: No secrets in staged files
 # ───────────────────────────────────────────────────────────────────
-STAGED_FILES=$(git diff --cached --name-only 2>/dev/null || true)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=d 2>/dev/null || true)
 SECRET_PATTERNS=(".env" "credentials" "secret" "api_key" "apikey" "password")
 
 for file in $STAGED_FILES; do

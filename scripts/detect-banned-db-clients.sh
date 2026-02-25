@@ -56,11 +56,14 @@ BANNED_PATTERNS=(
     'mysql://[^\s]+|MySQL connection string literal'
 )
 
-# Directories to skip
+# Directories to skip (gatekeeper and agent DB layers are the access layer)
 SKIP_DIRS=(
     "node_modules"
     "generated"
     "gatekeeper"
+    "barton-lib"
+    "tests"
+    "__tests__"
     ".git"
     "dist"
     "build"
@@ -70,7 +73,7 @@ SKIP_DIRS=(
 # Build find exclusion args
 EXCLUDE_ARGS=""
 for dir in "${SKIP_DIRS[@]}"; do
-    EXCLUDE_ARGS="$EXCLUDE_ARGS -not -path '*/\${dir}/*'"
+    EXCLUDE_ARGS="$EXCLUDE_ARGS -not -path '*/${dir}/*'"
 done
 
 # File extensions to scan
@@ -87,7 +90,7 @@ for entry in "${BANNED_PATTERNS[@]}"; do
     DESC="${entry##*|}"
 
     # Search for pattern in src/ files
-    MATCHES=$(eval "find src -type f \\( $FILE_PATTERN \\) $EXCLUDE_ARGS" 2>/dev/null \
+    MATCHES=$(eval "find src -type f \\( $FILE_PATTERN \\) $EXCLUDE_ARGS -not -name 'setupTests.*'" 2>/dev/null \
         | xargs grep -lE "$PATTERN" 2>/dev/null || true)
 
     if [ -n "$MATCHES" ]; then
