@@ -4,8 +4,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Doctrine Version** | 2.0.0 |
-| **CTB Version** | 2.0.0 |
+| **Doctrine Version** | 3.4.0 |
+| **CTB Version** | 3.4.0 |
 | **CC Layer** | CC-02 |
 
 ---
@@ -26,7 +26,7 @@
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Hub ID** | client-subhive |
 | **Owner** | Barton Ops System |
-| **Version** | 2.0.0 |
+| **Version** | 3.4.0 |
 
 ---
 
@@ -97,8 +97,8 @@ This hub manages the intake of client data, transforms it into a canonical schem
 | Layer | Role | Description | CC Layer |
 |-------|------|-------------|----------|
 | **I -- Ingress** | Dumb input only | API intake captures raw data into staging (S3: intake_batch, intake_record); no logic, no state | CC-02 |
-| **M -- Middle** | Logic, decisions, state | Canonical `clnt` schema (S1-S2, S4-S7), validation, transformation, quote promotion logic | CC-02 |
-| **O -- Egress** | Output only | Audit trail (S8: audit_event), compliance reports; no logic, no state | CC-02 |
+| **M -- Middle** | Logic, decisions, state | Canonical `clnt` schema (S1-S5), validation, transformation, quote promotion logic | CC-02 |
+| **O -- Egress** | Output only | Audit trail (audit_event), compliance reports; no logic, no state | CC-02 |
 
 ---
 
@@ -121,7 +121,7 @@ This hub manages the intake of client data, transforms it into a canonical schem
 | Hub ID | Constant | Immutable | CC-02 |
 | Hub Name | Constant | ADR-gated | CC-02 |
 | Canonical Schema (`clnt`) | Constant | ADR-gated | CC-02 |
-| CTB Spoke Structure (S1-S8) | Constant | ADR-gated | CC-02 |
+| CTB Spoke Structure (S1-S5) | Constant | ADR-gated | CC-02 |
 | Universal Join Key (`client_id`) | Constant | Immutable | CC-02 |
 | Vendor Mappings | Variable | Configuration | CC-03 |
 | Validation Rules | Variable | Configuration | CC-03 |
@@ -149,6 +149,11 @@ This hub manages the intake of client data, transforms it into a canonical schem
 | Schema Compliance | Validation | All tables in `clnt` schema with client_id FK | CC-03 |
 | Quote Status Enforcement | Validation | Status must be received/presented/selected/rejected | CC-04 |
 | Promotion Integrity | Validation | Rates copied on promotion; plan is self-contained | CC-04 |
+| Registry-First | Enforcement | All tables registered in `ctb.table_registry` before creation | CC-02 |
+| Write Guard | Enforcement | No writes to unregistered or frozen tables | CC-02 |
+| Immutability | Enforcement | STAGING is INSERT-only; no DELETE on governed tables | CC-02 |
+| Promotion Path | Enforcement | CANONICAL writes require declared promotion source | CC-02 |
+| Fail-Closed CI | Enforcement | All gates must pass; no continue-on-error | CC-02 |
 
 ---
 
@@ -258,7 +263,7 @@ UI implementations for this hub MUST follow:
 
 | Artifact | Reference |
 |----------|-----------|
-| Architecture Doctrine | ARCHITECTURE.md (v2.0.0) |
+| Architecture Doctrine | ARCHITECTURE.md (v3.4.0) |
 | Hub/Spoke Geometry | ARCHITECTURE.md Part IV |
 | IMO Flow | ARCHITECTURE.md Part V |
 | Descent Gates | ARCHITECTURE.md Part VI |
@@ -274,12 +279,19 @@ UI implementations for this hub MUST follow:
 | UI Constitution | docs/ui/UI_CONSTITUTION.md |
 | Secrets Management | integrations/DOPPLER.md |
 | Domain Bindings | doctrine/REPO_DOMAIN_SPEC.md |
+| CTB Registry Enforcement | doctrine/CTB_REGISTRY_ENFORCEMENT.md |
+| Execution Surface Law | doctrine/EXECUTION_SURFACE_LAW.md |
+| Fail-Closed CI Contract | doctrine/FAIL_CLOSED_CI_CONTRACT.md |
+| Legacy Collapse Playbook | doctrine/LEGACY_COLLAPSE_PLAYBOOK.md |
+| V1 Control Plane Agents | agents/ |
+| Constitutional Documents | docs/constitutional/ |
+| Enforcement Migration | db/neon/migrations/40_ctb_registry_infrastructure.sql |
 
 ## OSAM Compliance Declaration (MANDATORY)
 
 | Check | Status |
 |-------|--------|
-| [x] Governing OSAM referenced above | doctrine/OSAM.md v2.0.0 |
+| [x] Governing OSAM referenced above | doctrine/OSAM.md v3.4.0 |
 | [x] All questions in this PRD can be answered via OSAM query routes | Verified |
 | [x] No new query paths introduced in this PRD | Verified |
-| [x] All required tables exist in OSAM | 13 tables declared |
+| [x] All required tables exist in OSAM | 14 tables declared |

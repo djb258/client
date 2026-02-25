@@ -8,7 +8,7 @@
 | **Hub ID** | client-subhive |
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Parent Sovereign** | imo-creator |
-| **Doctrine Version** | 2.0.0 |
+| **Doctrine Version** | 3.4.0 |
 
 ---
 
@@ -45,13 +45,18 @@ imo-creator (Sovereign - CC-01)
 
 | Document | Purpose |
 |----------|---------|
-| ARCHITECTURE.md (v2.0.0) | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent) |
+| ARCHITECTURE.md (v2.1.0) | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent, OWN-10) |
 | TEMPLATE_IMMUTABILITY.md | AI modification prohibition |
+| CTB_REGISTRY_ENFORCEMENT.md (v1.5.0) | Registry-first enforcement, cardinality, drift audit |
+| EXECUTION_SURFACE_LAW.md (v1.0.0) | Code placement whitelist, side-door prohibition |
+| FAIL_CLOSED_CI_CONTRACT.md (v1.1.0) | Fail-closed CI gates, no continue-on-error |
+| LEGACY_COLLAPSE_PLAYBOOK.md (v1.0.0) | 5-phase legacy migration protocol |
 | IMO_SYSTEM_SPEC.md | System index and quick reference |
 | AI_EMPLOYEE_OPERATING_CONTRACT.md | Agent constraints |
 | SNAP_ON_TOOLBOX.yaml | Tool registry |
+| GUARDSPEC.md | CI-style enforcement rules |
 
-> **Note**: ARCHITECTURE.md consolidates the former CANONICAL_ARCHITECTURE_DOCTRINE.md, HUB_SPOKE_ARCHITECTURE.md, and ALTITUDE_DESCENT_MODEL.md.
+> **Note**: ARCHITECTURE.md consolidates the former CANONICAL_ARCHITECTURE_DOCTRINE.md, HUB_SPOKE_ARCHITECTURE.md, and ALTITUDE_DESCENT_MODEL.md. Adds OWN-10a/10b/10c table cardinality.
 
 ---
 
@@ -84,31 +89,39 @@ If something doesn't serve this transformation, it doesn't belong here.
 
 ## IMO Model (Ingress / Middle / Egress)
 
-| Layer | Prefix | Role | Rules |
-|-------|--------|------|-------|
-| **I - Ingress** | `clnt_i_*` | Dumb input only | No logic, no state, no decisions |
-| **M - Middle** | `clnt_m_*` | ALL logic lives here | Canonical data, validation, transformation |
-| **O - Egress** | `clnt_o_*` | Output only | Read-only projection, no logic |
+| Layer | Role | Rules |
+|-------|------|-------|
+| **I - Ingress** | Dumb input only | No logic, no state, no decisions |
+| **M - Middle** | ALL logic lives here | Canonical data, validation, transformation |
+| **O - Egress** | Output only | Read-only projection, no logic |
 
-### Tables (clnt2 schema)
+### Tables (clnt schema — 16 tables, 5 spokes)
 
-**Ingress (I)** — Raw staging
-- `clnt_i_raw_input` — Raw intake data
-- `clnt_i_profile` — Source system profiles
+**S1 Hub** — Client identity (SPINE)
+- `client` (CANONICAL) — Sovereign identity, config, branding
+- `client_error` (ERROR) — Client-level errors
 
-**Middle (M)** — Canonical truth
-- `clnt_m_client` — Client records
-- `clnt_m_person` — Employee/dependent records
-- `clnt_m_plan` — Benefit plans
-- `clnt_m_plan_cost` — Plan costs
-- `clnt_m_election` — Benefit elections
-- `clnt_m_vendor_link` — Vendor associations
-- `clnt_m_spd` — Summary Plan Descriptions
+**S2 Plan** — Benefit plans & quotes
+- `plan` (CANONICAL) — Benefit type, rates, quote lineage
+- `plan_error` (ERROR) — Plan-level errors
+- `plan_quote` (SUPPORT) — Quote tracking
 
-**Egress (O)** — Export/output
-- `clnt_o_output` — Vendor exports
-- `clnt_o_output_run` — Export runs
-- `clnt_o_compliance` — Compliance reports
+**S3 Employee** — Employee identity & enrollment
+- `person` (CANONICAL) — Employee/dependent identity
+- `employee_error` (ERROR) — Employee-level errors
+- `election` (SUPPORT) — Person-plan bridge
+- `enrollment_intake` (STAGING) — Batch header
+- `intake_record` (STAGING) — Raw payload
+
+**S4 Vendor** — Vendor identity & billing
+- `vendor` (CANONICAL) — Vendor identity per client
+- `vendor_error` (ERROR) — Vendor-level errors
+- `external_identity_map` (SUPPORT) — ID translation
+- `invoice` (SUPPORT) — Vendor invoices
+
+**S5 Service** — Service tickets
+- `service_request` (CANONICAL) — Service tickets
+- `service_error` (ERROR) — Service-level errors
 
 ---
 
@@ -221,15 +234,113 @@ See: `integrations/DOPPLER.md`
 
 ---
 
+## V1 Control Plane (v3.4.0 — Agent System)
+
+This repo uses the IMO-Creator V1 Control Plane with 4 agents and a folder-based message bus.
+
+### Agents
+
+| Agent | Role | Produces | Reads From |
+|-------|------|----------|------------|
+| **Planner** | Plans work, classifies change type | WORK_PACKET | User request + constitutional docs |
+| **Builder** | Executes approved plans | CHANGESET + pressure reports | work_packets/inbox |
+| **Auditor** | Verifies compliance | AUDIT_REPORT | work_packets/inbox + changesets/inbox |
+| **Control Panel** | Read-only diagnostic | Structured report | All bus folders (read-only) |
+
+### Message Bus (Folder-Based)
+
+```
+work_packets/inbox/     ← Builder reads from here
+work_packets/outbox/    ← Planner writes here
+changesets/inbox/       ← Auditor reads from here
+changesets/outbox/      ← Builder writes here
+audit_reports/inbox/    ← (future consumers)
+audit_reports/outbox/   ← Auditor writes here
+audit/                  ← Pressure test reports
+```
+
+### Agent Contracts
+
+| Contract | Schema | Purpose |
+|----------|--------|---------|
+| WORK_PACKET | `agents/contracts/work_packet.schema.json` | Planned scope of work |
+| CHANGESET | `agents/contracts/changeset.schema.json` | Completed changes |
+| AUDIT_REPORT | `agents/contracts/audit_report.schema.json` | Compliance classification |
+| ARCH_PRESSURE_REPORT | `agents/contracts/arch_pressure_report.schema.json` | 5 structural invariants |
+| FLOW_PRESSURE_REPORT | `agents/contracts/flow_pressure_report.schema.json` | 5 flow invariants |
+
+### Pressure Tests (v3.4.0 — 10 Mechanical Gates)
+
+When `requires_pressure_test = true` (mandatory for architectural changes):
+
+**Structural (5 gates):** cantonal_cardinality, registry_first, id_authority, no_sideways_calls, contracts_declared
+
+**Flow (5 gates):** ingress_contract_exists, egress_contract_exists, no_orphan_tables, no_unconsumed_events, id_propagation_intact
+
+All 10 must = PASS. Any FAIL blocks merge. No advisory override permitted.
+
+### Constitutional Docs
+
+| File | Purpose |
+|------|---------|
+| `docs/constitutional/backbone.md` | CTB backbone primitives, altitude hierarchy |
+| `docs/constitutional/governance.md` | Agent role isolation, artifact flow, pressure test bus |
+| `docs/constitutional/protected_assets.md` | Protected models and folders |
+
+---
+
+## Enforcement Scripts
+
+| Script | Purpose | Run When |
+|--------|---------|----------|
+| `scripts/ctb-registry-gate.sh` | Registry vs migrations + cardinality | Pre-commit, CI |
+| `scripts/ctb-drift-audit.sh` | Live DB vs registry vs YAML (3-surface) | CI, on-demand |
+| `scripts/detect-banned-db-clients.sh` | Banned DB client imports | Pre-commit, CI |
+| `scripts/verify-governance-ci.sh` | CI governance wiring | Bootstrap, CI |
+| `scripts/bootstrap-audit.sh` | Day 0 structural validation | Initial setup |
+
+---
+
+## Registry-First Architecture
+
+Single source of truth: `src/data/db/registry/clnt_column_registry.yml`
+
+```
+OSAM → column_registry.yml → codegen-schema.ts → Generated files → Application code
+```
+
+**Golden rule**: If it can be derived, it MUST be derived. Never hand-edit generated files.
+
+| Generated File | Location | Source |
+|----------------|----------|--------|
+| types.ts (per spoke) | `src/data/spokes/s{n}-*/types.ts` | Registry |
+| schema.ts (per spoke) | `src/data/spokes/s{n}-*/schema.ts` | Registry |
+| index.ts (barrel) | `src/data/spokes/index.ts` | Registry |
+| ERD.md | `src/data/ERD.md` | Registry |
+
+---
+
+## Gatekeeper Module
+
+All database writes MUST go through: `src/sys/modules/gatekeeper/`
+
+No direct DB client imports allowed (pg, mysql2, psycopg2, etc.). The `detect-banned-db-clients.sh` script enforces this.
+
+---
+
 ## Common Tasks
 
 | Task | How To |
 |------|--------|
-| Add database table | Requires ADR → `db/neon/migrations/` |
+| Add database table | Register in column_registry.yml FIRST → ADR → migration → run codegen |
 | Add new agent | `src/ai/` → update PRD |
 | Update UI | `src/ui/` → follow `docs/ui/UI_CONSTITUTION.md` |
 | Add integration | `integrations/` → update REGISTRY.yaml |
-| Sync ERD metrics | `node scripts/sync_erd_metrics.js` |
+| Run codegen | `npx ts-node scripts/codegen-schema.ts` |
+| Verify codegen drift | `npm run codegen:verify` |
+| Run registry gate | `bash scripts/ctb-registry-gate.sh` |
+| Run drift audit | `DATABASE_URL=... bash scripts/ctb-drift-audit.sh` |
+| Run bootstrap audit | `DATABASE_URL=... bash scripts/bootstrap-audit.sh` |
 
 ---
 
@@ -248,6 +359,12 @@ See: `integrations/DOPPLER.md`
 ║   ❌ Create schema without ADR                                       ║
 ║   ❌ Make UI own data or logic                                       ║
 ║   ❌ Skip the CC descent sequence                                    ║
+║   ❌ Use direct DB clients (must use Gatekeeper)                     ║
+║   ❌ Create tables without registering in column_registry.yml first  ║
+║   ❌ Use continue-on-error in CI enforcement jobs                    ║
+║   ❌ Connect to database as superuser                                ║
+║   ❌ Override or downgrade pressure test FAIL to advisory            ║
+║   ❌ Hand-edit generated files (types.ts, schema.ts, ERD.md)         ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -257,7 +374,7 @@ See: `integrations/DOPPLER.md`
 
 | Service | Purpose | Documentation |
 |---------|---------|---------------|
-| Neon | PostgreSQL database (clnt2 schema) | `db/neon/` |
+| Neon | PostgreSQL database (clnt schema) | `db/neon/` |
 | Doppler | Secrets management | `integrations/DOPPLER.md` |
 
 ---
@@ -277,6 +394,6 @@ See: `integrations/DOPPLER.md`
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-09 |
-| Version | 1.2.0 |
+| Last Modified | 2026-02-25 |
+| Version | 3.4.0 |
 | Status | ACTIVE |

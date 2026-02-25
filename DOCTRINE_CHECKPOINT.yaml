@@ -21,7 +21,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # When was this checkpoint last filled?
-last_verified: "2026-02-15"
+last_verified: "2026-02-25"
 
 # Who verified it?
 verified_by: "claude-code"
@@ -31,25 +31,25 @@ digest_version: "1.0.0"
 
 checkpoint:
   # What CTB branch does this change touch?
-  ctb_branch_target: "data"
+  ctb_branch_target: "sys, data"
 
   # Is the change in a hub or spoke?
   hub_or_spoke: "hub"
 
   # Where does processing logic live?
-  logic_placement: "src/data/spokes/"
+  logic_placement: "src/sys/modules/gatekeeper/"
 
   # Does this require an ADR?
   requires_adr: "no"
 
   # Does this change database schema?
-  registry_impact: "no"
+  registry_impact: "yes — migration 40 adds ctb enforcement infrastructure"
 
   # Which error table catches failures?
-  error_table_identified: "n/a"
+  error_table_identified: "ctb.registry_audit_log"
 
   # CONST -> VAR: What constant is being transformed into what variable?
-  transformation: "n/a"
+  transformation: "imo-creator doctrine templates -> client-subhive enforcement infrastructure"
 
   # Does validate-schema-completeness.sh pass?
-  schema_completeness_verified: "n/a"
+  schema_completeness_verified: "yes"

@@ -1,375 +1,114 @@
-# Barton Client Database - Schema Migrations
+# Client-Subhive Database Migrations
 
-## Overview
-
-This directory contains migrations for the **Barton Client Database** (`clnt`), implementing a minimal 5-schema architecture with doctrine metadata compliance (STAMPED/SPVPET).
-
-### Database Structure
-```
-Database: clnt
-├── Schema: core         (Identity Backbone)
-├── Schema: benefits     (Vendor + Plan References)
-├── Schema: compliance   (Rules + State/Federal Layer)
-├── Schema: operations   (Audit + Tickets)
-└── Schema: staging      (Raw Intake)
-```
+**Hub**: client-subhive
+**Schema**: `clnt` (canonical), `ctb` (governance)
+**Version**: 3.4.0
 
 ---
 
-## 📋 Migration Files
+## Migration Chain
 
-| File | Schema | Purpose | Tables |
-|------|--------|---------|--------|
-| `10_clnt_core_schema.sql` | `core` | Core identity and relationships | 3 tables |
-| `11_clnt_benefits_schema.sql` | `benefits` | Vendor linkage and cross-references | 2 tables |
-| `12_clnt_compliance_schema.sql` | `compliance` | Compliance rules and regulations | 1 table |
-| `13_clnt_operations_schema.sql` | `operations` | Data lineage and audit trails | 1 table |
-| `14_clnt_staging_schema.sql` | `staging` | Raw data intake staging | 2 tables |
-| `15_clnt_seed_data.sql` | All schemas | Test/development seed data | N/A |
+| Migration | Schema | Purpose | Status |
+|-----------|--------|---------|--------|
+| `10_clnt_core_schema.sql` | core | Gen 1 legacy identity | DEPRECATED |
+| `11_clnt_benefits_schema.sql` | benefits | Gen 1 legacy benefits | DEPRECATED |
+| `12_clnt_compliance_schema.sql` | compliance | Gen 1 legacy compliance | DEPRECATED |
+| `13_clnt_operations_schema.sql` | operations | Gen 1 legacy operations | DEPRECATED |
+| `14_clnt_staging_schema.sql` | staging | Gen 1 legacy staging | DEPRECATED |
+| `15_clnt_seed_data.sql` | all | Gen 1 seed data | DEPRECATED |
+| `20_ctb_consolidated_backbone.sql` | clnt | CTB backbone: 12 tables (S1-S8) | ACTIVE |
+| `25_add_renewal_subhub.sql` | clnt | ADR-003 renewal tables | WITHDRAWN |
+| `30_remove_renewal_add_plan_quote.sql` | clnt | ADR-004: remove renewal, add plan_quote | ACTIVE |
+| `35_client_projection.sql` | clnt | ADR-005: client_projection table | ACTIVE |
+| `40_ctb_registry_infrastructure.sql` | ctb | Registry-first enforcement stack | ACTIVE |
 
-**Total Tables**: 9 functional tables
+### Gen 1 (10-15) — DEPRECATED
 
----
+Legacy 5-schema architecture (core, benefits, compliance, operations, staging). Superseded by migration 20. These schemas still exist in the database but are not used by current application code.
 
-## 🏗️ Schema Descriptions
+### CTB Backbone (20-35) — ACTIVE
 
-### 1️⃣ core (Identity Backbone)
+Canonical `clnt` schema with 14 tables across 5 spokes. All tables use UUID PKs, FK to `client_hub.client_id`.
 
-**Purpose**: Master identity tables for companies and employees.
+### CTB Enforcement (40) — ACTIVE
 
-**Tables**:
-- `core.company_master` - Master company identity records
-- `core.employee_master` - Master employee identity records linked to companies
-- `core.entity_relationship` - Flexible relationship mapping (company-to-company, employee-to-employee, etc.)
+Deploys the full registry-first enforcement infrastructure:
 
-**Key Features**:
-- Auto-updating timestamps via triggers
-- Cascade delete protection for data integrity
-- Doctrine metadata columns on all tables
-- Indexed for fast lookups (status, EIN, hire date)
-
-**Sample Queries**:
-```sql
--- Get all active companies
-SELECT * FROM core.company_master WHERE status = 'active';
-
--- Get all employees for a specific company
-SELECT * FROM core.employee_master WHERE company_uid = 'CLNT-0001';
-
--- Find manager-employee relationships
-SELECT * FROM core.entity_relationship
-WHERE relationship_type = 'manager_employee' AND status = 'active';
-```
+| Component | Source Template | Purpose |
+|-----------|----------------|---------|
+| `ctb.table_registry` | 001 | Runtime mirror of column_registry.yml |
+| `ctb.registry_audit_log` | 001 | Audit trail for registry changes |
+| DDL event triggers | 002 | Block CREATE/ALTER/DROP on unregistered tables |
+| Write guards | 003 | Block DML on unregistered/frozen tables |
+| `ctb.promotion_paths` | 004 | Declared STAGING/SUPPORT → CANONICAL flow paths |
+| Promotion enforcement | 004 | Block direct writes to CANONICAL without declared source |
+| `ctb.vendor_bridges` | 005 | Registered vendor integration points |
+| Immutability guards | 005 | INSERT-only on STAGING; no DELETE on CANONICAL/SUPPORT/ERROR |
+| `ctb_app_role` | 011 | Non-superuser application role |
 
 ---
 
-### 2️⃣ benefits (Vendor + Plan References)
+## Current Table Inventory (14 tables in `clnt`)
 
-**Purpose**: Vendor management and employee-vendor ID cross-referencing.
-
-**Tables**:
-- `benefits.vendor_link` - Vendor master table with company linkage
-- `benefits.employee_vendor_id` - Vendor-specific employee ID cross-reference
-
-**Key Features**:
-- Unique constraint on (employee_uid, vendor_id) to prevent duplicates
-- Support for multiple vendor types (Carrier, TPA, PBM, Broker)
-- Integration type tracking (API, SFTP, Portal, Manual)
-- Indexed for fast vendor and employee lookups
-
-**Sample Queries**:
-```sql
--- Get all vendors for a company
-SELECT * FROM benefits.vendor_link WHERE company_uid = 'CLNT-0001';
-
--- Get vendor-specific employee ID
-SELECT vendor_employee_id
-FROM benefits.employee_vendor_id
-WHERE employee_uid = 'EMP-0001' AND vendor_id = 'VEND-GUARDIAN';
-
--- Find all employees with Guardian IDs
-SELECT e.first_name, e.last_name, v.vendor_employee_id
-FROM core.employee_master e
-JOIN benefits.employee_vendor_id v ON e.employee_uid = v.employee_uid
-WHERE v.vendor_id = 'VEND-GUARDIAN';
-```
+| Spoke | Table | Leaf Type | Migration |
+|-------|-------|-----------|-----------|
+| S1-hub | `client_hub` | CANONICAL | 20 |
+| S1-hub | `client_master` | CANONICAL | 20 |
+| S1-hub | `client_projection` | SUPPORT | 35 |
+| S2-plan | `plan` | CANONICAL | 20 |
+| S2-plan | `plan_quote` | SUPPORT | 30 |
+| S3-employee | `person` | CANONICAL | 20 |
+| S3-employee | `election` | SUPPORT | 20 |
+| S3-employee | `intake_batch` | STAGING | 20 |
+| S3-employee | `intake_record` | STAGING | 20 |
+| S4-vendor | `vendor` | CANONICAL | 20 |
+| S4-vendor | `external_identity_map` | SUPPORT | 20 |
+| S5-service | `service_request` | CANONICAL | 20 |
+| S5-service | `compliance_flag` | CANONICAL | 20 |
+| S1-hub | `audit_event` | STAGING | 20 |
 
 ---
 
-### 3️⃣ compliance (Rules + State/Federal Layer)
+## Governance Infrastructure (`ctb` schema)
 
-**Purpose**: Store compliance rules, regulations, and requirements.
-
-**Tables**:
-- `compliance.compliance_vault` - Compliance rules and regulatory requirements per company
-
-**Key Features**:
-- ERISA, ACA, FMLA tracking
-- Self-insured status tracking
-- JSONB fields for flexible state-specific rules
-- Plan year date tracking
-- Required forms tracking (Form 5500, 1095-C, etc.)
-
-**Sample Queries**:
-```sql
--- Get ERISA-applicable companies
-SELECT * FROM compliance.compliance_vault WHERE erisa_applicable = TRUE;
-
--- Get companies with enhanced FMLA leave
-SELECT company_uid, fmla_state_rules
-FROM compliance.compliance_vault
-WHERE fmla_state_rules->>'enhanced_leave' = 'true';
-
--- Find companies with plan years ending soon
-SELECT company_uid, plan_year_end
-FROM compliance.compliance_vault
-WHERE plan_year_end BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '3 months';
-```
+| Table | Purpose |
+|-------|---------|
+| `ctb.table_registry` | Runtime registry of all allowed tables |
+| `ctb.registry_audit_log` | Audit trail for registry changes |
+| `ctb.promotion_paths` | Declared data flow paths |
+| `ctb.vendor_bridges` | Registered vendor integration points |
 
 ---
 
-### 4️⃣ operations (Audit + Tickets)
+## Registry-First Rule
 
-**Purpose**: Track data modifications and lineage for audit trails.
+> Register the table in `ctb.table_registry` BEFORE creating it.
 
-**Tables**:
-- `operations.audit_data_lineage` - Data lineage and audit trail tracking
+All DDL and DML is gated by the enforcement stack deployed in migration 40. New tables must be:
 
-**Key Features**:
-- Version hash tracking for data integrity
-- Action type tracking (CREATE, UPDATE, DELETE, EXPORT, IMPORT)
-- Entity and attribute-level tracking
-- Timestamp and user/agent tracking
-- Indexed for fast audit queries
+1. Declared in `src/data/db/registry/clnt_column_registry.yml`
+2. Registered in `ctb.table_registry` (via migration)
+3. Created via DDL (migration will fail if not registered)
+4. Guarded via `ctb.create_write_guard()` and `ctb.create_immutability_guard()`
 
-**Sample Queries**:
-```sql
--- Get all audit records for an entity
-SELECT * FROM operations.audit_data_lineage
-WHERE entity_uid = 'CLNT-0001'
-ORDER BY timestamp_used DESC;
-
--- Find all CREATE actions
-SELECT * FROM operations.audit_data_lineage
-WHERE action_type = 'CREATE'
-ORDER BY created_at DESC;
-
--- Track attribute changes over time
-SELECT attribute_code, attribute_value, timestamp_used, filled_by
-FROM operations.audit_data_lineage
-WHERE entity_uid = 'EMP-0001'
-ORDER BY timestamp_used DESC;
-```
+Doctrine: `CTB_REGISTRY_ENFORCEMENT.md`
 
 ---
 
-### 5️⃣ staging (Raw Intake)
+## Running Migrations
 
-**Purpose**: Temporary storage for raw intake data before validation and processing.
-
-**Tables**:
-- `staging.raw_intake_company` - Raw company data staging
-- `staging.raw_intake_employee` - Raw employee data staging
-
-**Key Features**:
-- JSONB storage for flexible data formats
-- Source tracking (UI, API, CSV, Excel, Manual)
-- Processing status flag
-- Auto-timestamping on creation
-- Indexed for fast unprocessed record queries
-
-**Sample Queries**:
-```sql
--- Get all unprocessed company records
-SELECT * FROM staging.raw_intake_company WHERE processed = FALSE;
-
--- Get records from UI intake
-SELECT * FROM staging.raw_intake_employee WHERE source = 'UI';
-
--- Mark record as processed
-UPDATE staging.raw_intake_company
-SET processed = TRUE
-WHERE intake_id = 1;
-```
-
----
-
-## 🔧 Installation
-
-### Prerequisites
-1. PostgreSQL database named `clnt` must exist
-2. Connect to the `clnt` database before running migrations
-3. User must have CREATE SCHEMA and CREATE TABLE privileges
-
-### Running Migrations
-
-**Option 1: Run all migrations sequentially**
 ```bash
-psql -d clnt -f 10_clnt_core_schema.sql
-psql -d clnt -f 11_clnt_benefits_schema.sql
-psql -d clnt -f 12_clnt_compliance_schema.sql
-psql -d clnt -f 13_clnt_operations_schema.sql
-psql -d clnt -f 14_clnt_staging_schema.sql
-psql -d clnt -f 15_clnt_seed_data.sql
-```
-
-**Option 2: Run all at once**
-```bash
-cat 10_*.sql 11_*.sql 12_*.sql 13_*.sql 14_*.sql 15_*.sql | psql -d clnt
-```
-
-**Option 3: Using Neon connection string**
-```bash
-export DATABASE_URL="postgresql://user:pass@host/clnt"
-psql $DATABASE_URL -f 10_clnt_core_schema.sql
-# ... repeat for each migration
+# Via Doppler (required — no .env files)
+doppler run -- psql $NEON_DATABASE_URL -f db/neon/migrations/40_ctb_registry_infrastructure.sql
 ```
 
 ---
 
-## ✅ Verification
+## Document Control
 
-After running migrations, verify the setup:
-
-```sql
--- Check all schemas exist
-SELECT schema_name FROM information_schema.schemata
-WHERE schema_name IN ('core', 'benefits', 'compliance', 'operations', 'staging');
-
--- Count tables in each schema
-SELECT
-  table_schema,
-  COUNT(*) as table_count
-FROM information_schema.tables
-WHERE table_schema IN ('core', 'benefits', 'compliance', 'operations', 'staging')
-GROUP BY table_schema;
-
--- Verify seed data
-SELECT
-  (SELECT COUNT(*) FROM core.company_master) as companies,
-  (SELECT COUNT(*) FROM core.employee_master) as employees,
-  (SELECT COUNT(*) FROM benefits.vendor_link) as vendors,
-  (SELECT COUNT(*) FROM compliance.compliance_vault) as compliance_records,
-  (SELECT COUNT(*) FROM operations.audit_data_lineage) as audit_records,
-  (SELECT COUNT(*) FROM staging.raw_intake_company WHERE processed = FALSE) as unprocessed_companies,
-  (SELECT COUNT(*) FROM staging.raw_intake_employee WHERE processed = FALSE) as unprocessed_employees;
-```
-
-Expected results:
-- 5 schemas created
-- 9 tables total (3 core, 2 benefits, 1 compliance, 1 operations, 2 staging)
-- Seed data: 2 companies, 3 employees, 3 vendors, 2 compliance records
-
----
-
-## 📐 Doctrine Metadata Columns
-
-All tables include these doctrine metadata columns for STAMPED/SPVPET compliance:
-
-| Column | Type | Purpose |
-|--------|------|---------|
-| `column_number` | INT | Column sequence number for ordering |
-| `column_description` | TEXT | Human-readable column description |
-| `column_format` | TEXT | Expected format/pattern for validation |
-
-These columns support:
-- Data lineage tracking
-- Schema versioning
-- Validation rule documentation
-- Blueprint compliance
-
----
-
-## 🔄 Auto-Update Triggers
-
-All tables with `updated_at` columns have triggers to automatically update the timestamp on record modification:
-
-```sql
-CREATE TRIGGER update_{table_name}_updated_at
-    BEFORE UPDATE ON {schema}.{table_name}
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-```
-
-This ensures accurate tracking of data modifications without manual timestamp management.
-
----
-
-## 🚀 Extensibility
-
-Each schema is designed for independent expansion:
-
-### Adding Tables to Existing Schemas
-```sql
--- Example: Add a new table to benefits schema
-CREATE TABLE benefits.plan_master (
-  plan_id TEXT PRIMARY KEY,
-  vendor_id TEXT REFERENCES benefits.vendor_link(vendor_id),
-  plan_name TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  column_number INT,
-  column_description TEXT,
-  column_format TEXT
-);
-```
-
-### Adding New Schemas
-```sql
--- Example: Add a payroll schema
-CREATE SCHEMA IF NOT EXISTS payroll;
-
-CREATE TABLE payroll.payroll_master (
-  payroll_id TEXT PRIMARY KEY,
-  employee_uid TEXT REFERENCES core.employee_master(employee_uid),
-  pay_period_start DATE,
-  pay_period_end DATE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  column_number INT,
-  column_description TEXT,
-  column_format TEXT
-);
-```
-
-**No migration conflicts** - Each schema operates independently.
-
----
-
-## 📊 Schema Relationships
-
-See the ER diagram below for visual representation of schema relationships.
-
-**Cross-Schema Relationships**:
-- `benefits.vendor_link` → `core.company_master` (company linkage)
-- `benefits.employee_vendor_id` → `core.employee_master` (employee linkage)
-- `benefits.employee_vendor_id` → `benefits.vendor_link` (vendor linkage)
-- `compliance.compliance_vault` → `core.company_master` (company compliance rules)
-
-**No circular dependencies** - Schema relationships form a clean directed acyclic graph (DAG).
-
----
-
-## 📝 Notes
-
-1. **Minimal Footprint**: Only 9 functional tables to start
-2. **Scalable**: Each schema can expand independently
-3. **Doctrine-Compliant**: All tables include metadata columns
-4. **Clear Navigation**: Schema names indicate purpose
-5. **Production-Ready**: Includes indexes, triggers, and constraints
-6. **Seed Data Included**: Ready for testing immediately after migration
-
----
-
-## 🔗 Related Documentation
-
-- See `SCHEMA_ER_DIAGRAM.md` for visual schema relationships
-- See `/db/neon/01_schema.sql` for legacy schema reference
-- See `/README_LLM_OVERVIEW.md` for agent integration documentation
-
----
-
-**Migration Version**: 1.0.0
-**Created**: 2025-10-27
-**Database**: clnt
-**PostgreSQL Version**: 14+
+| Field | Value |
+|-------|-------|
+| Version | 3.4.0 |
+| Last Updated | 2026-02-25 |
+| Authority | client-subhive (CC-02) |
+| Doctrine | CTB_REGISTRY_ENFORCEMENT.md |

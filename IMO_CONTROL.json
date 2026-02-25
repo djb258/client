@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "IMO_CONTROL",
-    "version": "2.0.0",
+    "version": "3.4.0",
     "created": "2026-01-30",
-    "last_modified": "2026-02-11",
+    "last_modified": "2026-02-25",
     "authority": "imo-creator",
     "status": "ACTIVE",
     "description": "Child repo governance contract for Client Intake & Vendor Export System",
@@ -12,9 +12,9 @@
   },
 
   "control_plane": {
-    "control_version": "2.0.0",
+    "control_version": "3.4.0",
     "upstream_repo": "imo-creator",
-    "upstream_commit": "e9406bcb0",
+    "upstream_commit": "08b734d",
     "drift_detection": {
       "enabled": true,
       "warn_on_outdated": true,
@@ -37,7 +37,7 @@
     "domain_spec": "doctrine/REPO_DOMAIN_SPEC.md",
     "osam": "doctrine/OSAM.md",
     "schema": "clnt",
-    "spine_table": "clnt.client_hub",
+    "spine_table": "clnt.client",
     "universal_join_key": "client_id"
   },
 
@@ -76,17 +76,32 @@
   "schema": {
     "name": "clnt",
     "database": "Neon PostgreSQL",
-    "total_tables": 13,
+    "total_tables": 16,
     "total_views": 0,
     "spokes": {
-      "S1": {"name": "Hub", "tables": ["client_hub", "client_master"]},
-      "S2": {"name": "Plan", "tables": ["plan", "plan_quote"]},
-      "S3": {"name": "Intake", "tables": ["intake_batch", "intake_record"]},
-      "S4": {"name": "Vault", "tables": ["person", "election"]},
-      "S5": {"name": "Vendor", "tables": ["vendor", "external_identity_map"]},
-      "S6": {"name": "Service", "tables": ["service_request"]},
-      "S7": {"name": "Compliance", "tables": ["compliance_flag"]},
-      "S8": {"name": "Audit", "tables": ["audit_event"]}
+      "S1": {"name": "Hub", "tables": ["client", "client_error"]},
+      "S2": {"name": "Plan", "tables": ["plan", "plan_error", "plan_quote"]},
+      "S3": {"name": "Employee", "tables": ["person", "employee_error", "election", "enrollment_intake", "intake_record"]},
+      "S4": {"name": "Vendor", "tables": ["vendor", "vendor_error", "external_identity_map", "invoice"]},
+      "S5": {"name": "Service", "tables": ["service_request", "service_error"]}
+    },
+    "enforcement": {
+      "registry_first": true,
+      "column_registry": "src/data/db/registry/clnt_column_registry.yml",
+      "codegen_script": "scripts/codegen-schema.ts",
+      "enforcement_scripts": [
+        "scripts/ctb-registry-gate.sh",
+        "scripts/ctb-drift-audit.sh",
+        "scripts/detect-banned-db-clients.sh",
+        "scripts/verify-governance-ci.sh",
+        "scripts/bootstrap-audit.sh"
+      ],
+      "new_doctrine": [
+        "templates/doctrine/CTB_REGISTRY_ENFORCEMENT.md",
+        "templates/doctrine/EXECUTION_SURFACE_LAW.md",
+        "templates/doctrine/FAIL_CLOSED_CI_CONTRACT.md",
+        "templates/doctrine/LEGACY_COLLAPSE_PLAYBOOK.md"
+      ]
     }
   },
 
@@ -102,7 +117,11 @@
       "Enforce CTB altitude structure",
       "Refuse to modify parent doctrine",
       "Route all queries through OSAM-declared paths",
-      "HALT on undeclared join attempts"
+      "HALT on undeclared join attempts",
+      "Enforce registry-first principle (register before create)",
+      "Enforce OWN-10a/10b cardinality (1 CANONICAL + 1 ERROR per spoke)",
+      "Enforce Execution Surface Law (code only in CTB branches)",
+      "Enforce fail-closed CI posture (no continue-on-error)"
     ],
     "must_not": [
       "Modify parent doctrine files",
@@ -110,7 +129,11 @@
       "Invent structure beyond doctrine",
       "Query STAGING tables as business surfaces",
       "Query AUDIT tables as business surfaces",
-      "Create joins not declared in OSAM"
+      "Create joins not declared in OSAM",
+      "Use banned DB clients (direct pg/mysql imports outside gatekeeper)",
+      "Place executable code outside CTB branches",
+      "Use continue-on-error in CI enforcement jobs",
+      "Connect to database as superuser (use ctb_app_role)"
     ]
   }
 }

@@ -10,9 +10,10 @@ This repository is governed by **IMO-Creator**.
 |-------|-------|
 | **Parent** | imo-creator |
 | **Sovereignty** | INHERITED |
-| **Doctrine Version** | 2.1.0 |
-| **Manifest Version** | 2.8.0 |
-| **CTB Version** | 2.0.0 |
+| **Doctrine Version** | 3.4.0 |
+| **Manifest Version** | 3.3.0 |
+| **CTB Version** | 3.4.0 |
+| **Upstream Commit** | 08b734d |
 
 ---
 
@@ -37,6 +38,10 @@ Agents MUST load TIER 1 before any work. TIER 2 loads on-demand. TIER 3 is audit
 | `docs/prd/PRD.md` | Product requirements | PRD question or validation |
 | `doctrine/OSAM.md` | Query routing, joins | Data query or join question |
 | `SNAP_ON_TOOLBOX.yaml` | Tool evaluation | Tool selection or suggestion |
+| `templates/doctrine/CTB_REGISTRY_ENFORCEMENT.md` | Registry-first enforcement | Schema changes, table creation |
+| `templates/doctrine/EXECUTION_SURFACE_LAW.md` | Execution surface rules | Code placement questions |
+| `templates/doctrine/FAIL_CLOSED_CI_CONTRACT.md` | CI gate enforcement | CI/CD configuration |
+| `templates/checklists/REPO_HOUSEKEEPING.md` | Quarterly housekeeping audit | Repo cleanup, structural audit |
 
 ### TIER 3 — AUDIT (never auto-loaded)
 
@@ -57,11 +62,16 @@ This repository conforms to the following doctrine files from IMO-Creator:
 | **ARCHITECTURE.md** (v2.1.0) | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent, OWN-10) | imo-creator/templates/doctrine/ |
 | TEMPLATE_IMMUTABILITY.md | AI modification prohibition | imo-creator/templates/doctrine/ |
 | ROLLBACK_PROTOCOL.md | Doctrine sync rollback procedure | imo-creator/templates/doctrine/ |
+| **CTB_REGISTRY_ENFORCEMENT.md** (v1.5.0) | Registry-first enforcement, cardinality, drift audit | imo-creator/templates/doctrine/ |
+| **EXECUTION_SURFACE_LAW.md** (v1.0.0) | Code placement whitelist, side-door prohibition | imo-creator/templates/doctrine/ |
+| **FAIL_CLOSED_CI_CONTRACT.md** (v1.1.0) | Fail-closed CI gates (A-E), no continue-on-error | imo-creator/templates/doctrine/ |
+| **LEGACY_COLLAPSE_PLAYBOOK.md** (v1.0.0) | 5-phase legacy migration protocol | imo-creator/templates/doctrine/ |
 | SNAP_ON_TOOLBOX.yaml | Tool registry | imo-creator/templates/ |
 | TOOLS.md | Tool doctrine | imo-creator/templates/integrations/ |
 | OSAM.md (template) | Query routing contract (template) | imo-creator/templates/semantic/ |
 | IMO_SYSTEM_SPEC.md | System index | imo-creator/templates/ |
 | AI_EMPLOYEE_OPERATING_CONTRACT.md | Agent constraints | imo-creator/templates/ |
+| **GUARDSPEC.md** | CI-style enforcement rules | imo-creator/templates/ |
 
 **Note**: ARCHITECTURE.md (v2.1.0) consolidates CANONICAL_ARCHITECTURE_DOCTRINE.md, HUB_SPOKE_ARCHITECTURE.md, and ALTITUDE_DESCENT_MODEL.md. Adds OWN-10a/10b/10c sub-hub table cardinality (ADR-001).
 
@@ -127,5 +137,5 @@ If doctrine is stale, update first. If checkpoint is stale, fill it first.
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-15 |
+| Last Modified | 2026-02-25 |
 | Status | ACTIVE |

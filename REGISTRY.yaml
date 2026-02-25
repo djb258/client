@@ -5,8 +5,8 @@
 # Status: REQUIRED — Every hub MUST have a REGISTRY.yaml
 # ===============================================================================
 
-version: "2.0.0"
-last_updated: "2026-02-11"
+version: "3.4.0"
+last_updated: "2026-02-25"
 
 # ===============================================================================
 # HUB IDENTITY (CC-02)
@@ -25,10 +25,12 @@ hub:
 
 conformance:
   parent: "imo-creator"
-  doctrine_version: "2.0.0"
-  ctb_version: "2.0.0"
+  doctrine_version: "3.4.0"
+  ctb_version: "3.4.0"
+  upstream_commit: "08b734d"
   domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
   osam: "doctrine/OSAM.md"
+  column_registry: "src/data/db/registry/clnt_column_registry.yml"
 
 # ===============================================================================
 # CTB PLACEMENT
@@ -43,62 +45,69 @@ ctb:
     ui: true
 
 # ===============================================================================
-# SUB-HUBS / SPOKES (CTB Spoke Structure S1-S8)
+# SUB-HUBS / SPOKES (v3.0.0 — 5 Spokes, 16 Tables)
 # ===============================================================================
+# OWN-10a: Each spoke has exactly 1 CANONICAL table
+# OWN-10b: Each spoke has exactly 1 ERROR table
+# OWN-10c: Additional tables (SUPPORT, STAGING) require ADR justification
 
 subhubs:
   - subhub_id: "s1-hub"
     name: "S1: Hub"
-    description: "Root client identity and legal details"
+    description: "Root client identity and configuration (SPINE)"
     tables:
-      - "clnt.client_hub"
-      - "clnt.client_master"
+      - name: "clnt.client"
+        leaf_type: "CANONICAL"
+      - name: "clnt.client_error"
+        leaf_type: "ERROR"
 
   - subhub_id: "s2-plan"
     name: "S2: Plan"
-    description: "Benefit plans and renewal quote intake"
+    description: "Benefit plans, rates, and quote intake"
     tables:
-      - "clnt.plan"
-      - "clnt.plan_quote"
+      - name: "clnt.plan"
+        leaf_type: "CANONICAL"
+      - name: "clnt.plan_error"
+        leaf_type: "ERROR"
+      - name: "clnt.plan_quote"
+        leaf_type: "SUPPORT"
 
-  - subhub_id: "s3-intake"
-    name: "S3: Intake"
-    description: "Enrollment staging (one-way to vault)"
+  - subhub_id: "s3-employee"
+    name: "S3: Employee"
+    description: "Employee identity, elections, and enrollment intake"
     tables:
-      - "clnt.intake_batch"
-      - "clnt.intake_record"
+      - name: "clnt.person"
+        leaf_type: "CANONICAL"
+      - name: "clnt.employee_error"
+        leaf_type: "ERROR"
+      - name: "clnt.election"
+        leaf_type: "SUPPORT"
+      - name: "clnt.enrollment_intake"
+        leaf_type: "STAGING"
+      - name: "clnt.intake_record"
+        leaf_type: "STAGING"
 
-  - subhub_id: "s4-vault"
-    name: "S4: Vault"
-    description: "Employee identity and benefit elections"
+  - subhub_id: "s4-vendor"
+    name: "S4: Vendor"
+    description: "Vendor identity, ID translation, and billing"
     tables:
-      - "clnt.person"
-      - "clnt.election"
+      - name: "clnt.vendor"
+        leaf_type: "CANONICAL"
+      - name: "clnt.vendor_error"
+        leaf_type: "ERROR"
+      - name: "clnt.external_identity_map"
+        leaf_type: "SUPPORT"
+      - name: "clnt.invoice"
+        leaf_type: "SUPPORT"
 
-  - subhub_id: "s5-vendor"
-    name: "S5: Vendor"
-    description: "Vendor identity and ID translation"
+  - subhub_id: "s5-service"
+    name: "S5: Service"
+    description: "Service ticket tracking and dashboards"
     tables:
-      - "clnt.vendor"
-      - "clnt.external_identity_map"
-
-  - subhub_id: "s6-service"
-    name: "S6: Service"
-    description: "Service ticket tracking"
-    tables:
-      - "clnt.service_request"
-
-  - subhub_id: "s7-compliance"
-    name: "S7: Compliance"
-    description: "Compliance flag tracking"
-    tables:
-      - "clnt.compliance_flag"
-
-  - subhub_id: "s8-audit"
-    name: "S8: Audit"
-    description: "Append-only system audit trail"
-    tables:
-      - "clnt.audit_event"
+      - name: "clnt.service_request"
+        leaf_type: "CANONICAL"
+      - name: "clnt.service_error"
+        leaf_type: "ERROR"
 
 # ===============================================================================
 # SPOKES (CC-03 Interfaces)
@@ -126,10 +135,31 @@ spokes:
 schema:
   name: "clnt"
   database: "Neon PostgreSQL"
-  total_tables: 13
+  total_tables: 16
   total_views: 0
   universal_join_key: "client_id"
-  spine_table: "clnt.client_hub"
+  spine_table: "clnt.client"
+
+# ===============================================================================
+# ENFORCEMENT (v3.0.0 — Registry-First + Fail-Closed)
+# ===============================================================================
+
+enforcement:
+  registry_first: true
+  column_registry: "src/data/db/registry/clnt_column_registry.yml"
+  codegen_script: "scripts/codegen-schema.ts"
+  gatekeeper_module: "src/sys/modules/gatekeeper/"
+  enforcement_scripts:
+    - "scripts/ctb-registry-gate.sh"
+    - "scripts/ctb-drift-audit.sh"
+    - "scripts/detect-banned-db-clients.sh"
+    - "scripts/verify-governance-ci.sh"
+    - "scripts/bootstrap-audit.sh"
+  binding_doctrine:
+    - "templates/doctrine/CTB_REGISTRY_ENFORCEMENT.md"
+    - "templates/doctrine/EXECUTION_SURFACE_LAW.md"
+    - "templates/doctrine/FAIL_CLOSED_CI_CONTRACT.md"
+    - "templates/doctrine/LEGACY_COLLAPSE_PLAYBOOK.md"
 
 # ===============================================================================
 # DOCUMENT CONTROL
@@ -137,5 +167,5 @@ schema:
 
 document_control:
   created: "2026-01-30"
-  last_modified: "2026-02-11"
+  last_modified: "2026-02-25"
   status: "ACTIVE"
