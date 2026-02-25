@@ -1,7 +1,7 @@
 -- ===================================================================
 -- Migration: 45_v341_consolidation.sql
 -- Schema: clnt
--- ADR: ADR-006-v3-consolidation (pending)
+-- ADR: ADR-006-v341-consolidation
 -- Doctrine: v3.4.1
 -- Created: 2026-02-25
 -- ===================================================================
