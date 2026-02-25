@@ -1,6 +1,6 @@
 # CTB Governance Document
 
-**Version**: 3.4.0
+**Version**: 3.4.1
 **Status**: ACTIVE
 **Authority**: Derived from `doctrine/ARCHITECTURE.md`, `templates/doctrine/CTB_REGISTRY_ENFORCEMENT.md`
 **Change Protocol**: ADR + HUMAN APPROVAL REQUIRED
@@ -27,7 +27,7 @@ This document defines the CTB (Christmas Tree Backbone) governance structure for
 Schema: clnt
 Tables: 16
 Views: 0
-Spokes: S1-S5 (v3.4.0 consolidation)
+Spokes: S1-S5 (v3.4.1 consolidation)
 Column Registry: src/data/db/registry/clnt_column_registry.yml
 Codegen: scripts/codegen-schema.ts
 ADRs: ADR-002, ADR-004, ADR-005 (ADR-006 pending)
@@ -88,7 +88,7 @@ ADRs: ADR-002, ADR-004, ADR-005 (ADR-006 pending)
 |--------|-------|---------|
 | clnt | client | Sovereign identity — `client_id` (UUID, immutable) |
 
-The `client` table is the SPINE. All other tables FK to `client.client_id`. This table was created by merging the former `client_hub`, `client_master`, and `client_projection` tables (v3.4.0).
+The `client` table is the SPINE. All other tables FK to `client.client_id`. This table was created by merging the former `client_hub`, `client_master`, and `client_projection` tables (v3.4.1).
 
 ---
 
@@ -121,7 +121,7 @@ All primary keys are UUID via `gen_random_uuid()`. No SERIAL, no TEXT, no compos
 
 ## 5. Drift Detection
 
-### 5.1 Enforcement Scripts (v3.4.0)
+### 5.1 Enforcement Scripts (v3.4.1)
 
 | Script | Purpose | Run When |
 |--------|---------|----------|
@@ -168,7 +168,7 @@ All primary keys are UUID via `gen_random_uuid()`. No SERIAL, no TEXT, no compos
 | Renewal Sub-Hub | v2.1.0 | 2026-02-11 | +2 tables (S9), +3 views — SUPERSEDED by v2.2.0 |
 | Plan Quote Support | v2.2.0 | 2026-02-11 | Renewal removed (ADR-004). +plan_quote under S2. 13 tables |
 | Client Projection | v2.3.0 | 2026-02-15 | +client_projection (S1 SUPPORT), +v_client_dashboard. ADR-005. 14 tables |
-| **v3.4.0 Consolidation** | v3.4.0 | 2026-02-25 | Merge client tables → single SPINE. 8→5 spokes. +error tables. +invoice. 16 tables. Registry-first enforcement. New enforcement scripts. Template sync to imo-creator@08b734d |
+| **v3.4.1 Consolidation** | v3.4.1 | 2026-02-25 | Merge client tables → single SPINE. 8→5 spokes. +error tables. +invoice. 16 tables. Registry-first enforcement. New enforcement scripts. Template sync to imo-creator@08b734d |
 
 ---
 
@@ -220,7 +220,7 @@ Tables should be deprecated before deletion:
 
 ---
 
-## 9. Binding Doctrine (v3.4.0)
+## 9. Binding Doctrine (v3.4.1)
 
 | Document | Location | Purpose |
 |----------|----------|---------|
@@ -240,8 +240,8 @@ Tables should be deprecated before deletion:
 | ADR-003 | `docs/adr/ADR-003-renewal-subhub.md` | Renewal sub-hub (WITHDRAWN) |
 | ADR-004 | `docs/adr/ADR-004-renewal-downgraded-to-plan-support.md` | Renewal downgraded to plan support |
 | ADR-005 | `docs/adr/ADR-005-client-projection-support.md` | Client projection support |
-| ADR-006 | `docs/adr/ADR-006-v3-consolidation.md` | v3.4.0 restructure (PENDING) |
-| Column Registry | `src/data/db/registry/clnt_column_registry.yml` | Single source of truth (v3.4.0) |
+| ADR-006 | `docs/adr/ADR-006-v3-consolidation.md` | v3.4.1 restructure (PENDING) |
+| Column Registry | `src/data/db/registry/clnt_column_registry.yml` | Single source of truth (v3.4.1) |
 | Codegen | `scripts/codegen-schema.ts` | Registry → TypeScript generator |
 | Gatekeeper | `src/sys/modules/gatekeeper/` | Audit logger module |
 | CTB Map | `docs/CTB_MAP.md` | Spoke structure and join contracts |
@@ -250,7 +250,7 @@ Tables should be deprecated before deletion:
 | Migration (backbone) | `db/neon/migrations/20_ctb_consolidated_backbone.sql` | Schema DDL |
 | Migration (plan quote) | `db/neon/migrations/30_remove_renewal_add_plan_quote.sql` | Remove renewal, add plan_quote |
 | Migration (projection) | `db/neon/migrations/35_client_projection.sql` | client_projection + v_client_dashboard |
-| Migration 40 | `db/neon/migrations/40_v3_consolidation.sql` | v3.4.0 DDL (PENDING) |
+| Migration 40 | `db/neon/migrations/40_v3_consolidation.sql` | v3.4.1 DDL (PENDING) |
 | Architecture Doctrine | `templates/doctrine/ARCHITECTURE.md` | CTB constitutional law |
 
 ---
@@ -259,7 +259,7 @@ Tables should be deprecated before deletion:
 
 | Field | Value |
 |-------|-------|
-| Version | 3.4.0 |
+| Version | 3.4.1 |
 | Created | 2026-02-09 |
 | Last Modified | 2026-02-25 |
 | Author | Claude Code |

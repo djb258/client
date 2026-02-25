@@ -5,7 +5,7 @@
 # Status: REQUIRED — Every hub MUST have a REGISTRY.yaml
 # ===============================================================================
 
-version: "3.4.0"
+version: "3.4.1"
 last_updated: "2026-02-25"
 
 # ===============================================================================
@@ -25,9 +25,9 @@ hub:
 
 conformance:
   parent: "imo-creator"
-  doctrine_version: "3.4.0"
-  ctb_version: "3.4.0"
-  upstream_commit: "08b734d"
+  doctrine_version: "3.4.1"
+  ctb_version: "3.4.1"
+  upstream_commit: "56943d4"
   domain_spec: "doctrine/REPO_DOMAIN_SPEC.md"
   osam: "doctrine/OSAM.md"
   column_registry: "src/data/db/registry/clnt_column_registry.yml"

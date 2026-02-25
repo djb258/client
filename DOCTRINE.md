@@ -10,10 +10,10 @@ This repository is governed by **IMO-Creator**.
 |-------|-------|
 | **Parent** | imo-creator |
 | **Sovereignty** | INHERITED |
-| **Doctrine Version** | 3.4.0 |
-| **Manifest Version** | 3.3.0 |
-| **CTB Version** | 3.4.0 |
-| **Upstream Commit** | 08b734d |
+| **Doctrine Version** | 3.4.1 |
+| **Manifest Version** | 3.4.1 |
+| **CTB Version** | 3.4.1 |
+| **Upstream Commit** | 56943d4 |
 
 ---
 

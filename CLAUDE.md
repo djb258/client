@@ -8,7 +8,7 @@
 | **Hub ID** | client-subhive |
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Parent Sovereign** | imo-creator |
-| **Doctrine Version** | 3.4.0 |
+| **Doctrine Version** | 3.4.1 |
 
 ---
 
@@ -234,7 +234,7 @@ See: `integrations/DOPPLER.md`
 
 ---
 
-## V1 Control Plane (v3.4.0 — Agent System)
+## V1 Control Plane (v3.4.1 — Agent System)
 
 This repo uses the IMO-Creator V1 Control Plane with 4 agents and a folder-based message bus.
 
@@ -269,7 +269,7 @@ audit/                  ← Pressure test reports
 | ARCH_PRESSURE_REPORT | `agents/contracts/arch_pressure_report.schema.json` | 5 structural invariants |
 | FLOW_PRESSURE_REPORT | `agents/contracts/flow_pressure_report.schema.json` | 5 flow invariants |
 
-### Pressure Tests (v3.4.0 — 10 Mechanical Gates)
+### Pressure Tests (v3.4.1 — 10 Mechanical Gates)
 
 When `requires_pressure_test = true` (mandatory for architectural changes):
 
@@ -395,5 +395,5 @@ No direct DB client imports allowed (pg, mysql2, psycopg2, etc.). The `detect-ba
 |-------|-------|
 | Created | 2026-01-30 |
 | Last Modified | 2026-02-25 |
-| Version | 3.4.0 |
+| Version | 3.4.1 |
 | Status | ACTIVE |

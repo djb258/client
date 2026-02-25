@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "IMO_CONTROL",
-    "version": "3.4.0",
+    "version": "3.4.1",
     "created": "2026-01-30",
     "last_modified": "2026-02-25",
     "authority": "imo-creator",
@@ -12,9 +12,9 @@
   },
 
   "control_plane": {
-    "control_version": "3.4.0",
+    "control_version": "3.4.1",
     "upstream_repo": "imo-creator",
-    "upstream_commit": "08b734d",
+    "upstream_commit": "56943d4",
     "drift_detection": {
       "enabled": true,
       "warn_on_outdated": true,

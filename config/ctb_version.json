@@ -1,10 +1,11 @@
 {
-  "current_version": "3.4.0",
+  "current_version": "3.4.1",
   "last_updated": "2026-02-25T00:00:00Z",
   "last_checked": "2026-02-25T00:00:00Z",
   "source_repo": "https://github.com/djb258/imo-creator.git",
-  "upstream_commit": "08b734d",
+  "upstream_commit": "56943d4",
   "changelog": {
+    "3.4.1": "Audit sweep: 12-file fix, checklist hardening, version alignment, reference integrity",
     "3.4.0": "V1 Control Plane: agents, pressure tests, fail-closed CI, registry enforcement",
     "2.8.0": "Phase 3 spoke skeleton rebuild + enforcement gates + template sync",
     "2.0.0": "ARCHITECTURE.md v2.0.0 consolidation, hub-spoke restructure",

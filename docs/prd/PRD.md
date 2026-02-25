@@ -4,8 +4,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Doctrine Version** | 3.4.0 |
-| **CTB Version** | 3.4.0 |
+| **Doctrine Version** | 3.4.1 |
+| **CTB Version** | 3.4.1 |
 | **CC Layer** | CC-02 |
 
 ---
@@ -26,7 +26,7 @@
 | **Hub Name** | Client Intake & Vendor Export System |
 | **Hub ID** | client-subhive |
 | **Owner** | Barton Ops System |
-| **Version** | 3.4.0 |
+| **Version** | 3.4.1 |
 
 ---
 
@@ -263,7 +263,7 @@ UI implementations for this hub MUST follow:
 
 | Artifact | Reference |
 |----------|-----------|
-| Architecture Doctrine | ARCHITECTURE.md (v3.4.0) |
+| Architecture Doctrine | ARCHITECTURE.md (v3.4.1) |
 | Hub/Spoke Geometry | ARCHITECTURE.md Part IV |
 | IMO Flow | ARCHITECTURE.md Part V |
 | Descent Gates | ARCHITECTURE.md Part VI |
@@ -291,7 +291,7 @@ UI implementations for this hub MUST follow:
 
 | Check | Status |
 |-------|--------|
-| [x] Governing OSAM referenced above | doctrine/OSAM.md v3.4.0 |
+| [x] Governing OSAM referenced above | doctrine/OSAM.md v3.4.1 |
 | [x] All questions in this PRD can be answered via OSAM query routes | Verified |
 | [x] No new query paths introduced in this PRD | Verified |
 | [x] All required tables exist in OSAM | 14 tables declared |
