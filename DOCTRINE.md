@@ -37,7 +37,7 @@ Agents MUST load TIER 1 before any work. TIER 2 loads on-demand. TIER 3 is audit
 | `src/data/db/registry/clnt_column_registry.yml` | Data schema, codegen | Data schema or codegen task |
 | `docs/prd/PRD.md` | Product requirements | PRD question or validation |
 | `doctrine/OSAM.md` | Query routing, joins | Data query or join question |
-| `SNAP_ON_TOOLBOX.yaml` | Tool evaluation | Tool selection or suggestion |
+| `templates/SNAP_ON_TOOLBOX.yaml` | Tool evaluation | Tool selection or suggestion |
 | `templates/doctrine/CTB_REGISTRY_ENFORCEMENT.md` | Registry-first enforcement | Schema changes, table creation |
 | `templates/doctrine/EXECUTION_SURFACE_LAW.md` | Execution surface rules | Code placement questions |
 | `templates/doctrine/FAIL_CLOSED_CI_CONTRACT.md` | CI gate enforcement | CI/CD configuration |

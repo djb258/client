@@ -6,9 +6,8 @@
  */
 
 import fetch from "node-fetch";
-import * as dotenv from "dotenv";
 
-dotenv.config();
+// NOTE: Run with `doppler run --` to inject environment variables.
 
 const MCP_SERVER_URL = process.env.COMPOSIO_SERVER_URL!;
 const COMPOSIO_API_KEY = process.env.COMPOSIO_API_KEY!;

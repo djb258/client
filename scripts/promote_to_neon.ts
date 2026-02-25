@@ -6,15 +6,9 @@
  */
 
 import fetch from "node-fetch";
-import { initializeApp, cert } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import * as dotenv from "dotenv";
 
-dotenv.config();
-
-// Firebase init
-initializeApp();
-const db = getFirestore();
+// NOTE: Run with `doppler run --` to inject environment variables.
+// Firebase is deprecated — this script needs rewrite to use gatekeeper.
 
 // Composio MCP endpoint
 const MCP_SERVER_URL = process.env.COMPOSIO_SERVER_URL!;

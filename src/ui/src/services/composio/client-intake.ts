@@ -11,13 +11,30 @@
 // Composio MCP Client Integration for Client Intake Wizard
 // All Neon writes MUST be routed through these endpoints
 
-import {
-  CompanyDocument,
-  EmployeeDocument,
-  ComposioValidateResponse,
-  ComposioPromoteResponse,
-  IntakeAuditLogDocument
-} from '../../firebase/types/firestore';
+import { CompanyDocument, EmployeeDocument } from '../../types/intake';
+
+// Types previously from firebase — now local
+interface ComposioValidateResponse {
+  success: boolean;
+  errors: string[];
+  validated_at?: string;
+}
+
+interface ComposioPromoteResponse {
+  success: boolean;
+  neon_id?: string;
+  errors: string[];
+  promoted_at?: string;
+}
+
+interface IntakeAuditLogDocument {
+  audit_id?: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  details?: Record<string, unknown>;
+  timestamp?: Date;
+}
 import { v4 as uuidv4 } from 'uuid';
 
 // =====================================================

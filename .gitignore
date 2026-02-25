@@ -100,6 +100,12 @@ temp/
 # Claude Code specific
 .claude/settings.local.json
 
+# MCP server config (may contain API keys — use Doppler)
+config/mcp-servers.json
+
+# Deprecated config templates
+.env.example
+
 # Garage MCP cache
 garage-mcp/cache/
 garage-mcp/logs/

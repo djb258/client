@@ -21,10 +21,21 @@ import {
 } from '../client-intake';
 import {
   CompanyDocument,
-  EmployeeDocument,
-  ComposioValidateResponse,
-  ComposioPromoteResponse
-} from '../../../firebase/types/firestore';
+  EmployeeDocument
+} from '../../../types/intake';
+
+interface ComposioValidateResponse {
+  success: boolean;
+  errors: string[];
+  validated_at?: string;
+}
+
+interface ComposioPromoteResponse {
+  success: boolean;
+  neon_id?: string;
+  errors: string[];
+  promoted_at?: string;
+}
 
 // Mock fetch globally
 global.fetch = jest.fn();

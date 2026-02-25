@@ -2,7 +2,7 @@
 
 **Hub**: client-subhive
 **Schema**: `clnt` (canonical), `ctb` (governance)
-**Version**: 3.4.0
+**Version**: 3.4.1
 
 ---
 
@@ -16,19 +16,20 @@
 | `13_clnt_operations_schema.sql` | operations | Gen 1 legacy operations | DEPRECATED |
 | `14_clnt_staging_schema.sql` | staging | Gen 1 legacy staging | DEPRECATED |
 | `15_clnt_seed_data.sql` | all | Gen 1 seed data | DEPRECATED |
-| `20_ctb_consolidated_backbone.sql` | clnt | CTB backbone: 12 tables (S1-S8) | ACTIVE |
+| `20_ctb_consolidated_backbone.sql` | clnt | CTB backbone: 12 tables (S1-S8) | SUPERSEDED by 45 |
 | `25_add_renewal_subhub.sql` | clnt | ADR-003 renewal tables | WITHDRAWN |
-| `30_remove_renewal_add_plan_quote.sql` | clnt | ADR-004: remove renewal, add plan_quote | ACTIVE |
-| `35_client_projection.sql` | clnt | ADR-005: client_projection table | ACTIVE |
+| `30_remove_renewal_add_plan_quote.sql` | clnt | ADR-004: remove renewal, add plan_quote | SUPERSEDED by 45 |
+| `35_client_projection.sql` | clnt | ADR-005: client_projection table | SUPERSEDED by 45 |
 | `40_ctb_registry_infrastructure.sql` | ctb | Registry-first enforcement stack | ACTIVE |
+| `45_v341_consolidation.sql` | clnt | v3.4.1: merge client tables, add error/invoice, rename intake_batch | ACTIVE |
 
 ### Gen 1 (10-15) — DEPRECATED
 
 Legacy 5-schema architecture (core, benefits, compliance, operations, staging). Superseded by migration 20. These schemas still exist in the database but are not used by current application code.
 
-### CTB Backbone (20-35) — ACTIVE
+### CTB Backbone (20-35) — SUPERSEDED
 
-Canonical `clnt` schema with 14 tables across 5 spokes. All tables use UUID PKs, FK to `client_hub.client_id`.
+Original `clnt` schema structure with client_hub/client_master/client_projection, intake_batch, compliance_flag, audit_event. Superseded by migration 45 which consolidates into the v3.4.1 structure.
 
 ### CTB Enforcement (40) — ACTIVE
 
@@ -40,32 +41,47 @@ Deploys the full registry-first enforcement infrastructure:
 | `ctb.registry_audit_log` | 001 | Audit trail for registry changes |
 | DDL event triggers | 002 | Block CREATE/ALTER/DROP on unregistered tables |
 | Write guards | 003 | Block DML on unregistered/frozen tables |
-| `ctb.promotion_paths` | 004 | Declared STAGING/SUPPORT → CANONICAL flow paths |
+| `ctb.promotion_paths` | 004 | Declared STAGING/SUPPORT to CANONICAL flow paths |
 | Promotion enforcement | 004 | Block direct writes to CANONICAL without declared source |
 | `ctb.vendor_bridges` | 005 | Registered vendor integration points |
 | Immutability guards | 005 | INSERT-only on STAGING; no DELETE on CANONICAL/SUPPORT/ERROR |
 | `ctb_app_role` | 011 | Non-superuser application role |
 
+### v3.4.1 Consolidation (45) — ACTIVE
+
+Aligns database with v3.4.1 registry (16 tables, 5 spokes):
+
+| Change | Detail |
+|--------|--------|
+| Merge client tables | client_hub + client_master + client_projection → `client` (SPINE) |
+| Add 5 error tables | client_error, plan_error, employee_error, vendor_error, service_error |
+| Add invoice | S4 Vendor SUPPORT table |
+| Rename intake_batch | → `enrollment_intake` |
+| Drop deprecated | compliance_flag, audit_event, v_client_dashboard view |
+| Update registry | 16 rows in ctb.table_registry |
+
 ---
 
-## Current Table Inventory (14 tables in `clnt`)
+## Current Table Inventory (16 tables in `clnt`)
 
 | Spoke | Table | Leaf Type | Migration |
 |-------|-------|-----------|-----------|
-| S1-hub | `client_hub` | CANONICAL | 20 |
-| S1-hub | `client_master` | CANONICAL | 20 |
-| S1-hub | `client_projection` | SUPPORT | 35 |
+| S1-hub | `client` | CANONICAL (SPINE) | 45 |
+| S1-hub | `client_error` | ERROR | 45 |
 | S2-plan | `plan` | CANONICAL | 20 |
+| S2-plan | `plan_error` | ERROR | 45 |
 | S2-plan | `plan_quote` | SUPPORT | 30 |
 | S3-employee | `person` | CANONICAL | 20 |
+| S3-employee | `employee_error` | ERROR | 45 |
 | S3-employee | `election` | SUPPORT | 20 |
-| S3-employee | `intake_batch` | STAGING | 20 |
+| S3-employee | `enrollment_intake` | STAGING | 20 (renamed 45) |
 | S3-employee | `intake_record` | STAGING | 20 |
 | S4-vendor | `vendor` | CANONICAL | 20 |
+| S4-vendor | `vendor_error` | ERROR | 45 |
 | S4-vendor | `external_identity_map` | SUPPORT | 20 |
+| S4-vendor | `invoice` | SUPPORT | 45 |
 | S5-service | `service_request` | CANONICAL | 20 |
-| S5-service | `compliance_flag` | CANONICAL | 20 |
-| S1-hub | `audit_event` | STAGING | 20 |
+| S5-service | `service_error` | ERROR | 45 |
 
 ---
 
@@ -99,7 +115,7 @@ Doctrine: `CTB_REGISTRY_ENFORCEMENT.md`
 
 ```bash
 # Via Doppler (required — no .env files)
-doppler run -- psql $NEON_DATABASE_URL -f db/neon/migrations/40_ctb_registry_infrastructure.sql
+doppler run -- psql $NEON_DATABASE_URL -f db/neon/migrations/45_v341_consolidation.sql
 ```
 
 ---
@@ -108,7 +124,7 @@ doppler run -- psql $NEON_DATABASE_URL -f db/neon/migrations/40_ctb_registry_inf
 
 | Field | Value |
 |-------|-------|
-| Version | 3.4.0 |
+| Version | 3.4.1 |
 | Last Updated | 2026-02-25 |
 | Authority | client-subhive (CC-02) |
 | Doctrine | CTB_REGISTRY_ENFORCEMENT.md |

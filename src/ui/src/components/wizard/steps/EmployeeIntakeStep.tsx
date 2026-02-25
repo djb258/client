@@ -11,7 +11,7 @@
 // Step 3: Employee Intake (CSV upload or manual entry)
 
 import React, { useState } from 'react';
-import { EmployeeDocument } from '../../../firebase/types/firestore';
+import { EmployeeDocument } from '../../../types/intake';
 
 interface EmployeeIntakeStepProps {
   companyId: string;

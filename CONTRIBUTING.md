@@ -1,96 +1,45 @@
-# Contributing to IMO Creator
+# Contributing to Client Intake & Vendor Export System
 
-## Development Setup
+## Prerequisites
 
-### Prerequisites
-- Python 3.11+
-- Node.js (for Vercel deployment)
+- Node.js 18+
+- Doppler CLI (secrets management)
+- PostgreSQL client (for migrations)
 
-### Local Development
-
-1. **Clone and setup**:
-   ```bash
-   git clone https://github.com/djb258/imo-creator.git
-   cd imo-creator
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-2. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys
-   ```
-
-3. **Run development server**:
-   ```bash
-   uvicorn src.server.main:app --port 7002 --reload
-   ```
-
-4. **Test tools**:
-   ```bash
-   python tools/blueprint_score.py example
-   python tools/blueprint_visual.py example
-   ```
-
-5. **Open UI**:
-   Open `docs/blueprints/ui/overview.html` in your browser
-
-### Running Tests
+## Setup
 
 ```bash
-pip install pytest ruff black
-pytest -q
+git clone https://github.com/djb258/client.git
+cd client
+npm install
+doppler setup
 ```
 
-### Code Quality
+## Development Workflow
 
-We use `ruff` for linting and `black` for formatting:
-```bash
-ruff check .
-black --check .
-```
-
-To fix formatting issues:
-```bash
-black .
-```
+1. **Register first** — Any new table must be registered in `src/data/db/registry/clnt_column_registry.yml` before creation
+2. **ADR required** — Schema changes require an Architecture Decision Record in `docs/adr/`
+3. **Run codegen** — After registry changes: `npm run codegen`
+4. **Verify** — Before committing: `npm run codegen:verify`
 
 ## Commit Style
 
-Use conventional commits with clear, concise messages:
+Use conventional commits:
 
-- `feat(api): add new endpoint`
-- `fix(ui): resolve blueprint rendering issue`
-- `chore(deps): update requirements`
-- `docs: update README with new examples`
+- `feat:` New feature or capability
+- `fix:` Bug fix
+- `chore:` Maintenance, dependency updates, template sync
+- `docs:` Documentation only
 
-Keep commits atomic - one logical change per commit.
+## Architecture Rules
 
-## Architecture
+- All database access through `src/sys/modules/gatekeeper/` (no direct DB clients)
+- Secrets via Doppler only (no `.env` files)
+- UI owns no schema, no persistence, no business logic
+- Code lives in CTB branches: `src/sys/`, `src/data/`, `src/app/`, `src/ai/`, `src/ui/`
 
-- **FastAPI**: Backend API (`src/server/main.py`)
-- **Static UI**: HTML/JS/CSS in `docs/blueprints/ui/`
-- **Tools**: Python scripts in `tools/`
-- **Tests**: Located in `tests/`
+## Key Documents
 
-## API Endpoints
-
-- `/llm` - LLM proxy with provider fallback
-- `/api/ssot/save` - SSOT processing with HEIR doctrine
-- `/api/subagents` - Subagent registry with garage-mcp integration
-- `/blueprints/{slug}/*` - Blueprint CRUD operations
-
-## Deployment
-
-The project is configured for Vercel deployment with:
-- `vercel.json` - Routing configuration
-- `VERCEL_ENVS.md` - Environment variable documentation
-- Static assets served from `docs/blueprints/ui/`
-
-## Getting Help
-
-- Check existing issues for similar problems
-- Create detailed bug reports with reproduction steps
-- Include relevant logs and environment information
+- `CLAUDE.md` — Full developer guide
+- `docs/prd/PRD.md` — Product requirements and scope
+- `docs/CTB_GOVERNANCE.md` — Table governance rules

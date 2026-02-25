@@ -1,42 +1,41 @@
-.PHONY: score visuals run-api run-mcp run-sidecar run-garage-mcp open-ui test heir-check check
+.PHONY: codegen verify gate drift dev build lint
 
-score:
-	python tools/blueprint_score.py example
+# Registry-first codegen
+codegen:
+	npx ts-node scripts/codegen-schema.ts
 
-visuals:
-	python tools/blueprint_visual.py example
+# Verify generated files match registry
+verify:
+	npm run codegen:verify
 
-run-api:
-	uvicorn src.server.main:app --port 7002 --reload
+# Run registry gate (CI check)
+gate:
+	bash scripts/ctb-registry-gate.sh
 
-run-mcp:
-	uvicorn src.mcp_server:app --port 7001 --reload
+# Run drift audit (requires DATABASE_URL)
+drift:
+	bash scripts/ctb-drift-audit.sh
 
-run-sidecar:
-	uvicorn src.sidecar_server:app --port 8000 --reload
+# Check for banned DB client imports
+banned:
+	bash scripts/detect-banned-db-clients.sh
 
-run-garage-mcp:
-	cd garage-mcp && python -m services.mcp.main
+# Development server
+dev:
+	npm run dev
 
-open-ui:
-	@echo "Open docs/blueprints/ui/overview.html in your browser"
+# Production build
+build:
+	npm run build
 
-test:
-	pytest -q tests/test_blueprint_shell.py
+# Lint
+lint:
+	npm run lint
 
-heir-check:
-	python -m packages.heir.checks
+# Bootstrap audit (first-time setup validation)
+bootstrap:
+	bash scripts/bootstrap-audit.sh
 
-check:
-	@echo "Running HEIR validation checks..."
-	@python -m packages.heir.checks || echo "HEIR checks completed with warnings"
-
-# Full system startup
-run-full-stack:
-	@echo "Starting full HEIR/MCP stack..."
-	@echo "1. Starting sidecar service..."
-	@uvicorn src.sidecar_server:app --port 8000 --reload &
-	@echo "2. Starting garage-mcp service..." 
-	@cd garage-mcp && python -m services.mcp.main &
-	@echo "3. Starting main API..."
-	@uvicorn src.server.main:app --port 7002 --reload
+# Full CI gate suite
+ci: gate banned verify
+	@echo "All CI gates passed."

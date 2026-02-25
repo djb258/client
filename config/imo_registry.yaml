@@ -168,7 +168,7 @@ database:
   neon:
     enabled: true
     connection_string_env: "NEON_DATABASE_URL"
-    schemas: ["clnt2", "clnt2_i_src"]
+    schemas: ["clnt"]
     
   sqlite_fallback:
     enabled: true

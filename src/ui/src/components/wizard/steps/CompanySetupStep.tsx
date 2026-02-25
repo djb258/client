@@ -11,7 +11,7 @@
 // Step 1: Company Setup
 
 import React, { useState } from 'react';
-import { CompanyDocument } from '../../../firebase/types/firestore';
+import { CompanyDocument } from '../../../types/intake';
 
 interface CompanySetupStepProps {
   companyData: Partial<CompanyDocument>;

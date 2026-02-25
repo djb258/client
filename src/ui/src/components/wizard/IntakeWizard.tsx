@@ -12,12 +12,11 @@
 // Multi-step wizard for onboarding new clients under Barton Doctrine
 
 import React, { useState } from 'react';
-import { WizardState } from '../../firebase/types/firestore';
+import { WizardState } from '../../types/intake';
 import CompanySetupStep from './steps/CompanySetupStep';
 import HRToneSetupStep from './steps/HRToneSetupStep';
 import EmployeeIntakeStep from './steps/EmployeeIntakeStep';
 import ReviewConfirmStep from './steps/ReviewConfirmStep';
-import WizardProgress from './WizardProgress';
 
 interface IntakeWizardProps {
   onComplete?: () => void;
@@ -130,10 +129,14 @@ const IntakeWizard: React.FC<IntakeWizardProps> = ({ onComplete, onCancel }) => 
         <p>Onboard new clients under Barton Doctrine (IMO + ORBT)</p>
       </div>
 
-      <WizardProgress
-        steps={wizardState.steps}
-        currentStep={wizardState.current_step}
-      />
+      <div className="wizard-progress">
+        {wizardState.steps.map((step, idx) => (
+          <div key={idx} className={`wizard-step-indicator ${step.completed ? 'completed' : ''} ${wizardState.current_step === step.step_number ? 'active' : ''}`}>
+            <span className="step-number">{step.step_number}</span>
+            <span className="step-name">{step.step_name}</span>
+          </div>
+        ))}
+      </div>
 
       <div className="wizard-content">
         {renderStep()}

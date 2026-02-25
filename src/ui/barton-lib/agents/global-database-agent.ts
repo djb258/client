@@ -231,21 +231,9 @@ export class GlobalDatabaseAgent {
     return { client, pool };
   }
 
-  private async createFirebaseConnection(config: DatabaseConnectionConfig) {
-    // Firebase Admin SDK
-    const admin = await import('firebase-admin');
-    
-    const serviceAccount = config.service_account_key ? 
-      JSON.parse(config.service_account_key) : undefined;
-
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: serviceAccount ? admin.credential.cert(serviceAccount) : admin.credential.applicationDefault(),
-        projectId: config.project_id
-      });
-    }
-
-    return admin.firestore();
+  private async createFirebaseConnection(_config: DatabaseConnectionConfig) {
+    // Firebase is deprecated in this hub — use Neon via gatekeeper instead.
+    throw new Error('Firebase connections are deprecated. Use Neon PostgreSQL via gatekeeper module.');
   }
 
   private async createBigQueryConnection(config: DatabaseConnectionConfig) {

@@ -11,7 +11,7 @@
 // Step 2: HR Tone Setup
 
 import React, { useState } from 'react';
-import { HRTone } from '../../../firebase/types/firestore';
+import { HRTone } from '../../../types/intake';
 
 interface HRToneSetupStepProps {
   hrTone: HRTone;

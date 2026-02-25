@@ -266,25 +266,10 @@ blueprint_id = cursor.fetchone()[0]
 conn.commit()
 ```
 
-### Firebase Queries
+### Neon Queries (via Gatekeeper)
 
-```typescript
-import { getFirestore } from 'firebase-admin/firestore';
-
-const db = getFirestore();
-
-// Query clients
-const clientsRef = db.collection('clients');
-const snapshot = await clientsRef.where('email', '==', email).get();
-
-// Add blueprint
-const blueprintRef = await db.collection('blueprints').add({
-  clientId: client.id,
-  type: 'imo',
-  config: config,
-  createdAt: FieldValue.serverTimestamp()
-});
-```
+All database access must go through the gatekeeper module at `src/sys/modules/gatekeeper/`.
+Firebase is deprecated — use Neon PostgreSQL with the `clnt` schema.
 
 ## 🧪 Testing
 
