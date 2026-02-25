@@ -1,3 +1,28 @@
-# Python dependencies (minimal — used for enforcement scripts only)
-PyYAML==6.0.2
+# Python dependencies for client-subhive
+# Used by: MCP servers, sidecar servers, enforcement scripts, composio tools
+#
+# Install: pip install -r requirements.txt
+# Runtime: doppler run -- python <script>
+
+# Core web framework (MCP + sidecar servers)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+starlette>=0.27.0
+
+# Database (enforcement scripts only — src/ uses gatekeeper)
 psycopg2-binary==2.9.9
+
+# YAML parsing (registry, doctrine, config)
+PyYAML==6.0.2
+
+# HTTP client (composio, API calls)
+httpx>=0.25.0
+requests>=2.31.0
+
+# Composio integration
+composio-core>=0.4.0
+composio-langchain>=0.4.0
+
+# Testing
+pytest>=7.4.0

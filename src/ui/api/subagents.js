@@ -8,7 +8,7 @@
  * checksum: 6f971c58
  */
 
-// Vercel API Route for subagent registry with garage-mcp integration
+// API Route for subagent registry with garage-mcp integration
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' })

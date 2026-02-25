@@ -21,17 +21,10 @@ APP_NAME=
 IMO_MASTER_ERROR_ENDPOINT=
 IMO_ERROR_API_KEY=
 NEON_DATABASE_URL=
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
 
 # Optional:
 # OPENAI_API_KEY=
 # ANTHROPIC_API_KEY=
-# SUPABASE_URL=
-# SUPABASE_ANON_KEY=
-# VERCEL_URL=
-# VERCEL_ENV=
 # PORT=
 ENV
 
@@ -111,7 +104,7 @@ Validate   Process    Deliver
 
 Components:
 - Master error log via ../../../src/imo-logger.ts
-- Environment keys from Vercel/Render (never committed)
+- Environment keys from Doppler (never committed)
 - Compliance monitoring via imo-compliance-check.py
 
 Altitude Layers:
@@ -152,6 +145,6 @@ bash tools/deep_wiki_generator.sh "$TARGET" "$APP_NAME"
 echo "[Factory] ✅ Created $TARGET with deep wiki"
 echo "[Factory] Next steps:"
 echo "  1. cd $TARGET"
-echo "  2. Set environment variables in Vercel/Render"
+echo "  2. Set environment variables in Doppler"
 echo "  3. npm run env:check"
 echo "  4. npm run dev"

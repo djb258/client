@@ -13,7 +13,7 @@
 
 import { CompanyDocument, EmployeeDocument } from '../../types/intake';
 
-// Types previously from firebase — now local
+// Local intake types
 interface ComposioValidateResponse {
   success: boolean;
   errors: string[];
@@ -152,7 +152,7 @@ export async function promoteCompany(
       endpoint: '/mcp/client-intake/company/promote',
       body: {
         company_id: companyDoc.company_id,
-        firebase_doc: companyDoc
+        intake_doc: companyDoc
       }
     });
 
@@ -230,7 +230,7 @@ export async function promoteEmployee(
       endpoint: '/mcp/client-intake/employee/promote',
       body: {
         employee_id: employeeDoc.employee_id,
-        firebase_doc: employeeDoc
+        intake_doc: employeeDoc
       }
     });
 

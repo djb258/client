@@ -239,7 +239,7 @@ universal_join_key:
 | External ID translation | `external_identity_map` | `client` -> `vendor` -> `external_identity_map` | |
 | Vendor invoices / billing | `invoice` | `client` -> `vendor` -> `invoice` | |
 | Service tickets | `service_request` | `client` -> `service_request` | |
-| Dashboard rendering | `v_client_dashboard` | View (client table) | Read-only view |
+| Dashboard rendering | `client` | Direct (spine) | Read from client table directly |
 | Client-level errors | `client_error` | `client` -> `client_error` | ERROR table |
 | Plan-level errors | `plan_error` | `client` -> `plan_error` | ERROR table |
 | Employee-level errors | `employee_error` | `client` -> `employee_error` | ERROR table |

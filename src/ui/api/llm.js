@@ -47,16 +47,16 @@ export default async function handler(req, res) {
     if (requestedProvider) {
       provider = requestedProvider;
       if (provider === 'anthropic' && !anthropicKey) {
-        return res.status(502).json({ 
+        return res.status(502).json({
           error: 'Anthropic API key not configured',
-          help: 'Add ANTHROPIC_API_KEY=sk-ant-xxx to Vercel environment variables',
+          help: 'Configure ANTHROPIC_API_KEY in Doppler',
           provider: 'anthropic'
         });
       }
       if (provider === 'openai' && !openaiKey) {
-        return res.status(502).json({ 
+        return res.status(502).json({
           error: 'OpenAI API key not configured',
-          help: 'Add OPENAI_API_KEY=sk-xxx to Vercel environment variables',
+          help: 'Configure OPENAI_API_KEY in Doppler',
           provider: 'openai'
         });
       }
@@ -85,24 +85,24 @@ export default async function handler(req, res) {
     }
     // 5. No provider available - graceful degradation
     else {
-      return res.status(502).json({ 
-        error: 'No API keys configured yet. Add ANTHROPIC_API_KEY and/or OPENAI_API_KEY to Vercel environment variables.',
-        help: 'Go to Vercel Dashboard → Project Settings → Environment Variables'
+      return res.status(502).json({
+        error: 'No API keys configured yet. Configure ANTHROPIC_API_KEY and/or OPENAI_API_KEY in Doppler.',
+        help: 'Use doppler setup and add your API keys'
       });
     }
     
     // Validate selected provider has key
     if (provider === 'anthropic' && !anthropicKey) {
-      return res.status(502).json({ 
+      return res.status(502).json({
         error: 'Anthropic API key not configured',
-        help: 'Add ANTHROPIC_API_KEY=sk-ant-xxx to Vercel environment variables',
+        help: 'Configure ANTHROPIC_API_KEY in Doppler',
         provider: 'anthropic'
       });
     }
     if (provider === 'openai' && !openaiKey) {
-      return res.status(502).json({ 
+      return res.status(502).json({
         error: 'OpenAI API key not configured',
-        help: 'Add OPENAI_API_KEY=sk-xxx to Vercel environment variables',
+        help: 'Configure OPENAI_API_KEY in Doppler',
         provider: 'openai'
       });
     }

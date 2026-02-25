@@ -112,14 +112,9 @@ profiles:
     patterns: ["connection-pool", "migrations"]
     
   deploy:
-    deps: ["vercel", "@vercel/node"]
-    services: ["vercel", "render", "aws"]
-    patterns: ["serverless", "containers"]
-    
-  firebase:
-    deps: ["firebase-admin", "firebase"]
-    services: ["firestore", "auth", "storage"]
-    patterns: ["realtime", "offline-first"]
+    deps: []
+    services: ["docker", "render", "aws"]
+    patterns: ["containers"]
     
   messaging:
     deps: ["sendgrid", "slack-sdk", "@slack/web-api"]

@@ -12,7 +12,7 @@
  * Global Database Agent
  * 
  * Universal database agent that can work across any project with:
- * - Multiple database platforms (Neon, Firebase, BigQuery, PostgreSQL, Supabase)
+ * - Multiple database platforms (Neon, BigQuery, PostgreSQL, Supabase)
  * - Any schema structure
  * - Environment-agnostic configuration
  * - Barton Doctrine compliance (optional)
@@ -38,7 +38,7 @@ export interface GlobalDatabaseConfig {
 
 export interface DatabaseConnectionConfig {
   name: string; // Unique connection identifier
-  type: 'neon' | 'firebase' | 'bigquery' | 'postgres' | 'supabase' | 'mysql' | 'mongodb';
+  type: 'neon' | 'bigquery' | 'postgres' | 'supabase' | 'mysql' | 'mongodb';
   
   // Connection Details
   connection_string?: string;
@@ -49,7 +49,7 @@ export interface DatabaseConnectionConfig {
   password?: string;
   
   // Cloud-specific
-  project_id?: string; // For BigQuery, Firebase
+  project_id?: string; // For BigQuery
   service_account_key?: string; // For GCP services
   region?: string;
   
@@ -168,10 +168,6 @@ export class GlobalDatabaseAgent {
           ({ client, pool } = await this.createPostgresConnection(config));
           break;
         
-        case 'firebase':
-          client = await this.createFirebaseConnection(config);
-          break;
-        
         case 'bigquery':
           client = await this.createBigQueryConnection(config);
           break;
@@ -229,11 +225,6 @@ export class GlobalDatabaseAgent {
     });
 
     return { client, pool };
-  }
-
-  private async createFirebaseConnection(_config: DatabaseConnectionConfig) {
-    // Firebase is deprecated in this hub — use Neon via gatekeeper instead.
-    throw new Error('Firebase connections are deprecated. Use Neon PostgreSQL via gatekeeper module.');
   }
 
   private async createBigQueryConnection(config: DatabaseConnectionConfig) {
@@ -345,9 +336,6 @@ export class GlobalDatabaseAgent {
       case 'postgres':
       case 'supabase':
         return await this.executePostgresOperation(connection, operation);
-      
-      case 'firebase':
-        return await this.executeFirebaseOperation(connection, operation);
       
       case 'bigquery':
         return await this.executeBigQueryOperation(connection, operation);
@@ -529,11 +517,6 @@ export class GlobalDatabaseAgent {
   // ============================================
   // Other Database Implementations (Stubs)
   // ============================================
-
-  private async executeFirebaseOperation(connection: any, operation: DatabaseOperation): Promise<any> {
-    // TODO: Implement Firebase operations
-    throw new Error('Firebase operations not yet implemented');
-  }
 
   private async executeBigQueryOperation(connection: any, operation: DatabaseOperation): Promise<any> {
     // TODO: Implement BigQuery operations

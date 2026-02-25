@@ -86,7 +86,7 @@ def test_staging_stage_structure():
     assert 'events' in fields, "Missing events"
     
     # Check defaults
-    assert fields['working_store'] == 'firebase', "Wrong working_store default"
+    assert fields['working_store'] == 'neon', "Wrong working_store default"
     assert fields['write_kind'] == 'upsert', "Wrong write_kind default"
     assert 'middle.step.start' in fields['events'], "Missing start event"
     assert 'middle.step.done' in fields['events'], "Missing done event"

@@ -279,9 +279,9 @@ export const globalAgentRegistry: Agent[] = [
     name: 'Global Database Agent',
     role: 'specialist',
     category: 'global',
-    description: 'Universal database operations across Neon, Firebase, BigQuery, and other platforms',
+    description: 'Universal database operations across Neon, BigQuery, and other platforms',
     capabilities: [
-      'Multi-database connectivity (Neon, Firebase, BigQuery)',
+      'Multi-database connectivity (Neon, BigQuery)',
       'Schema-aware operations',
       'Batch processing and bulk operations',
       'Connection pooling and error recovery',

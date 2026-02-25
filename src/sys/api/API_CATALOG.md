@@ -43,7 +43,7 @@ No parameters required.
 #### Response
 ```json
 {
-  "message": "Hello from Vercel!",
+  "message": "Hello from API!",
   "url": "<request-url>"
 }
 ```
@@ -52,7 +52,7 @@ No parameters required.
 ```javascript
 export default function handler(req, res) {
   res.status(200).json({
-    message: 'Hello from Vercel!',
+    message: 'Hello from API!',
     url: req.url,
   });
 }
@@ -374,7 +374,6 @@ function generateHeirId(prefix = 'CLNT') {
 #### Environment Variables Required
 ```bash
 DATABASE_URL=postgresql://...
-FIREBASE_PROJECT_ID=client-subhive
 ```
 
 #### Notes
@@ -384,18 +383,13 @@ FIREBASE_PROJECT_ID=client-subhive
 - Returns 500 for save errors
 - All saves logged with HEIR altitude
 - IDs stored in database for traceability
-- Supports both PostgreSQL and Firebase/Firestore
+- Supports PostgreSQL (Neon)
 
 ---
 
 ## 🔧 Configuration
 
 ### Base URL
-
-**Production:**
-```
-https://client-subhive.vercel.app
-```
 
 **Development:**
 ```
@@ -478,17 +472,17 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
 ### Health Check Test
 ```bash
-curl https://client-subhive.vercel.app/api/hello
+curl http://localhost:3000/api/hello
 ```
 
 ### API Working Test
 ```bash
-curl https://client-subhive.vercel.app/api/test
+curl http://localhost:3000/api/test
 ```
 
 ### LLM Endpoint Test
 ```bash
-curl -X POST https://client-subhive.vercel.app/api/llm \
+curl -X POST http://localhost:3000/api/llm \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Hello"}],
@@ -499,12 +493,12 @@ curl -X POST https://client-subhive.vercel.app/api/llm \
 
 ### Subagents Endpoint Test
 ```bash
-curl https://client-subhive.vercel.app/api/subagents
+curl http://localhost:3000/api/subagents
 ```
 
 ### SSOT Save Endpoint Test
 ```bash
-curl -X POST https://client-subhive.vercel.app/api/ssot/save \
+curl -X POST http://localhost:3000/api/ssot/save \
   -H "Content-Type: application/json" \
   -d '{
     "data": {
@@ -534,30 +528,14 @@ curl -X POST https://client-subhive.vercel.app/api/ssot/save \
 
 ## 🚀 Deployment
 
-### Vercel Configuration
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ]
-}
-```
-
-### Environment Variables (Production)
+#### Environment Variables (Production)
 ```bash
 # LLM Providers
 ANTHROPIC_API_KEY=...
 OPENAI_API_KEY=...
 
-# Database
-DATABASE_URL=...
-FIREBASE_PROJECT_ID=...
-FIREBASE_PRIVATE_KEY=...
-FIREBASE_CLIENT_EMAIL=...
+# Database (Neon PostgreSQL via Doppler)
+NEON_DATABASE_URL=...
 
 # Configuration
 NODE_ENV=production

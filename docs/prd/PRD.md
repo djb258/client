@@ -55,15 +55,15 @@ This hub manages the intake of client data, transforms it into a canonical schem
 
 | Variable | Destination | Description |
 |----------|-------------|-------------|
-| Canonical Client Identity | Neon `clnt.client_hub` + `clnt.client_master` | Normalized client identity and legal details |
+| Canonical Client Identity | Neon `clnt.client` | Sovereign client identity, config, branding (SPINE) |
 | Canonical Employee Records | Neon `clnt.person` | Normalized employee/dependent data |
 | Benefit Plans | Neon `clnt.plan` | Active plans with embedded rates |
 | Plan Quotes | Neon `clnt.plan_quote` | Received carrier quotes for comparison |
 | Benefit Elections | Neon `clnt.election` | Person-to-plan election records |
 | Vendor Identity | Neon `clnt.vendor` + `clnt.external_identity_map` | Vendor records and ID translation |
+| Vendor Invoices | Neon `clnt.invoice` | Vendor billing records |
 | Service Requests | Neon `clnt.service_request` | Service ticket tracking |
-| Compliance Flags | Neon `clnt.compliance_flag` | Compliance flag tracking |
-| Audit Trail | Neon `clnt.audit_event` | Append-only system audit trail |
+| Error Records | Neon `clnt.*_error` (5 tables) | Per-spoke error tracking |
 
 ### Pass Structure
 
@@ -77,7 +77,7 @@ This hub manages the intake of client data, transforms it into a canonical schem
 
 | Scope | Description |
 |-------|-------------|
-| **IN SCOPE** | Client company intake, employee census intake, benefit election capture, renewal quote intake, quote-to-plan promotion, data validation, canonical storage, vendor identity mapping, service tracking, compliance flagging, audit logging |
+| **IN SCOPE** | Client company intake, employee census intake, benefit election capture, renewal quote intake, quote-to-plan promotion, data validation, canonical storage, vendor identity mapping, service tracking, per-spoke error tracking |
 | **OUT OF SCOPE** | Vendor API integrations (handled by separate hubs), payment processing, user authentication, email delivery |
 
 ---
@@ -96,9 +96,9 @@ This hub manages the intake of client data, transforms it into a canonical schem
 
 | Layer | Role | Description | CC Layer |
 |-------|------|-------------|----------|
-| **I -- Ingress** | Dumb input only | API intake captures raw data into staging (S3: intake_batch, intake_record); no logic, no state | CC-02 |
-| **M -- Middle** | Logic, decisions, state | Canonical `clnt` schema (S1-S5), validation, transformation, quote promotion logic | CC-02 |
-| **O -- Egress** | Output only | Audit trail (audit_event), compliance reports; no logic, no state | CC-02 |
+| **I -- Ingress** | Dumb input only | API intake captures raw data into staging (S3: enrollment_intake, intake_record); no logic, no state | CC-02 |
+| **M -- Middle** | Logic, decisions, state | Canonical `clnt` schema (S1-S5, 16 tables), validation, transformation, quote promotion logic | CC-02 |
+| **O -- Egress** | Output only | Vendor exports, read-only projections; no logic, no state | CC-02 |
 
 ---
 
@@ -184,9 +184,9 @@ This hub manages the intake of client data, transforms it into a canonical schem
 | Failure | Severity | CC Layer | Remediation |
 |---------|----------|----------|-------------|
 | Intake API fails | HIGH | CC-03 | Retry with exponential backoff |
-| Neon promotion fails | CRITICAL | CC-02 | Roll back, log to audit_event |
+| Neon promotion fails | CRITICAL | CC-02 | Roll back, log to spoke error table |
 | Vendor export malformed | HIGH | CC-03 | Validate against blueprint, retry |
-| Audit log write fails | CRITICAL | CC-04 | Block all operations until resolved |
+| Error table write fails | CRITICAL | CC-04 | Block all operations until resolved |
 | Quote promotion conflict | HIGH | CC-04 | Validate one selected per benefit/cycle |
 
 ---
@@ -197,7 +197,7 @@ This hub manages the intake of client data, transforms it into a canonical schem
 |-------|-------|
 | **PID Pattern** | `client-subhive-${TIMESTAMP}-${RANDOM_HEX}` |
 | **Retry Policy** | New PID per retry |
-| **Audit Trail** | Required via clnt.audit_event |
+| **Audit Trail** | Required via spoke error tables |
 
 ---
 
@@ -209,7 +209,7 @@ Human override is permitted for:
 - Compliance exemptions (CC-01 authority required, ADR mandatory)
 - Kill switch activation (CC-02 or CC-01 authority)
 
-All overrides MUST be logged to clnt.audit_event with human identifier.
+All overrides MUST be logged to the relevant spoke error table with human identifier.
 
 ---
 
@@ -217,7 +217,7 @@ All overrides MUST be logged to clnt.audit_event with human identifier.
 
 | Type | Description | CC Layer |
 |------|-------------|----------|
-| **Logs** | clnt.audit_event (append-only) | CC-04 |
+| **Logs** | clnt.*_error tables (per spoke) | CC-04 |
 | **Metrics** | ERD_METRICS.yaml (daily sync from Neon) | CC-04 |
 | **Alerts** | Critical errors via threshold breach in ERD_METRICS | CC-03/CC-04 |
 
@@ -294,4 +294,4 @@ UI implementations for this hub MUST follow:
 | [x] Governing OSAM referenced above | doctrine/OSAM.md v3.4.1 |
 | [x] All questions in this PRD can be answered via OSAM query routes | Verified |
 | [x] No new query paths introduced in this PRD | Verified |
-| [x] All required tables exist in OSAM | 14 tables declared |
+| [x] All required tables exist in OSAM | 16 tables declared |

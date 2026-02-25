@@ -349,10 +349,10 @@ def test_import():
     
     def fix_deployment_config(self) -> bool:
         """Fix deployment configuration"""
-        if (self.repo_path / "vercel.json").exists():
+        if (self.repo_path / "Dockerfile").exists():
             return False
-            
-        return self.copy_template_file("vercel.json", "vercel.json")
+
+        return self.copy_template_file("Dockerfile", "Dockerfile")
     
     def fix_code_quality(self) -> List[bool]:
         """Fix code quality configuration"""

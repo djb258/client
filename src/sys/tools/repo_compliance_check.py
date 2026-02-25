@@ -116,13 +116,10 @@ class ComplianceChecker:
     def check_deployment_config(self) -> Tuple[bool, Dict]:
         """Check for deployment configuration"""
         details = {}
-        
-        # Vercel
-        details["has_vercel"] = (self.repo_path / "vercel.json").exists()
-        
+
         # Docker
         details["has_docker"] = (self.repo_path / "Dockerfile").exists()
-        
+
         # Other deployment configs
         deploy_files = [
             "docker-compose.yml",
@@ -133,9 +130,9 @@ class ComplianceChecker:
             "serverless.yml"
         ]
         details["has_other_deploy"] = any((self.repo_path / f).exists() for f in deploy_files)
-        
-        details["has_deployment"] = any([details["has_vercel"], details["has_docker"], details["has_other_deploy"]])
-        
+
+        details["has_deployment"] = any([details["has_docker"], details["has_other_deploy"]])
+
         return details["has_deployment"], details
     
     def check_code_quality(self) -> Tuple[bool, Dict]:
@@ -222,7 +219,7 @@ class ComplianceChecker:
                     if not result["details"].get("has_test_files"):
                         recs.append("Add test files (test_*.py)")
                 elif check_name == "deployment_config":
-                    recs.append("Add deployment configuration (vercel.json, Dockerfile, etc.)")
+                    recs.append("Add deployment configuration (Dockerfile, docker-compose.yml, etc.)")
                 elif check_name == "code_quality":
                     recs.append("Add code quality tools (ruff, black) and configuration")
                 elif check_name == "fastapi_compliance":

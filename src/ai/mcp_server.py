@@ -2,7 +2,6 @@
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 from typing import Dict, Any
 import yaml
 from pathlib import Path
@@ -12,8 +11,7 @@ try:
 except ImportError:
     from ctb.ai.models import HeirCheckRequest, HeirCheckResult
 
-# Load environment variables
-load_dotenv()
+# Environment variables provided by Doppler (no .env files)
 
 app = FastAPI(title="IMO Creator MCP Server", description="HEIR/MCP integration server")
 

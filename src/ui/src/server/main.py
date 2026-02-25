@@ -132,7 +132,7 @@ async def generate_visuals(slug: str):
 
 @app.post("/llm")
 async def llm_endpoint(request: Request):
-    """LLM endpoint mirroring Vercel function with concurrent provider support"""
+    """LLM endpoint with concurrent provider support"""
     try:
         body = await request.json()
         
@@ -157,13 +157,13 @@ async def llm_endpoint(request: Request):
             if provider == "anthropic" and not anthropic_key:
                 return JSONResponse({
                     "error": "Anthropic API key not configured",
-                    "help": "Add ANTHROPIC_API_KEY=sk-ant-xxx to your .env file",
+                    "help": "Configure ANTHROPIC_API_KEY in Doppler",
                     "provider": "anthropic"
                 }, status_code=502)
             if provider == "openai" and not openai_key:
                 return JSONResponse({
                     "error": "OpenAI API key not configured",
-                    "help": "Add OPENAI_API_KEY=sk-xxx to your .env file", 
+                    "help": "Configure OPENAI_API_KEY in Doppler",
                     "provider": "openai"
                 }, status_code=502)
         # 2. Infer from model name
@@ -187,21 +187,21 @@ async def llm_endpoint(request: Request):
         # 5. No provider available - graceful degradation
         else:
             return JSONResponse({
-                "error": "No API keys configured yet. Add ANTHROPIC_API_KEY and/or OPENAI_API_KEY to .env file.",
-                "help": "Copy .env.example to .env and add your API keys"
+                "error": "No API keys configured yet. Configure ANTHROPIC_API_KEY and/or OPENAI_API_KEY in Doppler.",
+                "help": "Use doppler setup and add your API keys"
             }, status_code=502)
         
         # Validate selected provider has key - with helpful messages
         if provider == "anthropic" and not anthropic_key:
             return JSONResponse({
                 "error": "Anthropic API key not configured",
-                "help": "Add ANTHROPIC_API_KEY=sk-ant-xxx to your .env file",
+                "help": "Configure ANTHROPIC_API_KEY in Doppler",
                 "provider": "anthropic"
             }, status_code=502)
         if provider == "openai" and not openai_key:
             return JSONResponse({
-                "error": "OpenAI API key not configured", 
-                "help": "Add OPENAI_API_KEY=sk-xxx to your .env file",
+                "error": "OpenAI API key not configured",
+                "help": "Configure OPENAI_API_KEY in Doppler",
                 "provider": "openai"
             }, status_code=502)
         

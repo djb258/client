@@ -93,7 +93,7 @@ def test_ui_files_exist():
 
 def test_id_helpers():
     """Test ID generation helpers"""
-    from tools.ids import process_id, run_id, stage_id, artifact_id
+    from src.sys.tools.ids import process_id, run_id, stage_id, artifact_id
     from datetime import datetime
     
     dt = datetime(2025, 1, 18)

@@ -28,7 +28,7 @@ const { Composio } = require('@composio/core');
 
 // Initialize Composio client
 const composio = new Composio({
-  apiKey: process.env.COMPOSIO_API_KEY || 'ak_t-F0AbvfZHUZSUrqAGNn',
+  apiKey: process.env.COMPOSIO_API_KEY,
 });
 
 // Initialize MCP server

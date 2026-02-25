@@ -11,7 +11,7 @@
 import { Agent, AgentStatus } from '@/lib/heir/types';
 
 export interface DatabaseConnection {
-  type: 'neon' | 'firebase' | 'bigquery' | 'postgres_local' | 'supabase';
+  type: 'neon' | 'bigquery' | 'postgres_local' | 'supabase';
   connectionString?: string;
   projectId?: string;
   credentials?: any;
@@ -58,9 +58,9 @@ export class DatabaseAgent {
       name: 'Universal Database Agent',
       role: 'specialist',
       category: 'data',
-      description: 'Handles all database operations across Neon, Firebase, BigQuery, and other platforms',
+      description: 'Handles all database operations across Neon, BigQuery, and other platforms',
       capabilities: [
-        'Multi-database connectivity (Neon, Firebase, BigQuery)',
+        'Multi-database connectivity (Neon, BigQuery)',
         'Schema-aware operations',
         'Batch processing and bulk operations',
         'Connection pooling and error recovery',
@@ -85,9 +85,6 @@ export class DatabaseAgent {
         case 'postgres_local':
         case 'supabase':
           connection = await this.createPostgresConnection(config);
-          break;
-        case 'firebase':
-          connection = await this.createFirebaseConnection(config);
           break;
         case 'bigquery':
           connection = await this.createBigQueryConnection(config);
@@ -117,12 +114,6 @@ export class DatabaseAgent {
     });
     await client.connect();
     return client;
-  }
-
-  private async createFirebaseConnection(config: DatabaseConnection) {
-    // Firebase Admin SDK integration
-    // This would require firebase-admin package
-    throw new Error('Firebase integration not yet implemented');
   }
 
   private async createBigQueryConnection(config: DatabaseConnection) {
@@ -188,8 +179,6 @@ export class DatabaseAgent {
       case 'postgres_local':
       case 'supabase':
         return await this.executePostgresOperation(connection.client, operation);
-      case 'firebase':
-        return await this.executeFirebaseOperation(connection.client, operation);
       case 'bigquery':
         return await this.executeBigQueryOperation(connection.client, operation);
       default:
@@ -351,15 +340,6 @@ export class DatabaseAgent {
 
     const query = `DELETE FROM ${tableName} WHERE ${whereClause} RETURNING *`;
     return { query, values: whereValues };
-  }
-
-  // ============================================
-  // Firebase Operations (Placeholder)
-  // ============================================
-
-  private async executeFirebaseOperation(client: any, operation: DatabaseOperation): Promise<DatabaseResult> {
-    // TODO: Implement Firebase Firestore operations
-    throw new Error('Firebase operations not yet implemented');
   }
 
   // ============================================

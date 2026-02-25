@@ -1,5 +1,5 @@
 /**
- * Intake type definitions — replaces former firebase/types/firestore imports.
+ * Intake type definitions for the client intake wizard.
  * These types define the intake wizard data shapes.
  */
 

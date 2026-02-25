@@ -116,7 +116,7 @@ When working with me, please provide:
 - **Styling**: Tailwind CSS, Styled Components, CSS Modules
 - **Build Tools**: Vite, Webpack, Rollup, Turbopack
 - **Testing**: Jest, Vitest, Cypress, Playwright
-- **Deployment**: Vercel, Netlify, AWS CloudFront
+- **Deployment**: Docker, Netlify, AWS CloudFront
 
 ## Architecture Patterns
 

@@ -8,8 +8,8 @@ This guide helps you get started with the HEIR (Hierarchical Error-handling, ID 
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy environment template
-cp .env.example .env
+# Configure secrets via Doppler (MANDATORY — no .env files permitted)
+doppler setup
 ```
 
 ## Service Architecture
@@ -91,7 +91,7 @@ curl http://localhost:8000/events/recent?limit=5
 
 ### Environment Variables
 
-The system uses these environment variables from `.env`:
+The system uses these environment variables (provided by Doppler):
 
 ```bash
 # HEIR/MCP Integration

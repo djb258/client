@@ -8,10 +8,7 @@
  * checksum: 5a6a3259
  */
 
-// Vercel API Route for SSOT processing with doctrine-safe IDs
-import { NextApiRequest, NextApiResponse } from 'next'
-
-// Import utilities with relative imports for Vercel compatibility
+// API Route for SSOT processing with doctrine-safe IDs
 function _ts_ms() {
     return Date.now()
 }

@@ -91,8 +91,8 @@ hub_design_declaration:
   # ─────────────────────────────────────────────────────────────────────────────
   candidate_variables:
     - name: "Canonical Client Identity"
-      destination: "Neon PostgreSQL (clnt.client_hub + clnt.client_master)"
-      description: "Normalized client identity and legal details"
+      destination: "Neon PostgreSQL (clnt.client)"
+      description: "Sovereign client identity, config, branding (SPINE)"
 
     - name: "Canonical Employee Records"
       destination: "Neon PostgreSQL (clnt.person)"
@@ -103,12 +103,12 @@ hub_design_declaration:
       description: "Validated benefit election records linked to plans and persons"
 
     - name: "Vendor Identity"
-      destination: "Neon PostgreSQL (clnt.vendor + clnt.external_identity_map)"
-      description: "Vendor records and internal-to-external ID translation"
+      destination: "Neon PostgreSQL (clnt.vendor + clnt.external_identity_map + clnt.invoice)"
+      description: "Vendor records, ID translation, and invoices"
 
-    - name: "Audit Trail"
-      destination: "Neon PostgreSQL (clnt.audit_event)"
-      description: "Append-only system audit trail of all actions"
+    - name: "Error Records"
+      destination: "Neon PostgreSQL (clnt.*_error — 5 tables)"
+      description: "Per-spoke error tracking across all domains"
 
   # ─────────────────────────────────────────────────────────────────────────────
   # SNAP-ON TOOLS

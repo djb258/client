@@ -2,14 +2,14 @@
 # ===============================================================================
 # HEIR = Hub Environment Identity Record
 # CC Layer: CC-03 (Validation Interface)
-# Reference: ARCHITECTURE.md (CTB Constitutional Law v2.0.0)
+# Reference: ARCHITECTURE.md (CTB Constitutional Law v3.4.1)
 # ===============================================================================
 
 # --- Conformance ---
 conformance:
-  doctrine_version: "2.0.0"
-  ctb_version: "2.0.0"
-  schema_version: "HEIR/2.0"
+  doctrine_version: "3.4.1"
+  ctb_version: "3.4.1"
+  schema_version: "HEIR/3.0"
 
 # --- Sovereign Declaration (CC-01) ---
 sovereign:
@@ -31,52 +31,43 @@ process:
   id_pattern: "client-subhive-${TIMESTAMP}-${RANDOM_HEX}"
   session_pattern: "client-subhive-session-${SESSION_ID}"
 
-# --- IMO Structure ---
+# --- IMO Structure (v3.0.0 — 5 Spokes, 16 Tables) ---
 imo:
   ingress:
-    description: "API intake captures raw data into staging tables (S3: intake_batch, intake_record)"
+    description: "API intake captures raw data into staging tables (S3: enrollment_intake, intake_record)"
     spokes:
       - spoke_id: "api-intake"
         name: "API Intake Endpoint"
         contract: "Zod schema validation"
         tables:
-          - "clnt.intake_batch"
+          - "clnt.enrollment_intake"
           - "clnt.intake_record"
   middle:
-    description: "Canonical clnt schema (S1-S2, S4-S7): validation, transformation, quote promotion logic"
+    description: "Canonical clnt schema (S1-S5): validation, transformation, quote promotion logic"
     owns_logic: true
     owns_state: true
     spokes:
       - spoke_id: "s1-hub"
-        name: "S1: Hub"
-        tables: ["clnt.client_hub", "clnt.client_master"]
+        name: "S1: Hub (SPINE)"
+        tables: ["clnt.client", "clnt.client_error"]
       - spoke_id: "s2-plan"
         name: "S2: Plan"
-        tables: ["clnt.plan", "clnt.plan_quote"]
-      - spoke_id: "s4-vault"
-        name: "S4: Vault"
-        tables: ["clnt.person", "clnt.election"]
-      - spoke_id: "s5-vendor"
-        name: "S5: Vendor"
-        tables: ["clnt.vendor", "clnt.external_identity_map"]
-      - spoke_id: "s6-service"
-        name: "S6: Service"
-        tables: ["clnt.service_request"]
-      - spoke_id: "s7-compliance"
-        name: "S7: Compliance"
-        tables: ["clnt.compliance_flag"]
+        tables: ["clnt.plan", "clnt.plan_error", "clnt.plan_quote"]
+      - spoke_id: "s3-employee"
+        name: "S3: Employee"
+        tables: ["clnt.person", "clnt.employee_error", "clnt.election", "clnt.enrollment_intake", "clnt.intake_record"]
+      - spoke_id: "s4-vendor"
+        name: "S4: Vendor"
+        tables: ["clnt.vendor", "clnt.vendor_error", "clnt.external_identity_map", "clnt.invoice"]
+      - spoke_id: "s5-service"
+        name: "S5: Service"
+        tables: ["clnt.service_request", "clnt.service_error"]
   egress:
-    description: "Audit trail (S8: audit_event), compliance reports, vendor exports"
+    description: "Vendor exports, read-only projections"
     spokes:
       - spoke_id: "vendor-export"
         name: "Vendor Export Interface"
         contract: "vendor_output_blueprint schema"
-      - spoke_id: "compliance-report"
-        name: "Compliance Reporting"
-        contract: "compliance_flag schema"
-      - spoke_id: "s8-audit"
-        name: "S8: Audit"
-        tables: ["clnt.audit_event"]
 
 # --- Meta ---
 meta:
@@ -89,10 +80,10 @@ meta:
 
 # --- Doctrine Compliance ---
 doctrine:
-  version: "2.0.0"
+  version: "3.4.1"
   unique_id: "client-subhive-${TIMESTAMP}-${RANDOM_HEX}"
   process_id: "client-subhive-process-${SESSION_ID}"
-  schema_version: "HEIR/2.0"
+  schema_version: "HEIR/3.0"
 
 # --- Services (Abstract) ---
 services:
@@ -136,11 +127,10 @@ deliverables:
 contracts:
   acceptance:
     - "All HEIR checks pass in CI"
-    - "All 13 tables exist in clnt schema"
-    - "OSAM query routing verified (14 declared joins)"
+    - "All 16 tables exist in clnt schema (5 spokes)"
+    - "OSAM query routing verified (17 declared joins)"
     - "No undeclared joins in ERD"
     - "Doppler secrets accessible"
-    - "Audit trail writes succeed"
 
 # --- Build Actions ---
 build:
@@ -156,18 +146,18 @@ build:
 orbt:
   operate:
     altitude: "60k ft"
-    description: "Runtime monitoring, ERD metrics sync, audit trail"
+    description: "Runtime monitoring, ERD metrics sync"
     actions:
       - "Sync ERD metrics daily"
-      - "Monitor audit_event writes"
+      - "Monitor error tables (5 error tables across spokes)"
       - "Validate Doppler secret access"
   repair:
     altitude: "30k ft"
-    description: "Error recovery, data integrity checks, compliance remediation"
+    description: "Error recovery, data integrity checks"
     actions:
-      - "Intake batch error recovery"
+      - "Enrollment intake error recovery"
       - "Quote promotion conflict resolution"
-      - "Compliance flag remediation"
+      - "Spoke error table triage"
   build:
     altitude: "15k ft"
     description: "Schema migrations, spoke additions, ADR execution"
@@ -196,14 +186,15 @@ traceability:
     - "docs/adr/ADR-001-architecture.md"
     - "docs/adr/ADR-002-ctb-consolidated-backbone.md"
     - "docs/adr/ADR-004-renewal-downgraded-to-plan-support.md"
+    - "docs/adr/ADR-005-client-projection-support.md"
 
 # ===============================================================================
 # DOCUMENT CONTROL
 # ===============================================================================
 document_control:
   created: "2026-02-11"
-  last_modified: "2026-02-11"
-  version: "1.0.0"
+  last_modified: "2026-02-25"
+  version: "3.0.0"
   status: "ACTIVE"
   authority: "CC-03 (Validation Interface)"
   template_source: "imo-creator/templates/integrations/heir.doctrine.yaml.template"

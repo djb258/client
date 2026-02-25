@@ -4,9 +4,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Doctrine Version** | 2.0.0 |
+| **Doctrine Version** | 3.4.1 |
 | **CC Layer** | CC-02 |
-| **Last Validated** | 2026-02-11 |
+| **Last Validated** | 2026-02-25 |
 | **Validated By** | Claude Code (Claude Opus 4.6) |
 | **Template Source** | templates/checklists/HUB_COMPLIANCE.md (synced from imo-creator) |
 | **Template Sync Date** | 2026-02-11 (imo-creator @ e9406bcb0) |
@@ -57,7 +57,7 @@ This is an IMMUTABLE RULE. No exceptions.
 | Field | Value |
 |-------|-------|
 | PRD Location | docs/prd/PRD.md |
-| PRD Version | 2.0.0 |
+| PRD Version | 3.4.1 |
 
 ---
 
@@ -77,29 +77,32 @@ This is an IMMUTABLE RULE. No exceptions.
 | Field | Value |
 |-------|-------|
 | ERD Location | db/neon/migrations/SCHEMA_ER_DIAGRAM.md |
-| ERD Version | 2.2.0 |
+| ERD Version | 3.0.0 |
 
 ---
 
 ## A.4 ERD Pressure Test (Static)
 
-| Table | Q1 (Constant) | Q2 (Variable) | Q3 (Pass) | Q4 (Lineage) | Result |
-|-------|---------------|---------------|-----------|--------------|--------|
-| client_hub | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| client_master | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| plan | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| plan_quote | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| intake_batch | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| intake_record | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| person | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| election | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| vendor | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| external_identity_map | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| service_request | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| compliance_flag | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
-| audit_event | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| Table | Spoke | Q1 (Constant) | Q2 (Variable) | Q3 (Pass) | Q4 (Lineage) | Result |
+|-------|-------|---------------|---------------|-----------|--------------|--------|
+| client | S1 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| client_error | S1 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| plan | S2 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| plan_error | S2 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| plan_quote | S2 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| person | S3 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| employee_error | S3 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| election | S3 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| enrollment_intake | S3 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| intake_record | S3 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| vendor | S4 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| vendor_error | S4 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| external_identity_map | S4 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| invoice | S4 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| service_request | S5 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
+| service_error | S5 | [x] PASS | [x] PASS | [x] PASS | [x] PASS | PASS |
 
-**All 13 tables pass pressure test.**
+**All 16 tables pass pressure test (5 spokes).**
 
 ---
 
@@ -121,18 +124,18 @@ This is an IMMUTABLE RULE. No exceptions.
 |----------|-------|--------|
 | CRITICAL | [x] OSAM exists at doctrine/OSAM.md | PASS |
 | CRITICAL | [x] Universal join key declared (client_id, UUID) | PASS |
-| CRITICAL | [x] Spine table identified (clnt.client_hub) | PASS |
-| CRITICAL | [x] All spokes listed with table ownership (S1-S8, 13 tables) | PASS |
-| CRITICAL | [x] All allowed joins explicitly declared (14 joins) | PASS |
-| CRITICAL | [x] All tables classified (QUERY/STAGING/SUPPORT/AUDIT) | PASS |
-| CRITICAL | [x] No queries target STAGING/AUDIT tables as primary surface | PASS |
+| CRITICAL | [x] Spine table identified (clnt.client) | PASS |
+| CRITICAL | [x] All spokes listed with table ownership (S1-S5, 16 tables) | PASS |
+| CRITICAL | [x] All allowed joins explicitly declared (17 joins) | PASS |
+| CRITICAL | [x] All tables classified (CANONICAL/ERROR/SUPPORT/STAGING) | PASS |
+| CRITICAL | [x] No queries target STAGING tables as primary surface | PASS |
 
 | Field | Value |
 |-------|-------|
 | OSAM Location | doctrine/OSAM.md |
-| OSAM Version | 2.0.0 |
+| OSAM Version | 3.0.0 |
 | Universal Join Key | client_id (UUID) |
-| Spine Table | clnt.client_hub |
+| Spine Table | clnt.client |
 
 ---
 
@@ -317,7 +320,7 @@ This is an IMMUTABLE RULE. No exceptions.
 | CRITICAL | [x] Shipping without observability is forbidden | PASS |
 
 **Observability:**
-- Logging: clnt.audit_event (append-only)
+- Logging: clnt.*_error tables (per spoke, 5 error tables)
 - Metrics: erd/ERD_METRICS.yaml (daily Neon sync)
 - Alerts: Threshold breach in ERD_METRICS
 
@@ -360,10 +363,10 @@ This is an IMMUTABLE RULE. No exceptions.
 
 | Priority | Check | Status |
 |----------|-------|--------|
-| HIGH | [x] DOCTRINE.md references ARCHITECTURE.md v2.0.0 | PASS |
+| HIGH | [x] DOCTRINE.md references ARCHITECTURE.md v3.4.1 | PASS |
 | HIGH | [x] CLAUDE.md binding doctrine table references ARCHITECTURE.md | PASS |
 | MEDIUM | [x] HUB_DESIGN_DECLARATION.yaml exists at repo root | PASS |
-| MEDIUM | [x] doctrine/OSAM.md exists and is valid (v2.0.0) | PASS |
+| MEDIUM | [x] doctrine/OSAM.md exists and is valid (v3.0.0) | PASS |
 | MEDIUM | [x] docs/architecture/ directory exists with reference docs | PASS |
 
 ---
@@ -389,7 +392,7 @@ This is an IMMUTABLE RULE. No exceptions.
 | CRITICAL | [x] ADRs exist for each decision (CC-03) | PASS |
 | HIGH | [ ] Work item linked | N/A (foundational) |
 | HIGH | [x] PR linked (CC-04) | PASS |
-| HIGH | [x] Architecture Doctrine referenced (ARCHITECTURE.md v2.0.0) | PASS |
+| HIGH | [x] Architecture Doctrine referenced (ARCHITECTURE.md v3.4.1) | PASS |
 
 ---
 
@@ -511,8 +514,8 @@ This hub MAY ship.
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-11 |
+| Last Modified | 2026-02-25 |
 | Auditor | Claude Code (Claude Opus 4.6) |
 | Branch | main |
 | Status | COMPLIANT |
-| Template Version | 2.0.0 (synced from imo-creator @ e9406bcb0, 2026-02-11) |
+| Template Version | 3.4.1 (revalidated against v3.0.0 architecture, 2026-02-25) |

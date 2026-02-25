@@ -313,13 +313,10 @@ APP_NAME
 IMO_MASTER_ERROR_ENDPOINT
 IMO_ERROR_API_KEY
 NEON_DATABASE_URL
-FIREBASE_PROJECT_ID
-FIREBASE_CLIENT_EMAIL
-FIREBASE_PRIVATE_KEY
 ```
 
 ## Security
-Never commit real values. Use Vercel/Render for production secrets.
+Never commit real values. Use Doppler for production secrets.
 
 ## Related
 - [[../60-operations/deployment.md|Deployment]]
@@ -340,10 +337,9 @@ Deployment, monitoring, and maintenance procedures.
 - [[scaling.md|Scaling Strategy]]
 
 ## Deployment Targets
-- Vercel
+- Docker
 - Render
 - AWS
-- Docker
 
 ## Monitoring
 - Health checks
@@ -364,11 +360,6 @@ cat > "$WIKI/60-operations/deployment.md" << 'MD'
 - Environment variables configured
 - Tests passing
 - Compliance score ≥ 80%
-
-## Vercel Deployment
-```bash
-vercel --prod
-```
 
 ## Docker Deployment
 ```bash

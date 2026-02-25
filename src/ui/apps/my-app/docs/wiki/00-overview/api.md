@@ -25,8 +25,7 @@ Response:
   "timestamp": "2024-01-01T00:00:00Z",
   "compliance": {
     "monitoring": true,
-    "database": true,
-    "firebase": true
+    "database": true
   }
 }
 ```

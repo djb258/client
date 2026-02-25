@@ -32,7 +32,7 @@ export async function logError(e: unknown, ctx: ErrorContext = {}) {
     level: "error",
     ts: new Date().toISOString(),
     app: process.env.APP_NAME || "unknown-app",
-    env: process.env.VERCEL_ENV || process.env.NODE_ENV || "development",
+    env: process.env.NODE_ENV || "development",
     ctx,
     err: e instanceof Error ? {
       message: e.message,
@@ -66,7 +66,7 @@ export async function logInfo(message: string, ctx: ErrorContext = {}) {
     level: "info",
     ts: new Date().toISOString(),
     app: process.env.APP_NAME || "unknown-app",
-    env: process.env.VERCEL_ENV || process.env.NODE_ENV || "development",
+    env: process.env.NODE_ENV || "development",
     message,
     ctx
   };
@@ -87,12 +87,11 @@ export function createHealthCheck() {
   return {
     ok: true,
     app: process.env.APP_NAME || "unknown",
-    env: process.env.VERCEL_ENV || process.env.NODE_ENV || "development",
+    env: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
     compliance: {
       monitoring: !!process.env.IMO_MASTER_ERROR_ENDPOINT,
-      database: !!process.env.NEON_DATABASE_URL,
-      firebase: !!process.env.FIREBASE_PROJECT_ID
+      database: !!process.env.NEON_DATABASE_URL
     }
   };
 }

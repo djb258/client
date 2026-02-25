@@ -37,7 +37,7 @@ class IMOCreatorHeartbeat:
         self.repo_path = Path(repo_path)
         self.config_file = self.repo_path / ".imo-compliance.json"
         self.imo_creator_remote = "https://github.com/djb258/imo-creator.git"
-        self.compliance_api = "https://imo-creator.vercel.app/api"
+        self.compliance_api = os.getenv("IMO_COMPLIANCE_API_URL", "")
         
         # Load or create configuration
         self.config = self._load_config()
@@ -95,7 +95,7 @@ class IMOCreatorHeartbeat:
         """Generate a hash of current compliance-related files"""
         compliance_files = [
             ".github/workflows/ci.yml",
-            "vercel.json",
+            "Dockerfile",
             "LICENSE",
             "CONTRIBUTING.md",
             "requirements.txt",

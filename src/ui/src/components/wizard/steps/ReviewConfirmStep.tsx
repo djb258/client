@@ -13,12 +13,12 @@
 import React, { useState } from 'react';
 import { CompanyDocument, EmployeeDocument } from '../../../types/intake';
 
-// TODO: Replace with gatekeeper-based intake service (firebase deprecated)
-const createCompanyInFirebase = async (_data: any) => ({ company_id: '' });
-const validateCompanyInFirebase = async (_id: string) => ({ success: true, errors: [] as string[] });
+// TODO: Replace with gatekeeper-based intake service
+const createCompanyRecord = async (_data: any) => ({ company_id: '' });
+const validateCompanyRecord = async (_id: string) => ({ success: true, errors: [] as string[] });
 const promoteCompanyToNeon = async (_id: string) => ({ success: true, neon_id: '', errors: [] as string[] });
-const createEmployeeInFirebase = async (_data: any) => ({ employee_id: '' });
-const validateEmployeeInFirebase = async (_id: string) => ({ success: true, errors: [] as string[] });
+const createEmployeeRecord = async (_data: any) => ({ employee_id: '' });
+const validateEmployeeRecord = async (_id: string) => ({ success: true, errors: [] as string[] });
 const promoteEmployeeToNeon = async (_id: string) => ({ success: true, errors: [] as string[] });
 
 interface ReviewConfirmStepProps {
@@ -44,13 +44,13 @@ const ReviewConfirmStep: React.FC<ReviewConfirmStepProps> = ({
     setErrors([]);
 
     try {
-      // Step 1: Create company in Firebase
-      setProgress(prev => [...prev, 'Creating company record in Firebase...']);
-      const company = await createCompanyInFirebase(companyData as any);
+      // Step 1: Create company record
+      setProgress(prev => [...prev, 'Creating company record...']);
+      const company = await createCompanyRecord(companyData as any);
 
       // Step 2: Validate company
       setProgress(prev => [...prev, 'Validating company data via Composio...']);
-      const companyValidation = await validateCompanyInFirebase(company.company_id);
+      const companyValidation = await validateCompanyRecord(company.company_id);
 
       if (!companyValidation.success) {
         setErrors(prev => [...prev, ...companyValidation.errors]);
@@ -90,14 +90,14 @@ const ReviewConfirmStep: React.FC<ReviewConfirmStepProps> = ({
         ]);
 
         try {
-          // Create in Firebase
-          const employee = await createEmployeeInFirebase({
+          // Create employee record
+          const employee = await createEmployeeRecord({
             ...empData,
             company_id: company.company_id
           } as any);
 
           // Validate
-          const empValidation = await validateEmployeeInFirebase(employee.employee_id);
+          const empValidation = await validateEmployeeRecord(employee.employee_id);
           if (!empValidation.success) {
             throw new Error(empValidation.errors.join(', '));
           }

@@ -11,9 +11,9 @@ checksum: 65013c78
 """Tests for doctrine ID generation and subagent registry"""
 import os
 import pytest
-from src.server.blueprints.ids import ensure_ids, generate_unique_id, generate_process_id
-from src.server.blueprints.versioning import stamp_version_hash, canonicalize
-from src.server.infra.subagents import list_subagents
+from src.ui.src.server.blueprints.ids import ensure_ids, generate_unique_id, generate_process_id
+from src.ui.src.server.blueprints.versioning import stamp_version_hash, canonicalize
+from src.ui.src.server.infra.subagents import list_subagents
 
 def test_id_generation():
     """Test doctrine ID generation"""

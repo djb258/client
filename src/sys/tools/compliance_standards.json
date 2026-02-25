@@ -52,7 +52,7 @@
           "description": "Production deployment setup",
           "weight": 10,
           "requirements": {
-            "has_deployment": "vercel.json, Dockerfile, or similar"
+            "has_deployment": "Dockerfile, docker-compose.yml, or similar"
           }
         },
         "code_quality": {
@@ -90,7 +90,7 @@
   "templates": {
     "quick_fixes": {
       "add_github_actions": ".github/workflows/ci.yml",
-      "add_vercel_config": "vercel.json", 
+      "add_dockerfile": "Dockerfile",
       "add_requirements": "requirements.txt",
       "add_license": "LICENSE",
       "add_contributing": "CONTRIBUTING.md",

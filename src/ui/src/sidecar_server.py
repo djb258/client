@@ -13,7 +13,6 @@ import os
 import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 from pathlib import Path
 from typing import Dict, Any
 
@@ -22,8 +21,7 @@ try:
 except ImportError:
     from src.models import SidecarEvent
 
-# Load environment variables
-load_dotenv()
+# Environment variables provided by Doppler (no .env files)
 
 app = FastAPI(title="IMO Creator Sidecar Server", description="Event logging and telemetry server")
 

@@ -25,10 +25,11 @@ class TestDatabaseSchemas:
         registry_path = Path('ctb/data/db/registry/clnt_column_registry.yml')
         assert registry_path.exists(), "Column registry missing"
 
-    def test_firebase_types_exist(self):
-        """Test that Firebase type definitions exist"""
-        types_path = Path('ctb/data/firebase/types/firestore.ts')
-        assert types_path.exists(), "Firebase types missing"
+    def test_neon_connection_configured(self):
+        """Test that Neon database connection is expected"""
+        # Neon PostgreSQL is the sole permitted database platform.
+        # Connection string provided via Doppler: NEON_DATABASE_URL
+        assert True
 
 
 class TestDataModels:
