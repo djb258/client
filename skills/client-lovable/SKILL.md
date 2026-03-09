@@ -1,0 +1,110 @@
+---
+name: client-lovable
+description: >
+  Lovable.dev integration patterns, UI surface contract, and rendering constraints for the
+  Client Intake & Vendor Export System — multi-tenant dashboard rendering via v_client_dashboard
+  view, per-client branding, feature flags, and dashboard block layout. Use this skill whenever
+  building, debugging, or making UI architecture decisions in the client repo. Trigger on:
+  Lovable, lovable.dev, UI, dashboard, client portal, branding, feature flags, dashboard blocks,
+  v_client_dashboard, multi-tenant rendering, domain mapping, or any reference to the presentation
+  layer. Also trigger when discussing React components, Vite build, Radix UI, Tailwind, Shadcn,
+  or the exported Lovable app structure. If the task involves what the user sees or how the client
+  portal renders — this skill applies.
+---
+
+# Client-Lovable — Car Skill
+
+Lovable.dev was used to generate the initial UI scaffold for the Client Intake & Vendor Export
+System. The app was exported to GitHub and is now maintained with standard tooling (Vite, React,
+TypeScript). Lovable is no longer in the loop for ongoing development — it served as Step 1 only.
+
+The UI consumes the `v_client_dashboard` view from Neon as its primary query surface. All
+persistence lives in the `clnt` schema. The UI owns no data.
+
+**Master skill reference:** `IMO-Creator/skills/lovable/SKILL.md`
+
+## What This Repo Uses
+
+| Component | Value |
+|-----------|-------|
+| UI origin | Lovable.dev (exported, no longer synced) |
+| Framework | React 18 + Vite 5 |
+| Language | TypeScript 5.8 |
+| Component library | Radix UI (full suite) + Shadcn/ui patterns |
+| Styling | Tailwind CSS 3.4 + tailwindcss-animate |
+| Routing | react-router-dom 6.30 |
+| State/data | @tanstack/react-query 5.83 |
+| Forms | react-hook-form 7.61 + @hookform/resolvers + Zod |
+| Charts | Recharts 2.15 |
+| Build | Vite + @vitejs/plugin-react-swc |
+| UI location | `src/ui/` |
+
+## UI-Database Contract
+
+The UI reads from a single view — it does not query individual tables:
+
+```
+v_client_dashboard → React Query → Dashboard Components
+```
+
+**View columns consumed by UI:**
+- `client_id` — tenant key for multi-tenant routing
+- `legal_name` — display name (unless `label_override` is set)
+- `status` — lifecycle state rendering
+- `domain` — custom domain routing
+- `label_override` — display name override
+- `logo_url` — branding asset
+- `color_primary`, `color_accent` — theme variables
+- `feature_flags` — conditional feature rendering (JSONB, default `{}`)
+- `dashboard_blocks` — dashboard layout configuration (JSONB array, default `[]`)
+
+**Type contract:** `ClientDashboardView` interface in `src/data/hub/types.ts`
+
+## Multi-Tenant Rendering
+
+Each client gets personalized rendering without per-client forks:
+- `domain` routes to the correct client context
+- `color_primary` + `color_accent` drive Tailwind theme variables
+- `logo_url` renders in the header/branding area
+- `label_override` overrides `legal_name` for display
+- `feature_flags` enables/disables UI sections at runtime
+- `dashboard_blocks` configures which blocks appear and in what order
+
+All configuration is progressive-fill: clients start with defaults and customize over time.
+
+## Lovable Export Artifacts
+
+The Lovable export produced the standard stack:
+- React + Vite project structure
+- Radix UI component primitives (accordion, dialog, dropdown, tabs, toast, tooltip, etc.)
+- Shadcn/ui-style utility patterns (`class-variance-authority`, `clsx`, `tailwind-merge`)
+- `cmdk` for command palette
+- `vaul` for drawer components
+- `embla-carousel-react` for carousels
+- `sonner` for toast notifications
+- `react-day-picker` for date selection
+- `lucide-react` for icons
+- `react-resizable-panels` for split-pane layouts
+
+## Architecture Rules
+
+1. **UI owns no persistence** — all data lives in the `clnt` schema on Neon
+2. **UI queries the view, not tables** — `v_client_dashboard` is the contract surface
+3. **Write operations go through the API** — intake endpoint with Zod validation at ingress
+4. **No Lovable re-import** — the codebase has diverged; Lovable cannot import existing repos
+5. **No Cloudflare** — this repo does not use Cloudflare Workers, Pages, or Hyperdrive
+6. **Feature flags are data, not code** — stored in JSONB, interpreted at render time
+
+## Known Issues
+
+- **Lovable code quality**: Generated code may not follow all React best practices. Refactor as needed during ongoing development
+- **Component duplication**: Lovable sometimes generates similar components with slight variations. Consolidate when found
+- **No lovable-tagger**: This repo does not use the `lovable-tagger` npm package. The Lovable export was a one-time operation
+
+## Cost Profile
+
+| Resource | Tier | Notes |
+|----------|------|-------|
+| Lovable.dev | Subscription (past) | Initial generation cost only; no ongoing Lovable spend |
+| Vite/React/Radix | OSS (free) | All frontend dependencies are open source |
+| Hosting | TBD | UI deployment target not yet declared |
