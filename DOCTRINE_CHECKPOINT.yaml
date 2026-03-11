@@ -21,7 +21,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # When was this checkpoint last filled?
-last_verified: "2026-02-25"
+last_verified: "2026-03-11"
 
 # Who verified it?
 verified_by: "claude-code"
@@ -31,25 +31,25 @@ digest_version: "1.0.0"
 
 checkpoint:
   # What CTB branch does this change touch?
-  ctb_branch_target: "sys, data"
+  ctb_branch_target: "sys, data, ui, ai"
 
   # Is the change in a hub or spoke?
   hub_or_spoke: "hub"
 
   # Where does processing logic live?
-  logic_placement: "src/sys/modules/gatekeeper/"
+  logic_placement: "skills/, docs/, src/ui/barton-lib/"
 
   # Does this require an ADR?
   requires_adr: "no"
 
   # Does this change database schema?
-  registry_impact: "yes — migration 40 adds ctb enforcement infrastructure"
+  registry_impact: "no — documentation and reference updates only (BAR-104)"
 
   # Which error table catches failures?
-  error_table_identified: "ctb.registry_audit_log"
+  error_table_identified: "N/A — no schema changes"
 
   # CONST -> VAR: What constant is being transformed into what variable?
-  transformation: "imo-creator doctrine templates -> client-subhive enforcement infrastructure"
+  transformation: "BAR-100 architecture shift constants -> updated platform references across docs"
 
   # Does validate-schema-completeness.sh pass?
   schema_completeness_verified: "yes"

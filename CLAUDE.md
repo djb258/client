@@ -81,7 +81,7 @@ The system operates on a 4-layer authority hierarchy:
 
 This hub transforms:
 - **Constants (Inputs):** Raw client intake data, employee census, benefit elections
-- **Variables (Outputs):** Canonical Neon records, vendor-specific export files
+- **Variables (Outputs):** Canonical records (CF D1/KV working, Neon vault), vendor-specific export files
 
 If something doesn't serve this transformation, it doesn't belong here.
 
@@ -225,7 +225,7 @@ doppler run -- node scripts/sync_erd_metrics.js
 ║   ❌ secrets.json, credentials.json                                  ║
 ║   ❌ Environment variables not from Doppler                          ║
 ║   ❌ Firebase (deprecated)                                           ║
-║   ❌ Vercel (deprecated)                                             ║
+║   ❌ Vercel (deprecated — use CF Workers/Pages)                      ║
 ║   ❌ N8N (deprecated)                                                ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
@@ -374,7 +374,8 @@ No direct DB client imports allowed (pg, mysql2, psycopg2, etc.). The `detect-ba
 
 | Service | Purpose | Documentation |
 |---------|---------|---------------|
-| Neon | PostgreSQL database (clnt schema) | `db/neon/` |
+| CF D1/KV | Working database (active operations) | `db/` |
+| Neon | PostgreSQL vault/archive (clnt schema) | `db/neon/` |
 | Doppler | Secrets management | `integrations/DOPPLER.md` |
 
 ---

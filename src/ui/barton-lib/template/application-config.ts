@@ -78,7 +78,7 @@ export const outreachConfig: ApplicationConfig = {
       name: "Company & People Ingestion",
       description: "Initial data ingestion from CSV/Excel files into Neon database",
       route: "/doctrine/data-ingestion",
-      tools: ["CSV Parser", "Excel Parser", "Neon", "Render API"],
+      tools: ["CSV Parser", "Excel Parser", "Neon", "CF Workers API"],
       subagents: ["File Processing Agent", "Data Validation Agent", "Database Ingestion Agent"],
       doctrines: ["Data Format Validation", "Batch Processing", "Error Handling", "Schema Compliance"],
       processes: [
@@ -109,8 +109,8 @@ export const outreachConfig: ApplicationConfig = {
         {
           id: "04",
           name: "Ingest to Database",
-          description: "Send validated data to Neon database via Render API",
-          tool: "Render API",
+          description: "Send validated data to Neon database via CF Workers API",
+          tool: "CF Workers API",
           table: "company.marketing_company / people.marketing_people",
           unique_id_template: "01.04.01.00.05.04"
         },
@@ -231,15 +231,15 @@ export const outreachConfig: ApplicationConfig = {
       name: "Campaign Execution & Telemetry",
       description: "Deploy campaigns and track performance metrics",
       route: "/doctrine/campaign-execution", 
-      tools: ["Instantly", "HeyReach", "Tracking", "Dashboard"],
+      tools: ["Mailgun", "HeyReach", "Tracking", "Dashboard"],
       subagents: ["Campaign Manager Agent", "Delivery Agent", "Analytics Agent", "Performance Monitor"],
       doctrines: ["Campaign Optimization", "Deliverability", "Performance Tracking", "ROI Analysis"],
       processes: [
         {
           id: "01",
           name: "Publish Messages",
-          description: "Deploy messages via Instantly/HeyReach APIs",
-          tool: "Instantly/HeyReach",
+          description: "Deploy messages via Mailgun/HeyReach APIs",
+          tool: "Mailgun/HeyReach",
           table: "campaign_run_log",
           unique_id_template: "01.04.01.03.05.01"
         },
@@ -247,8 +247,8 @@ export const outreachConfig: ApplicationConfig = {
           id: "02", 
           name: "Track Events",
           description: "Monitor sends, opens, replies, bounces",
-          tool: "Instantly/HeyReach",
-          table: "campaign_run_log", 
+          tool: "Mailgun/HeyReach",
+          table: "campaign_run_log",
           unique_id_template: "01.04.01.03.05.02"
         },
         {

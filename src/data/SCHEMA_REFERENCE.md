@@ -300,7 +300,7 @@ Append-only system audit trail. No updates, no deletes.
 
 ### `clnt.v_client_dashboard`
 
-Read-only dashboard surface for lovable.dev. Joins hub + master + projection. ADR-005.
+Read-only dashboard surface for Figma UI. Joins hub + master + projection. ADR-005.
 
 | Column | Source | Notes |
 |--------|--------|-------|

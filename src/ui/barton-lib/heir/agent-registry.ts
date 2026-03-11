@@ -87,7 +87,7 @@ export const projectAgentRegistry: Agent[] = [
     capabilities: [
       'Channel mapping (email, LinkedIn)',
       'Rate limiting and QPS guardrails',
-      'Send operations via Instantly/HeyReach',
+      'Send operations via Mailgun/HeyReach',
       'Event tracking (opens, clicks, replies)',
       'Reply routing and triage'
     ],

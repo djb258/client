@@ -5,13 +5,13 @@
   "agents_needed": {
     "ceo_orchestrator": { "use_this_agent": true, "why": "Master coordinator" },
     "backend_manager": { "use_this_agent": true, "why": "Neon schema + tables", "what_to_build": "Refs only (managed elsewhere)" },
-    "integration_manager": { "use_this_agent": true, "why": "Apollo, Apify, MillionVerifier, Instantly, HeyReach", "what_to_integrate": "API contracts + payload schemas" },
+    "integration_manager": { "use_this_agent": true, "why": "Apollo, Apify, MillionVerifier, Mailgun, HeyReach", "what_to_integrate": "API contracts + payload schemas" },
     "deployment_manager": { "use_this_agent": false, "why": "N/A" }
   },
   "technical_specs": {
     "integration_details": {
-      "external_apis": ["Apollo","Apify","MillionVerifier","Instantly","HeyReach"],
-      "data_flows": "Apollo->Neon->Apify->MillionVerifier->Neon->Agent->Instantly/HeyReach->Neon->Dashboard",
+      "external_apis": ["Apollo","Apify","MillionVerifier","Mailgun","HeyReach"],
+      "data_flows": "Apollo->Neon->Apify->MillionVerifier->Neon->Agent->Mailgun/HeyReach->Neon->Dashboard",
       "rate_limits": "Configure per vendor in env"
     },
     "database_details": {

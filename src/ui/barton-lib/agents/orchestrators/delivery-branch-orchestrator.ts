@@ -31,7 +31,7 @@ export interface DeliveryConfig {
     burst_limit: number;
   };
   provider_settings?: {
-    instantly_config?: any;
+    mailgun_config?: any;
     heyreach_config?: any;
   };
   tracking_settings?: {
@@ -58,7 +58,7 @@ export interface DeliveryStatus {
 
 export class DeliveryBranchOrchestrator {
   private databaseAgent: GlobalDatabaseAgent;
-  private instantlyAgent: any; // Will be injected
+  private mailgunAgent: any; // Will be injected
   private heyreachAgent: any;
   private rateLimiter: any;
   private emailParser: any;
@@ -88,12 +88,12 @@ export class DeliveryBranchOrchestrator {
   // ============================================
 
   injectDependencies(agents: {
-    instantlyAgent?: any;
+    mailgunAgent?: any;
     heyreachAgent?: any;
     rateLimiter?: any;
     emailParser?: any;
   }): void {
-    this.instantlyAgent = agents.instantlyAgent;
+    this.mailgunAgent = agents.mailgunAgent;
     this.heyreachAgent = agents.heyreachAgent;
     this.rateLimiter = agents.rateLimiter;
     this.emailParser = agents.emailParser;
@@ -448,7 +448,7 @@ export class DeliveryBranchOrchestrator {
       const emailSends = sends.filter(s => s.channel === 'email');
       const linkedinSends = sends.filter(s => s.channel === 'linkedin');
 
-      // Send emails via Instantly
+      // Send emails via Mailgun
       if (emailSends.length > 0) {
         await this.processEmailSends(emailSends);
       }
@@ -469,9 +469,9 @@ export class DeliveryBranchOrchestrator {
       try {
         let sendResult;
         
-        if (this.instantlyAgent) {
-          // Use Instantly agent
-          sendResult = await this.instantlyAgent.sendEmail({
+        if (this.mailgunAgent) {
+          // Use Mailgun agent
+          sendResult = await this.mailgunAgent.sendEmail({
             to: send.email_address,
             subject: this.extractSubject(send.content),
             content: send.content,

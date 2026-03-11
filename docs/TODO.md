@@ -14,7 +14,7 @@
 
 ## Environment & Configuration
 - [x] Env check warns on missing placeholders or drift from schema
-- [ ] Validate against Vercel/Render deployment configs
+- [ ] Validate against CF Workers/Pages deployment configs
 - [ ] Auto-sync environment requirements across repos
 
 ## Monitoring & Health

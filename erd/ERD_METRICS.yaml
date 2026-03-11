@@ -137,7 +137,7 @@ tables:
 # ─────────────────────────────────────────────────────────────────────────────────
 views:
   - view_name: clnt.v_client_dashboard
-    description: Read-only dashboard surface for lovable.dev (ADR-005)
+    description: Read-only dashboard surface for Figma UI (ADR-005)
     spoke: S1
     source_tables: [client_hub, client_master, client_projection]
 

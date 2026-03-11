@@ -540,7 +540,7 @@ Before activating live endpoints, ensure all checks pass:
 
 - [ ] ✅ Commit all changes to git
 - [ ] ✅ Push to main branch
-- [ ] ✅ Deploy to Render/Vercel/production
+- [ ] ✅ Deploy to CF Workers/Pages/production
 - [ ] ✅ Verify endpoints are accessible
 - [ ] ✅ Test first API call manually
 - [ ] ✅ Monitor audit logs for activity
@@ -578,8 +578,8 @@ Before activating live endpoints, ensure all checks pass:
 4. **Integration**
    - Connect n8n workflows to production endpoints
    - Configure Builder.io data sources
-   - Set up Lovable.dev integration
-   - Enable Firebase sync
+   - Set up Figma UI integration
+   - Enable CF D1/KV sync
 
 ---
 

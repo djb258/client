@@ -55,7 +55,7 @@ Per OWN-10a/10b, each spoke gets exactly one CANONICAL table and one ERROR table
 
 ## Context
 
-The client-subhive UI will be built by lovable.dev. The UI needs per-client configuration data that does not exist in any current table:
+The client-subhive UI (designed in Figma UI, originally scaffolded by lovable.dev) needs per-client configuration data that does not exist in any current table:
 
 - **Domain mapping**: which custom domain resolves to which client
 - **Branding**: logo, primary color, accent color
@@ -64,7 +64,7 @@ The client-subhive UI will be built by lovable.dev. The UI needs per-client conf
 
 This data is 1:1 with `client_id`. It is projection/presentation configuration — not canonical business data, not identity, not an election or plan. It does not belong in `client_master` (which stores legal/business details) or any other existing table.
 
-Without this table, lovable.dev has no query surface for multi-tenant rendering. Each client would need hardcoded configuration or environment variables, violating both multi-tenancy and the Transformation Law.
+Without this table, the UI has no query surface for multi-tenant rendering. Each client would need hardcoded configuration or environment variables, violating both multi-tenancy and the Transformation Law.
 
 ---
 
@@ -96,7 +96,7 @@ Without this table, lovable.dev has no query surface for multi-tenant rendering.
 
 ### View: `v_client_dashboard`
 
-Joins `client_hub`, `client_master`, and `client_projection` into a single read-only surface for lovable.dev. Returns: `client_id`, `status`, `legal_name`, `domicile_state`, `domain`, `label_override`, `logo_url`, `color_primary`, `color_accent`, `feature_flags`, `dashboard_blocks`.
+Joins `client_hub`, `client_master`, and `client_projection` into a single read-only surface for the UI (Figma UI). Returns: `client_id`, `status`, `legal_name`, `domicile_state`, `domain`, `label_override`, `logo_url`, `color_primary`, `color_accent`, `feature_flags`, `dashboard_blocks`.
 
 ### Design Rules
 
@@ -104,7 +104,7 @@ Joins `client_hub`, `client_master`, and `client_projection` into a single read-
 2. All columns except `client_id`, `feature_flags`, `dashboard_blocks`, and timestamps are nullable (progressive fill)
 3. `feature_flags` defaults to empty object `{}` — all features disabled by default
 4. `dashboard_blocks` defaults to empty array `[]` — no blocks rendered by default
-5. The view is the primary query surface for the UI — lovable.dev should query `v_client_dashboard`, not the individual tables
+5. The view is the primary query surface for the UI — the UI should query `v_client_dashboard`, not the individual tables
 6. `client_projection` is a SUPPORT table — not a query surface for business questions
 
 ### Why One Table, Not Five
@@ -115,8 +115,8 @@ The original proposal had 5 tables (domain_map, branding, permission_set, dashbo
 |--------|-----------|
 | Cardinality | All data is 1:1 with client_id — same cardinality = same table |
 | OWN-10c | Fewer additional tables = less justification burden |
-| JSONB flexibility | `feature_flags` and `dashboard_blocks` give lovable.dev flexibility without schema changes |
-| Lovable.dev contract | The view provides a single query surface — simpler integration |
+| JSONB flexibility | `feature_flags` and `dashboard_blocks` give the UI flexibility without schema changes |
+| UI contract | The view provides a single query surface — simpler integration |
 
 ---
 
@@ -127,7 +127,7 @@ The original proposal had 5 tables (domain_map, branding, permission_set, dashbo
 | Add columns to `client_master` | `client_master` is legal/business identity — UI config is presentation, not identity |
 | 5 separate tables | Violates structural minimalism; all data is 1:1 with client_id |
 | Store config in Doppler environment | Per-client config is data, not secrets — belongs in the database |
-| Let lovable.dev manage its own config | UI owns no persistence (UI_CONSTITUTION.md) — data lives in the hub |
+| Let the UI manage its own config | UI owns no persistence (UI_CONSTITUTION.md) — data lives in the hub |
 | JSONB-only (single column) | Loses column-level indexing on domain; harder to query branding individually |
 
 ---
@@ -136,7 +136,7 @@ The original proposal had 5 tables (domain_map, branding, permission_set, dashbo
 
 ### Enables
 
-- lovable.dev can query `v_client_dashboard` for all rendering configuration
+- The UI (Figma UI) can query `v_client_dashboard` for all rendering configuration
 - Multi-tenant UI without per-client forks, schemas, or deployments
 - Progressive fill — clients start with defaults, customize over time
 - Feature flags enable/disable capabilities without code changes

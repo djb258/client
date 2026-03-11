@@ -171,7 +171,7 @@ async function callLLM({system, prompt, json, provider, model}) {
         // Show helpful message based on error
         let message = 'LLM unavailable — prompt copied to clipboard. ';
         if (error.message.includes('API key not configured') || error.message.includes('No API keys configured')) {
-            message += 'Add API keys to Vercel environment variables to enable LLM assistance.';
+            message += 'Add API keys to CF Workers environment variables to enable LLM assistance.';
         } else {
             message += error?.message || '';
         }

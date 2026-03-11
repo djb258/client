@@ -131,18 +131,18 @@ doppler run -- npm start
     DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
 ```
 
-### Vercel
+### CF Workers/Pages
 
 ```bash
-# Sync to Vercel
-doppler secrets download --no-file --format env | vercel env add
+# Sync to CF Workers/Pages
+doppler secrets download --no-file --format env | wrangler secret:bulk
 ```
 
-### Render
+### Render (Deprecated -- use CF Workers/Pages)
 
 ```bash
-# Sync to Render
-doppler secrets download --no-file --format env-no-quotes > render.env
+# (Historical) Sync to Render -- now use wrangler secret:bulk above
+# doppler secrets download --no-file --format env-no-quotes > render.env
 ```
 
 ---

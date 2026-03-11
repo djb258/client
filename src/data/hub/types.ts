@@ -35,7 +35,7 @@ export type {
 
 /**
  * v_client_dashboard — Read-only view joining client + projection data.
- * Used by lovable.dev for dashboard rendering.
+ * Used by Figma UI for dashboard rendering.
  * This type represents the denormalized view surface.
  */
 export interface ClientDashboardView {

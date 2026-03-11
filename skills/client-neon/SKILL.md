@@ -1,22 +1,23 @@
 ---
 name: client-neon
 description: >
-  Neon PostgreSQL configuration, schema topology, and operational patterns for the Client
-  Intake & Vendor Export System — 5 spokes, 16 tables in the clnt schema, serverless driver
-  over pooled connections, Doppler-managed secrets, Zod-validated intake pipeline, and
-  vendor export egress. Use this skill whenever querying, migrating, debugging, or making
-  data-layer decisions in the client repo. Trigger on: Neon, PostgreSQL, clnt schema,
-  client_id, enrollment intake, vendor export, plan quote, election, invoice, spoke tables,
-  column registry, codegen, promote-to-neon, or any reference to the client database layer.
-  Also trigger when discussing connection strings, migration scripts, error tables, staging
-  tables, or the intake-to-canonical promotion pipeline. If the task touches relational data
-  in this repo — even if the user says "database" without saying "Neon" — this skill applies.
+  Neon PostgreSQL vault/archive configuration, schema topology, and operational patterns for
+  the Client Intake & Vendor Export System — 5 spokes, 16 tables in the clnt schema,
+  serverless driver over pooled connections, Doppler-managed secrets, Zod-validated intake
+  pipeline, and vendor export egress. Neon serves as the vault/archive layer; CF D1/KV is the
+  working database. Use this skill whenever querying, migrating, debugging, or making
+  data-layer decisions about the Neon vault in the client repo. Trigger on: Neon, PostgreSQL,
+  clnt schema, client_id, enrollment intake, vendor export, plan quote, election, invoice,
+  spoke tables, column registry, codegen, promote-to-neon, or any reference to the vault
+  database layer. Also trigger when discussing connection strings, migration scripts, error
+  tables, staging tables, or the intake-to-canonical promotion pipeline.
 ---
 
 # Client-Neon — Car Skill
 
-Neon is the sole persistence layer for the Client Intake & Vendor Export System. All 16
-tables live in the `clnt` schema under a 5-spoke CTB topology. The serverless driver
+Neon is the vault/archive persistence layer for the Client Intake & Vendor Export System.
+CF D1/KV serves as the working database for active operations. The clnt schema (16 tables,
+5-spoke CTB topology) lives in Neon for archival and canonical storage. The serverless driver
 (`@neondatabase/serverless ^0.10.0`) connects via pooled endpoint. Secrets come from
 Doppler (project: `barton-outreach-core`, config: `dev`).
 
@@ -26,7 +27,8 @@ Doppler (project: `barton-outreach-core`, config: `dev`).
 
 | Component | Value |
 |-----------|-------|
-| Database | Neon Serverless PostgreSQL |
+| Database (vault/archive) | Neon Serverless PostgreSQL |
+| Database (working) | CF D1/KV |
 | Schema | `clnt` |
 | Driver | `@neondatabase/serverless` ^0.10.0 |
 | Connection secret | `NEON_DATABASE_URL` via Doppler |
@@ -136,6 +138,7 @@ Schema changes follow a registry-first workflow:
 
 ## Known Issues
 
+- **Vault role**: Neon is vault/archive only. Active working data lives in CF D1/KV. Neon handles canonical archival, historical queries, and migration-managed schema
 - **Cold starts**: Neon scale-to-zero means first query after idle period has latency. The serverless driver's HTTP mode (`neon()`) handles this gracefully for one-shot queries
 - **Transaction mode pooling**: PgBouncer in transaction mode means `SET` statements, temp tables, and advisory locks do not persist between transactions
 - **No superuser**: Neon provides `neon_superuser` role, not full superuser. Some extensions and `CREATE TABLESPACE` are unavailable

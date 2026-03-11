@@ -12,7 +12,7 @@
  * Global Database Agent
  * 
  * Universal database agent that can work across any project with:
- * - Multiple database platforms (Neon, BigQuery, PostgreSQL, Supabase)
+ * - Multiple database platforms (Neon vault, CF D1/KV, BigQuery, PostgreSQL)
  * - Any schema structure
  * - Environment-agnostic configuration
  * - Barton Doctrine compliance (optional)
@@ -38,7 +38,7 @@ export interface GlobalDatabaseConfig {
 
 export interface DatabaseConnectionConfig {
   name: string; // Unique connection identifier
-  type: 'neon' | 'bigquery' | 'postgres' | 'supabase' | 'mysql' | 'mongodb';
+  type: 'neon' | 'bigquery' | 'postgres' | 'cf_d1' | 'mysql' | 'mongodb';
   
   // Connection Details
   connection_string?: string;
@@ -164,7 +164,7 @@ export class GlobalDatabaseAgent {
       switch (config.type) {
         case 'neon':
         case 'postgres':
-        case 'supabase':
+        case 'cf_d1':
           ({ client, pool } = await this.createPostgresConnection(config));
           break;
         
@@ -334,7 +334,7 @@ export class GlobalDatabaseAgent {
     switch (connection.type) {
       case 'neon':
       case 'postgres':
-      case 'supabase':
+      case 'cf_d1':
         return await this.executePostgresOperation(connection, operation);
       
       case 'bigquery':
@@ -619,7 +619,7 @@ export class GlobalDatabaseAgent {
   async disconnect(): Promise<void> {
     for (const [name, connection] of this.connections) {
       try {
-        if (connection.type === 'postgres' || connection.type === 'neon' || connection.type === 'supabase') {
+        if (connection.type === 'postgres' || connection.type === 'neon' || connection.type === 'cf_d1') {
           await connection.client.end();
         }
         // Add disconnect logic for other types
