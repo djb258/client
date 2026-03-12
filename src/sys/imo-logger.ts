@@ -1,3 +1,4 @@
+// TODO: BAR-117 INVESTIGATE — update NEON_DATABASE_URL check after D1 migration
 import { fetch } from 'undici';
 
 interface ErrorContext {

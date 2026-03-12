@@ -11,7 +11,7 @@
 import { Agent, AgentStatus } from '@/lib/heir/types';
 
 export interface DatabaseConnection {
-  type: 'neon' | 'bigquery' | 'postgres_local' | 'supabase';
+  type: 'neon' | 'bigquery' | 'postgres_local';
   connectionString?: string;
   projectId?: string;
   credentials?: any;
@@ -83,7 +83,6 @@ export class DatabaseAgent {
       switch (config.type) {
         case 'neon':
         case 'postgres_local':
-        case 'supabase':
           connection = await this.createPostgresConnection(config);
           break;
         case 'bigquery':
@@ -177,7 +176,6 @@ export class DatabaseAgent {
     switch (connection.type) {
       case 'neon':
       case 'postgres_local':
-      case 'supabase':
         return await this.executePostgresOperation(connection.client, operation);
       case 'bigquery':
         return await this.executeBigQueryOperation(connection.client, operation);

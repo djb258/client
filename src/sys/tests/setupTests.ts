@@ -1,3 +1,4 @@
+// TODO: BAR-117 INVESTIGATE — update NEON_DATABASE_URL mock after D1 migration
 // Jest Setup File for Client Intake Wizard Tests
 
 // Mock environment variables

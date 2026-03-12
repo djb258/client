@@ -1142,7 +1142,7 @@ error_log_registry:
       - all_agents
     read:
       - repo-dashboard
-      - lovable
+      - cf-pages
       - deepwiki
   enforcement:
     required_on_repo_build: true
