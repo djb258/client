@@ -98,7 +98,7 @@ temp/
 !**/*example*
 
 # Claude Code specific
-.claude/settings.local.json
+.claude/
 
 # MCP server config (may contain API keys — use Doppler)
 config/mcp-servers.json
