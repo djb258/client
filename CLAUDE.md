@@ -1,93 +1,114 @@
-# Claude Bootstrap Guide - Client Intake & Vendor Export System
+# CLAUDE.md — Client Intake & Vendor Export System
 
-## Repository Identity
+## Identity
+
+This is a **blueprint repo** — schema, doctrine, definitions. ZERO runtime code.
+All executable processes live in **Barton-Processes** (800-series).
+
+**Authority**: Inherited from imo-creator-v2 (Sovereign)
+**Engine**: `law/doctrine/TIER0_DOCTRINE.md` (in imo-creator-v2)
 
 | Field | Value |
 |-------|-------|
 | **Repository** | djb258/client |
 | **Hub ID** | client-subhive |
 | **Hub Name** | Client Intake & Vendor Export System |
-| **Parent Sovereign** | imo-creator |
-| **Doctrine Version** | 3.4.1 |
+| **Parent Sovereign** | imo-creator-v2 |
+| **Doctrine Version** | 2.0.0 |
 
 ---
 
-## READ THESE FIRST
+## CANONICAL REFERENCE
 
-Before making ANY changes, read these files in order:
-
-1. `IMO_CONTROL.json` — Machine-enforced governance contract
-2. `CONSTITUTION.md` — Sovereign boundary declaration
-3. `DOCTRINE.md` — Doctrine adherence and binding documents
-4. `docs/prd/PRD.md` — Hub definition and transformation statement
+| Template | imo-creator-v2 Path | Version |
+|----------|---------------------|---------|
+| Architecture | law/doctrine/ARCHITECTURE.md | 2.1.0 |
+| Tier 0 | law/doctrine/TIER0_DOCTRINE.md | LOCKED |
+| Critical Thinking | law/doctrine/CRITICAL_THINKING_FRAMEWORK.md | LOCKED |
+| Tools | law/integrations/TOOLS.md | 1.1.0 |
+| OSAM | law/semantic/OSAM.md | 1.1.0 |
+| PRD | fleet/car-template/docs/PRD_HUB.md | 1.0.0 |
+| ADR | fleet/adr-templates/ADR.md | 1.0.0 |
+| Checklist | fleet/checklists/HUB_COMPLIANCE.md | 1.0.0 |
 
 ---
 
-## Parent-Child Relationship
+## Blueprint, Not Muscle
+
+This repo defines WHAT. Barton-Processes defines HOW.
+
+| This Repo (Blueprint) | Barton-Processes (Muscle) |
+|------------------------|--------------------------|
+| Schema (column registry) | CF Workers (800-830) |
+| OSAM (query routing) | D1 working tables |
+| PRD (transformation statement) | Neon vault migrations |
+| Vendor blueprints (field mappings) | Export generation |
+| Doctrine, governance, ADRs | Runtime execution |
+
+**No executable code belongs here.** If it runs, it goes in Barton-Processes.
+
+---
+
+## Processes (in Barton-Processes)
+
+| # | Name | What It Does |
+|---|------|-------------|
+| 800 | Client Mint | CL sovereign ID → mint client_id → D1 → vault to Neon |
+| 810 | Client Data Intake | CSV/API → Zod validate → D1 staging → promote canonical → vault |
+| 820 | Vendor Export | Cron → D1 canonical → vendor blueprint mapping → export files |
+| 830 | Client Portal | 5 pages (renewal, CEO, HR, underwriting, agent) → SSR HTML |
+
+---
+
+## Data Hierarchy
 
 ```
-imo-creator (Sovereign - CC-01)
-    │
-    └── client (Hub - CC-02)
-            │
-            ├── API Intake Endpoint (Spoke - CC-03, Ingress)
-            ├── Vendor Export API (Spoke - CC-03, Egress)
-            └── Compliance Report (Spoke - CC-03, Egress)
+CL (Company Lifecycle — sovereign ID)
+├── Outreach ID (sub-hub)
+├── Sales ID (sub-hub)
+└── Client ID (sub-hub) ← THIS REPO
+    ├── S1 Hub — client identity (SPINE)
+    ├── S2 Plan — benefits, rates, renewal quotes
+    ├── S3 Employee — enrollment, person, elections
+    ├── S4 Vendor — vendor identity, ID translation, invoices
+    └── S5 Service — service tickets
 ```
 
-**This repository inherits doctrine from `imo-creator`.**
-
-- Templates and constitutional documents flow DOWN from the parent
-- Child repos MUST NOT modify parent doctrine
-- If rules conflict, parent doctrine wins — no exceptions
-
-### Binding Doctrine (from imo-creator)
-
-| Document | Purpose |
-|----------|---------|
-| ARCHITECTURE.md (v2.1.0) | CTB Constitutional Law (CTB, CC, Hub-Spoke, IMO, Descent, OWN-10) |
-| TEMPLATE_IMMUTABILITY.md | AI modification prohibition |
-| CTB_REGISTRY_ENFORCEMENT.md (v1.5.0) | Registry-first enforcement, cardinality, drift audit |
-| EXECUTION_SURFACE_LAW.md (v1.0.0) | Code placement whitelist, side-door prohibition |
-| FAIL_CLOSED_CI_CONTRACT.md (v1.1.0) | Fail-closed CI gates, no continue-on-error |
-| LEGACY_COLLAPSE_PLAYBOOK.md (v1.0.0) | 5-phase legacy migration protocol |
-| IMO_SYSTEM_SPEC.md | System index and quick reference |
-| AI_EMPLOYEE_OPERATING_CONTRACT.md | Agent constraints |
-| SNAP_ON_TOOLBOX.yaml | Tool registry |
-| GUARDSPEC.md | CI-style enforcement rules |
-
-> **Note**: ARCHITECTURE.md consolidates the former CANONICAL_ARCHITECTURE_DOCTRINE.md, HUB_SPOKE_ARCHITECTURE.md, and ALTITUDE_DESCENT_MODEL.md. Adds OWN-10a/10b/10c table cardinality.
+**CL sovereign ID is the spine.** Client identity is minted from it (Process 800).
 
 ---
 
-## Canonical Chain (CC) Layers
+## Infrastructure Layers
 
-The system operates on a 4-layer authority hierarchy:
+| Layer | Technology | Role |
+|-------|-----------|------|
+| Working | CF D1 | All active operations — staging, validation, canonical working copy |
+| Config | CF KV | Vendor blueprints, schedule config |
+| Compute | CF Workers | All processing logic |
+| Vault | Neon PostgreSQL | Long-term canonical storage — promote when certified |
+| Secrets | Doppler (imo-creator project) | All runtime configuration |
 
-| Layer | Name | Authority | This Repo |
-|-------|------|-----------|-----------|
-| CC-01 | Sovereign | imo-creator | Parent (inherited) |
-| CC-02 | Hub | client-subhive | This repository |
-| CC-03 | Spoke/Context | Interfaces | API endpoints, exports |
-| CC-04 | Process | Execution | PIDs, agent runs |
-
-**Authorization flows DOWN only.** CC-04 cannot modify CC-02. CC-02 cannot modify CC-01.
-
----
-
-## The Transformation Law
-
-> "Nothing may exist unless it transforms declared constants into declared variables."
-
-This hub transforms:
-- **Constants (Inputs):** Raw client intake data, employee census, benefit elections
-- **Variables (Outputs):** Canonical records (CF D1/KV working, Neon vault), vendor-specific export files
-
-If something doesn't serve this transformation, it doesn't belong here.
+**CF does the work. Neon is the vault.**
 
 ---
 
-## IMO Model (Ingress / Middle / Egress)
+## Schema (16 Tables, 5 Spokes)
+
+Single source of truth: `src/data/db/registry/clnt_column_registry.yml`
+
+| Spoke | CANONICAL | ERROR | Additional |
+|-------|-----------|-------|------------|
+| S1 Hub | client | client_error | — |
+| S2 Plan | plan | plan_error | plan_quote (SUPPORT) |
+| S3 Employee | person | employee_error | election (SUPPORT), enrollment_intake (STAGING), intake_record (STAGING) |
+| S4 Vendor | vendor | vendor_error | external_identity_map (SUPPORT), invoice (SUPPORT) |
+| S5 Service | service_request | service_error | — |
+
+**Universal join key:** `client_id` (from clnt.client)
+
+---
+
+## IMO Model
 
 | Layer | Role | Rules |
 |-------|------|-------|
@@ -95,215 +116,43 @@ If something doesn't serve this transformation, it doesn't belong here.
 | **M - Middle** | ALL logic lives here | Canonical data, validation, transformation |
 | **O - Egress** | Output only | Read-only projection, no logic |
 
-### Tables (clnt schema — 16 tables, 5 spokes)
-
-**S1 Hub** — Client identity (SPINE)
-- `client` (CANONICAL) — Sovereign identity, config, branding
-- `client_error` (ERROR) — Client-level errors
-
-**S2 Plan** — Benefit plans & quotes
-- `plan` (CANONICAL) — Benefit type, rates, quote lineage
-- `plan_error` (ERROR) — Plan-level errors
-- `plan_quote` (SUPPORT) — Quote tracking
-
-**S3 Employee** — Employee identity & enrollment
-- `person` (CANONICAL) — Employee/dependent identity
-- `employee_error` (ERROR) — Employee-level errors
-- `election` (SUPPORT) — Person-plan bridge
-- `enrollment_intake` (STAGING) — Batch header
-- `intake_record` (STAGING) — Raw payload
-
-**S4 Vendor** — Vendor identity & billing
-- `vendor` (CANONICAL) — Vendor identity per client
-- `vendor_error` (ERROR) — Vendor-level errors
-- `external_identity_map` (SUPPORT) — ID translation
-- `invoice` (SUPPORT) — Vendor invoices
-
-**S5 Service** — Service tickets
-- `service_request` (CANONICAL) — Service tickets
-- `service_error` (ERROR) — Service-level errors
-
----
-
-## CTB Structure (Christmas Tree Backbone)
-
-```
-client/
-├── src/                        # Code lives here (CTB branches)
-│   ├── sys/                    # System infrastructure, scripts
-│   ├── data/                   # Database schemas, migrations
-│   ├── app/                    # Application logic
-│   ├── ai/                     # Agents, MCP servers
-│   └── ui/                     # User interface
-├── docs/                       # Governance documentation
-│   ├── prd/                    # Product Requirements
-│   ├── adr/                    # Architecture Decisions
-│   ├── audit/                  # Audit attestations
-│   └── ui/                     # UI governance
-├── doctrine/                   # Domain specifications
-├── templates/                  # IMO-Creator templates (synced)
-├── integrations/               # External service docs
-├── db/                         # Database migrations
-├── erd/                        # ERD metrics
-├── scripts/                    # Root-level scripts
-└── [root governance files]     # IMO_CONTROL, CONSTITUTION, etc.
-```
-
-### Forbidden Folders
-
-NEVER create these folders anywhere:
-- `utils/`
-- `helpers/`
-- `common/`
-- `shared/`
-- `lib/`
-- `misc/`
-
 ---
 
 ## Governance Files
 
-| File | Purpose | Authority |
-|------|---------|-----------|
-| `IMO_CONTROL.json` | Machine-enforced rules | CC-02 |
-| `CONSTITUTION.md` | Boundary declaration | CC-02 |
-| `REGISTRY.yaml` | Hub identity | CC-02 |
-| `DOCTRINE.md` | Doctrine adherence | CC-02 |
-| `HUB_DESIGN_DECLARATION.yaml` | Hub existence justification (HSS) | CC-02 |
-| `doctrine/REPO_DOMAIN_SPEC.md` | Domain bindings | CC-02 |
-| `doctrine/OSAM.md` | Semantic Access Map (query routing) | CC-02 |
-| `docs/prd/PRD.md` | Hub definition | CC-02 |
-| `docs/adr/ADR-001-architecture.md` | Architecture decisions | CC-03 |
-| `docs/audit/HUB_COMPLIANCE_CHECKLIST.md` | Compliance checklist | CC-02 |
-| `docs/CTB_GOVERNANCE.md` | CTB table registry and governance | CC-02 |
-| `docs/architecture/HUBS_AND_SPOKES.md` | Hub/spoke reference (explanatory) | CC-02 |
-| `docs/architecture/SYSTEM_FUNNEL_OVERVIEW.md` | System funnel reference (explanatory) | CC-02 |
-
-### UI Governance
-
 | File | Purpose |
 |------|---------|
-| `docs/ui/UI_CONSTITUTION.md` | UI layer governance |
-| `docs/ui/UI_PRD_client-subhive.md` | UI surface definitions |
-| `docs/ui/UI_ERD_client-subhive.md` | Read-only data mirror |
-
-**UI owns no schema, no persistence, no business logic.**
+| `IMO_CONTROL.json` | Machine-enforced governance contract |
+| `CONSTITUTION.md` | Boundary declaration |
+| `DOCTRINE.md` | Doctrine adherence |
+| `REGISTRY.yaml` | Hub identity |
+| `HUB_DESIGN_DECLARATION.yaml` | Hub existence justification |
+| `doctrine/REPO_DOMAIN_SPEC.md` | Domain bindings + lane definitions |
+| `doctrine/OSAM.md` | Semantic Access Map (query routing) |
+| `docs/prd/PRD.md` | Hub definition + transformation statement |
 
 ---
 
 ## Secrets Management (Doppler)
 
-**Doppler is the ONLY permitted secrets provider.**
+**All secrets live in the imo-creator Doppler project.** This is the sovereign vault.
 
-```bash
-# Setup (run once)
-doppler setup
-
-# Run any command with secrets
-doppler run -- <command>
-
-# Examples
-doppler run -- npm start
-doppler run -- node scripts/sync_erd_metrics.js
-```
-
-### Required Secrets
-
-| Secret | Purpose | Required |
-|--------|---------|----------|
-| `HUB_ID` | Hub identifier | Yes |
-| `NEON_DATABASE_URL` | Database connection | Yes |
-
-### Forbidden
+Relevant keys:
+- `CLIENT_DATABASE_URL` — Neon connection string
+- `CLIENT_HUB_ID` — client-subhive
+- `CLIENT_NEON_HOST`, `CLIENT_NEON_USER`, `CLIENT_NEON_PASSWORD`, `CLIENT_NEON_DATABASE`
 
 ```
-╔══════════════════════════════════════════════════════════════════════╗
-║                         FORBIDDEN PATTERNS                            ║
-╠══════════════════════════════════════════════════════════════════════╣
-║   ❌ .env files (any variant)                                        ║
-║   ❌ Hardcoded secrets in code                                       ║
-║   ❌ secrets.json, credentials.json                                  ║
-║   ❌ Environment variables not from Doppler                          ║
-║   ❌ Firebase (deprecated)                                           ║
-║   ❌ Vercel (deprecated — use CF Workers/Pages)                      ║
-║   ❌ N8N (deprecated)                                                ║
-╚══════════════════════════════════════════════════════════════════════╝
+FORBIDDEN:
+- .env files (any variant)
+- Hardcoded secrets in code
+- secrets.json, credentials.json
+- Environment variables not from Doppler
 ```
-
-See: `integrations/DOPPLER.md`
-
----
-
-## V1 Control Plane (v3.4.1 — Agent System)
-
-This repo uses the IMO-Creator V1 Control Plane with 4 agents and a folder-based message bus.
-
-### Agents
-
-| Agent | Role | Produces | Reads From |
-|-------|------|----------|------------|
-| **Planner** | Plans work, classifies change type | WORK_PACKET | User request + constitutional docs |
-| **Builder** | Executes approved plans | CHANGESET + pressure reports | work_packets/inbox |
-| **Auditor** | Verifies compliance | AUDIT_REPORT | work_packets/inbox + changesets/inbox |
-| **Control Panel** | Read-only diagnostic | Structured report | All bus folders (read-only) |
-
-### Message Bus (Folder-Based)
-
-```
-work_packets/inbox/     ← Builder reads from here
-work_packets/outbox/    ← Planner writes here
-changesets/inbox/       ← Auditor reads from here
-changesets/outbox/      ← Builder writes here
-audit_reports/inbox/    ← (future consumers)
-audit_reports/outbox/   ← Auditor writes here
-audit/                  ← Pressure test reports
-```
-
-### Agent Contracts
-
-| Contract | Schema | Purpose |
-|----------|--------|---------|
-| WORK_PACKET | `agents/contracts/work_packet.schema.json` | Planned scope of work |
-| CHANGESET | `agents/contracts/changeset.schema.json` | Completed changes |
-| AUDIT_REPORT | `agents/contracts/audit_report.schema.json` | Compliance classification |
-| ARCH_PRESSURE_REPORT | `agents/contracts/arch_pressure_report.schema.json` | 5 structural invariants |
-| FLOW_PRESSURE_REPORT | `agents/contracts/flow_pressure_report.schema.json` | 5 flow invariants |
-
-### Pressure Tests (v3.4.1 — 10 Mechanical Gates)
-
-When `requires_pressure_test = true` (mandatory for architectural changes):
-
-**Structural (5 gates):** cantonal_cardinality, registry_first, id_authority, no_sideways_calls, contracts_declared
-
-**Flow (5 gates):** ingress_contract_exists, egress_contract_exists, no_orphan_tables, no_unconsumed_events, id_propagation_intact
-
-All 10 must = PASS. Any FAIL blocks merge. No advisory override permitted.
-
-### Constitutional Docs
-
-| File | Purpose |
-|------|---------|
-| `docs/constitutional/backbone.md` | CTB backbone primitives, altitude hierarchy |
-| `docs/constitutional/governance.md` | Agent role isolation, artifact flow, pressure test bus |
-| `docs/constitutional/protected_assets.md` | Protected models and folders |
-
----
-
-## Enforcement Scripts
-
-| Script | Purpose | Run When |
-|--------|---------|----------|
-| `scripts/ctb-registry-gate.sh` | Registry vs migrations + cardinality | Pre-commit, CI |
-| `scripts/ctb-drift-audit.sh` | Live DB vs registry vs YAML (3-surface) | CI, on-demand |
-| `scripts/detect-banned-db-clients.sh` | Banned DB client imports | Pre-commit, CI |
-| `scripts/verify-governance-ci.sh` | CI governance wiring | Bootstrap, CI |
-| `scripts/bootstrap-audit.sh` | Day 0 structural validation | Initial setup |
 
 ---
 
 ## Registry-First Architecture
-
-Single source of truth: `src/data/db/registry/clnt_column_registry.yml`
 
 ```
 OSAM → column_registry.yml → codegen-schema.ts → Generated files → Application code
@@ -320,73 +169,42 @@ OSAM → column_registry.yml → codegen-schema.ts → Generated files → Appli
 
 ---
 
-## Gatekeeper Module
+## Vendor Blueprints
 
-All database writes MUST go through: `src/sys/modules/gatekeeper/`
+Field mappings for export generation (consumed by Process 820):
 
-No direct DB client imports allowed (pg, mysql2, psycopg2, etc.). The `detect-banned-db-clients.sh` script enforces this.
-
----
-
-## Common Tasks
-
-| Task | How To |
+| File | Vendor |
 |------|--------|
-| Add database table | Register in column_registry.yml FIRST → ADR → migration → run codegen |
-| Add new agent | `src/ai/` → update PRD |
-| Update UI | `src/ui/` → follow `docs/ui/UI_CONSTITUTION.md` |
-| Add integration | `integrations/` → update REGISTRY.yaml |
-| Run codegen | `npx ts-node scripts/codegen-schema.ts` |
-| Verify codegen drift | `npm run codegen:verify` |
-| Run registry gate | `bash scripts/ctb-registry-gate.sh` |
-| Run drift audit | `DATABASE_URL=... bash scripts/ctb-drift-audit.sh` |
-| Run bootstrap audit | `DATABASE_URL=... bash scripts/bootstrap-audit.sh` |
+| `db/vendor_blueprints/guardian_life.mapping.json` | Guardian Life |
+| `db/vendor_blueprints/mutual_of_omaha.mapping.json` | Mutual of Omaha |
 
 ---
 
 ## Never Do These Things
 
 ```
-╔══════════════════════════════════════════════════════════════════════╗
-║                           HARD PROHIBITIONS                           ║
-╠══════════════════════════════════════════════════════════════════════╣
-║   ❌ Modify parent doctrine (imo-creator templates)                  ║
-║   ❌ Create files outside CTB branches (src/)                        ║
-║   ❌ Put logic in Ingress or Egress layers                           ║
-║   ❌ Use .env files                                                  ║
-║   ❌ Hardcode secrets                                                ║
-║   ❌ Create forbidden folders (utils, helpers, lib, etc.)            ║
-║   ❌ Create schema without ADR                                       ║
-║   ❌ Make UI own data or logic                                       ║
-║   ❌ Skip the CC descent sequence                                    ║
-║   ❌ Use direct DB clients (must use Gatekeeper)                     ║
-║   ❌ Create tables without registering in column_registry.yml first  ║
-║   ❌ Use continue-on-error in CI enforcement jobs                    ║
-║   ❌ Connect to database as superuser                                ║
-║   ❌ Override or downgrade pressure test FAIL to advisory            ║
-║   ❌ Hand-edit generated files (types.ts, schema.ts, ERD.md)         ║
-╚══════════════════════════════════════════════════════════════════════╝
+HARD PROHIBITIONS:
+- Put executable code in this repo (it goes in Barton-Processes)
+- Modify parent doctrine (imo-creator-v2)
+- Put logic in Ingress or Egress layers
+- Use .env files or hardcode secrets
+- Create forbidden folders (utils, helpers, lib, etc.)
+- Create schema without ADR
+- Create tables without registering in column_registry.yml first
+- Hand-edit generated files (types.ts, schema.ts, ERD.md)
+- Make UI own data or logic
 ```
 
 ---
 
-## Key Integrations
+## Golden Rules
 
-| Service | Purpose | Documentation |
-|---------|---------|---------------|
-| CF D1/KV | Working database (active operations) | `db/` |
-| Neon | PostgreSQL vault/archive (clnt schema) | `db/neon/` |
-| Doppler | Secrets management | `integrations/DOPPLER.md` |
-
----
-
-## If You Get Stuck
-
-1. Re-read `DOCTRINE.md` for binding rules
-2. Check `docs/prd/PRD.md` for scope boundaries
-3. Review `docs/adr/ADR-001-architecture.md` for decisions
-4. If rules conflict, parent doctrine wins
-5. When in doubt, ask — don't assume
+1. **This repo is a blueprint. Barton-Processes is the muscle.**
+2. **Tier 0 is the engine. Everything else is fuel.**
+3. **CF does the work. Neon is the vault.**
+4. **CL sovereign ID is the spine. Client ID is minted from it.**
+5. **Children conform to parent. Never the reverse.**
+6. **Determinism first. LLM is tail, not spine.**
 
 ---
 
@@ -395,6 +213,7 @@ No direct DB client imports allowed (pg, mysql2, psycopg2, etc.). The `detect-ba
 | Field | Value |
 |-------|-------|
 | Created | 2026-01-30 |
-| Last Modified | 2026-02-25 |
-| Version | 3.4.1 |
+| Last Modified | 2026-03-19 |
+| Version | 2.0.0 |
 | Status | ACTIVE |
+| Authority | imo-creator-v2 (Inherited) |
