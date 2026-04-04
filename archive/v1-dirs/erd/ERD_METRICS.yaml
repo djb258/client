@@ -13,10 +13,10 @@
 # SYNC METADATA
 # ─────────────────────────────────────────────────────────────────────────────────
 sync:
-  last_updated: '2026-02-11T00:00:00.000Z'
+  last_updated: '2026-03-09T00:00:00.000Z'
   updated_by: claude-code
   source: doppler://neon/client-subhive
-  next_sync_due: '2026-02-12T00:00:00.000Z'
+  next_sync_due: '2026-03-10T00:00:00.000Z'
   frequency: daily
   stale_after_hours: 24
   auto_sync_on_session: true
@@ -40,24 +40,18 @@ hub:
 # ─────────────────────────────────────────────────────────────────────────────────
 tables:
   s1_hub:
-    - table_name: clnt.client_hub
-      description: Root client identity (read-only after creation)
-      spoke: S1
-      leaf_type: FROZEN
-      count: 0
-      query: SELECT COUNT(*) FROM clnt.client_hub
-    - table_name: clnt.client_master
-      description: Client legal/business details
+    - table_name: clnt.client
+      description: Sovereign client identity and configuration (SPINE)
       spoke: S1
       leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt.client_master
-    - table_name: clnt.client_projection
-      description: Per-client UI projection configuration (ADR-005)
+      query: SELECT COUNT(*) FROM clnt.client
+    - table_name: clnt.client_error
+      description: Client-level errors
       spoke: S1
-      leaf_type: SUPPORT
+      leaf_type: ERROR
       count: 0
-      query: SELECT COUNT(*) FROM clnt.client_projection
+      query: SELECT COUNT(*) FROM clnt.client_error
   s2_plan:
     - table_name: clnt.plan
       description: Benefit plans with fixed cost tiers (canonical source of truth for active rates)
@@ -65,72 +59,87 @@ tables:
       leaf_type: CANONICAL
       count: 0
       query: SELECT COUNT(*) FROM clnt.plan
+    - table_name: clnt.plan_error
+      description: Plan-level errors
+      spoke: S2
+      leaf_type: ERROR
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.plan_error
     - table_name: clnt.plan_quote
-      description: Received quotes. Multiple per benefit/year allowed. Promotion copies rates into plan.
+      description: Quote tracking
       spoke: S2
       leaf_type: SUPPORT
       count: 0
       query: SELECT COUNT(*) FROM clnt.plan_quote
-  s3_intake:
-    - table_name: clnt.intake_batch
-      description: Enrollment batch upload header
+  s3_employee:
+    - table_name: clnt.person
+      description: Employee/dependent identity
+      spoke: S3
+      leaf_type: CANONICAL
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.person
+    - table_name: clnt.employee_error
+      description: Employee-level errors
+      spoke: S3
+      leaf_type: ERROR
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.employee_error
+    - table_name: clnt.election
+      description: Person-plan bridge
+      spoke: S3
+      leaf_type: SUPPORT
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.election
+    - table_name: clnt.enrollment_intake
+      description: Enrollment batch header
       spoke: S3
       leaf_type: STAGING
       count: 0
-      query: SELECT COUNT(*) FROM clnt.intake_batch
+      query: SELECT COUNT(*) FROM clnt.enrollment_intake
     - table_name: clnt.intake_record
-      description: Individual raw intake records
+      description: Raw intake payload
       spoke: S3
       leaf_type: STAGING
       count: 0
       query: SELECT COUNT(*) FROM clnt.intake_record
-  s4_vault:
-    - table_name: clnt.person
-      description: Employee/dependent identity
-      spoke: S4
-      leaf_type: CANONICAL
-      count: 0
-      query: SELECT COUNT(*) FROM clnt.person
-    - table_name: clnt.election
-      description: Benefit election bridge (person → plan)
-      spoke: S4
-      leaf_type: CANONICAL
-      count: 0
-      query: SELECT COUNT(*) FROM clnt.election
-  s5_vendor:
+  s4_vendor:
     - table_name: clnt.vendor
       description: Vendor identity per client
-      spoke: S5
+      spoke: S4
       leaf_type: CANONICAL
       count: 0
       query: SELECT COUNT(*) FROM clnt.vendor
+    - table_name: clnt.vendor_error
+      description: Vendor-level errors
+      spoke: S4
+      leaf_type: ERROR
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.vendor_error
     - table_name: clnt.external_identity_map
       description: Internal-to-external ID translation
+      spoke: S4
+      leaf_type: SUPPORT
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.external_identity_map
+    - table_name: clnt.invoice
+      description: Vendor invoices
+      spoke: S4
+      leaf_type: SUPPORT
+      count: 0
+      query: SELECT COUNT(*) FROM clnt.invoice
+  s5_service:
+    - table_name: clnt.service_request
+      description: Service ticket tracking
       spoke: S5
       leaf_type: CANONICAL
       count: 0
-      query: SELECT COUNT(*) FROM clnt.external_identity_map
-  s6_service:
-    - table_name: clnt.service_request
-      description: Service ticket tracking
-      spoke: S6
-      leaf_type: CANONICAL
-      count: 0
       query: SELECT COUNT(*) FROM clnt.service_request
-  s7_compliance:
-    - table_name: clnt.compliance_flag
-      description: Compliance flag tracking
-      spoke: S7
-      leaf_type: CANONICAL
+    - table_name: clnt.service_error
+      description: Service-level errors
+      spoke: S5
+      leaf_type: ERROR
       count: 0
-      query: SELECT COUNT(*) FROM clnt.compliance_flag
-  s8_audit:
-    - table_name: clnt.audit_event
-      description: Append-only system audit trail
-      spoke: S8
-      leaf_type: AUDIT
-      count: 0
-      query: SELECT COUNT(*) FROM clnt.audit_event
+      query: SELECT COUNT(*) FROM clnt.service_error
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # VIEWS (Read-only, no table storage)
@@ -139,13 +148,13 @@ views:
   - view_name: clnt.v_client_dashboard
     description: Read-only dashboard surface for Figma UI (ADR-005)
     spoke: S1
-    source_tables: [client_hub, client_master, client_projection]
+    source_tables: [client, client_error]
 
 # ─────────────────────────────────────────────────────────────────────────────────
 # AGGREGATE METRICS
 # ─────────────────────────────────────────────────────────────────────────────────
 aggregates:
-  total_tables: 14
+  total_tables: 16
   total_views: 1
   total_records_all_tables: 0
   total_clients: 0
@@ -161,7 +170,7 @@ aggregates:
 # ─────────────────────────────────────────────────────────────────────────────────
 queries:
   total_clients: |
-    SELECT COUNT(*) FROM clnt.client_hub;
+    SELECT COUNT(*) FROM clnt.client;
   total_persons: |
     SELECT COUNT(*) FROM clnt.person;
   total_plans: |
