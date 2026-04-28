@@ -1,0 +1,13 @@
+name = "client-hub"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "a1dd98c646e8d2f4ae6f1ca6c0b79653"
+
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "client-hub"
+database_id = "3ba426ee-f9ed-4b76-958e-4001468bd847"
+migrations_dir = "migrations"
